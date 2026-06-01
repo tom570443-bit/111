@@ -153,17 +153,46 @@ main {
   flex: 1;
 }
 
-/* ── HERO — centred overlap layout ── */
+/* ── HERO — sticky, full-height ── */
 #hero {
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border-bottom: 1px solid var(--gray3);
-  position: relative;
+  position: sticky;
+  top: 0;
   overflow: hidden;
+}
+
+/* ── Hero spacer (provides scroll room for the transition) ── */
+#hero-spacer {
+  height: 150vh;
+  background: var(--black);
+}
+
+/* ── Transition: expanding DIGITAL portal text ── */
+#word-trans {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  font-family: var(--sans);
+  font-size: clamp(5rem, 14vw, 13rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  pointer-events: none;
+  z-index: 600;
+  opacity: 0;
+  white-space: nowrap;
+  will-change: transform, opacity;
+  user-select: none;
 }
 
 /* torus canvas fills the whole hero and sits behind text */
@@ -219,83 +248,17 @@ main {
   mix-blend-mode: normal;
 }
 
-/* first word — solid white so it punches through the torus */
+/* first word — clean solid white */
 .hero-title .word-solid {
   display: block;
   color: #ffffff;
-  text-shadow: 0 0 80px rgba(0,255,0,0.25);
 }
 
-/* second word — outline only, torus bleeds through */
+/* second word — outline only */
 .hero-title .word-outline {
   display: block;
   -webkit-text-stroke: 2px var(--green);
   color: transparent;
-  text-shadow: none;
-}
-
-/* glitch pseudo-elements on outline word: use stroke too */
-.word-outline.glitch-wrap::before {
-  -webkit-text-stroke: 2px var(--green);
-  color: transparent;
-}
-
-.word-outline.glitch-wrap::after {
-  -webkit-text-stroke: 2px #ff00ff;
-  color: transparent;
-}
-
-/* glitch layer lives on the solid word */
-.glitch-wrap {
-  position: relative;
-  display: block;
-}
-
-.glitch-wrap::before,
-.glitch-wrap::after {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.glitch-wrap::before {
-  color: var(--green);
-  animation: gb 2.2s infinite;
-}
-
-.glitch-wrap::after {
-  color: #ff00ff;
-  animation: ga 2.2s infinite;
-}
-
-@keyframes gb {
-  0%,82%,100%  { opacity:0; transform:translate(0); clip-path:none; }
-  84%  { opacity:.9; transform:translate(-5px, 2px);
-         clip-path:polygon(0 15%,100% 15%,100% 32%,0 32%); }
-  86%  { opacity:.7; transform:translate(5px,-2px);
-         clip-path:polygon(0 55%,100% 55%,100% 68%,0 68%); }
-  88%  { opacity:.8; transform:translate(-3px, 0);
-         clip-path:polygon(0 5%,100% 5%,100% 18%,0 18%); }
-  90%  { opacity:0; transform:translate(0); }
-  /* second burst */
-  92%  { opacity:.6; transform:translate(6px,-1px);
-         clip-path:polygon(0 40%,100% 40%,100% 55%,0 55%); }
-  94%  { opacity:0; transform:translate(0); }
-}
-
-@keyframes ga {
-  0%,83%,100%  { opacity:0; transform:translate(0); clip-path:none; }
-  85%  { opacity:.7; transform:translate(4px,-3px);
-         clip-path:polygon(0 65%,100% 65%,100% 80%,0 80%); }
-  87%  { opacity:.5; transform:translate(-4px, 3px);
-         clip-path:polygon(0 25%,100% 25%,100% 38%,0 38%); }
-  89%  { opacity:.6; transform:translate(3px, 1px);
-         clip-path:polygon(0 75%,100% 75%,100% 90%,0 90%); }
-  91%  { opacity:0; transform:translate(0); }
-  93%  { opacity:.5; transform:translate(-6px,2px);
-         clip-path:polygon(0 10%,100% 10%,100% 22%,0 22%); }
-  95%  { opacity:0; transform:translate(0); }
 }
 
 /* ── sub-line / typewriter ── */
@@ -1046,8 +1009,8 @@ footer {
       <div class="hero-sys-line">DIGITAL_REALITY.EXE &mdash; PID:4096</div>
 
       <h1 class="hero-title">
-        <span class="word-solid glitch-wrap" data-text="DIGITAL">DIGITAL</span>
-        <span class="word-outline glitch-wrap" data-text="REALITY">REALITY</span>
+        <span class="word-solid">DIGITAL</span>
+        <span class="word-outline">REALITY</span>
       </h1>
 
       <div class="hero-sub">
@@ -1083,6 +1046,9 @@ footer {
       <div class="scroll-line"></div>
     </div>
   </section>
+
+  <!-- Transition scroll space (150 vh gives room for the portal animation) -->
+  <div id="hero-spacer"></div>
 
   <!-- Marquee -->
   <div class="marquee-strip">
@@ -1343,6 +1309,9 @@ footer {
 
 </main>
 
+<!-- Portal text overlay (animated by JS) -->
+<div id="word-trans" aria-hidden="true">DIGITAL</div>
+
 <script>
 // ── Loader ────────────────────────────────────────────────────────────────────
 (function() {
@@ -1561,57 +1530,110 @@ footer {
   if (sl) barObs.observe(sl);
 })();
 
+// ── Shared scroll state (read by torus and transition) ────────────────────────
+window._sf = 0; // scatter factor 0→1
+
 // ── Nav auto-reveal on mouse near top ────────────────────────────────────────
 (function () {
   var nav = document.querySelector('nav');
-  var ZONE = 72; // px from top that triggers reveal
+  var ZONE = 72;
   document.addEventListener('mousemove', function (e) {
     if (e.clientY < ZONE) nav.classList.add('nav-visible');
     else                  nav.classList.remove('nav-visible');
   });
 })();
 
-// ── Glitch text random flicker (both title words) ─────────────────────────────
+// ── Scroll-driven page transition ─────────────────────────────────────────────
 (function () {
-  var chars = '!@#$%^&*<>[]{}|/\\?~`X01';
-  var els   = document.querySelectorAll('.glitch-wrap');
+  var vh          = window.innerHeight;
+  var vw          = window.innerWidth;
+  var wordTrans   = document.getElementById('word-trans');
+  var worksEl     = document.getElementById('works');
+  var heroContent = document.querySelector('.hero-content');
+  var TRANS_START = vh;          // spacer begins
+  var TRANS_END   = vh * 2.5;   // spacer ends, works naturally at viewport top
+  var active      = false;
 
-  els.forEach(function (el) {
-    var original = el.getAttribute('data-text');
+  // Approximate text geometry (re-measured on resize)
+  var textH = 0, textW = 0;
+  function measureText() {
+    vh = window.innerHeight;
+    vw = window.innerWidth;
+    TRANS_START = vh;
+    TRANS_END   = vh * 2.5;
+    // hero-title font-size is clamped(5rem, 14vw, 13rem)
+    var fs = Math.min(Math.max(vw * 0.14, 80), 208); // px
+    textH = fs * 0.82;              // cap-height ≈ 0.82 em
+    textW = fs * 4.6;               // "DIGITAL" ≈ 4.6 em wide
+  }
+  measureText();
+  window.addEventListener('resize', measureText);
 
-    function corrupt() {
-      var out = '';
-      for (var i = 0; i < original.length; i++) {
-        out += Math.random() > 0.58
-          ? chars[(Math.random() * chars.length) | 0]
-          : original[i];
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; } // ease in-out
+
+  window.addEventListener('scroll', function () {
+    var sy = window.scrollY;
+
+    /* ── before transition zone: normal torus scatter from scroll ── */
+    if (sy < TRANS_START) {
+      window._sf = Math.min(sy / (TRANS_START * 0.8), 0.5);
+      if (active) {
+        // reset everything
+        wordTrans.style.opacity        = '0';
+        wordTrans.style.transform      = 'translate(-50%,-50%) scale(1)';
+        worksEl.style.cssText          = '';
+        heroContent.style.opacity      = '';
+        active = false;
       }
-      // text node is first child when pseudo-elements haven't replaced it
-      if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
-        el.childNodes[0].textContent = out;
-      } else {
-        el.textContent = out;
-      }
+      return;
     }
 
-    function restore() {
-      if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
-        el.childNodes[0].textContent = original;
-      } else {
-        el.textContent = original;
-      }
-    }
+    /* ── transition zone ── */
+    active = true;
+    var raw = (sy - TRANS_START) / (TRANS_END - TRANS_START); // 0→1 linear
+    var p   = Math.min(Math.max(raw, 0), 1);
+    var ep  = ease(p);
 
-    setInterval(function () {
-      if (Math.random() > 0.86) {
-        var flashes = 2 + ((Math.random() * 3) | 0);
-        for (var f = 0; f < flashes; f++) {
-          setTimeout(corrupt,  f * 50);
-          setTimeout(restore,  f * 50 + 42);
-        }
-      }
-    }, 200);
-  });
+    // Torus: fully scattered as transition progresses
+    window._sf = 0.5 + ep * 0.5;
+
+    // Hero content fades away quickly
+    heroContent.style.opacity = Math.max(0, 1 - p * 5).toFixed(3);
+
+    // Portal text: appear, then scale out to fill screen
+    var wtOpacity = p < 0.08
+      ? (p / 0.08)                        // fade in fast
+      : Math.max(0, 1 - (p - 0.5) / 0.5); // then fade out after p=0.5
+    wordTrans.style.opacity   = wtOpacity.toFixed(3);
+    var scale = 1 + ep * 32;              // 1 → 33×
+    wordTrans.style.transform = 'translate(-50%,-50%) scale(' + scale.toFixed(3) + ')';
+
+    // Works section: clip-path expands from text-shaped rect to full screen
+    var inTop    = Math.max(0, (vh / 2 - textH * 0.5) * (1 - ep));
+    var inBottom = Math.max(0, (vh / 2 - textH * 0.5) * (1 - ep));
+    var inLeft   = Math.max(0, (vw / 2 - textW * 0.5) * (1 - ep));
+    var inRight  = Math.max(0, (vw / 2 - textW * 0.5) * (1 - ep));
+
+    worksEl.style.position   = 'fixed';
+    worksEl.style.inset      = '0';
+    worksEl.style.zIndex     = '500';
+    worksEl.style.background = '#000';
+    worksEl.style.overflowY  = 'auto';
+    worksEl.style.opacity    = Math.min(1, ep * 2).toFixed(3);
+    worksEl.style.clipPath   = 'inset(' +
+      inTop.toFixed(1)    + 'px ' +
+      inRight.toFixed(1)  + 'px ' +
+      inBottom.toFixed(1) + 'px ' +
+      inLeft.toFixed(1)   + 'px)';
+
+    /* ── transition complete ── */
+    if (p >= 1) {
+      worksEl.style.cssText     = '';   // back to normal flow
+      wordTrans.style.opacity   = '0';
+      heroContent.style.opacity = '';
+      active = false;
+    }
+  }, { passive: true });
 })();
 
 // ── ASCII Particle Torus — click + scroll interactions ───────────────────────
@@ -1702,12 +1724,7 @@ footer {
   var fontCache = {};
   function getFont(s) { return fontCache[s] || (fontCache[s] = 'bold ' + s + 'px "JetBrains Mono",monospace'); }
 
-  /* ── scroll expansion state ── */
-  var scrollFactor = 0;  // 0 = normal torus, 1 = fully scattered
-  window.addEventListener('scroll', function () {
-    var heroH = hero.offsetHeight;
-    scrollFactor = Math.min(Math.max(window.scrollY / (heroH * 0.75), 0), 1);
-  }, { passive: true });
+  /* ── scroll expansion state — driven by global window._sf ── */
 
   /* ── click ripple ── */
   cv.addEventListener('click', function (e) {
@@ -1733,8 +1750,9 @@ footer {
   function draw() {
     requestAnimationFrame(draw);
 
-    var scale3d = Math.min(W, H) * (0.30 + scrollFactor * 0.85);
-    var scatterAmt = scrollFactor * scale3d * 1.1;
+    var sf      = window._sf || 0;
+    var scale3d = Math.min(W, H) * (0.30 + sf * 0.85);
+    var scatterAmt = sf * scale3d * 1.1;
     var cx = W * 0.5, cy = H * 0.5;
 
     angY += 0.0055;
