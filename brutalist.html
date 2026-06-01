@@ -231,7 +231,7 @@ main {
   justify-content: center;
   padding: 80px 0 40px;
   position: relative;
-  z-index: 2;
+  z-index: 4;
 }
 
 .hero-sys-line {
@@ -339,17 +339,16 @@ main {
 /* ASCII art decoration */
 .hero-ascii {
   position: absolute;
-  right: 40px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.55rem;
+  right: 44px;
+  bottom: 120px;
+  font-size: 0.52rem;
   line-height: 1.3;
-  color: rgba(0,255,0,0.18);
+  color: rgba(0,255,0,0.22);
   letter-spacing: 0.05em;
   pointer-events: none;
   user-select: none;
   font-family: var(--mono);
-  z-index: 1;
+  z-index: 3;
 }
 
 /* Terminal prompt */
@@ -1598,14 +1597,16 @@ footer {
   }, 300);
 })();
 
-// ── Noise canvas on hero ──────────────────────────────────────────────────────
-(function() {
+// ── ASCII Particle Torus on hero ──────────────────────────────────────────────
+(function () {
+  /* ---- canvas setup ---- */
   var hero = document.getElementById('hero');
-  var cv = document.createElement('canvas');
-  cv.style.cssText = 'position:absolute;inset:0;opacity:0.03;pointer-events:none;z-index:0;';
-  hero.appendChild(cv);
-  var ctx = cv.getContext('2d');
+  var cv   = document.createElement('canvas');
+  cv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;';
+  hero.insertBefore(cv, hero.firstChild);
+  var ctx  = cv.getContext('2d');
 
+  /* responsive size */
   function resize() {
     cv.width  = hero.offsetWidth;
     cv.height = hero.offsetHeight;
@@ -1613,17 +1614,143 @@ footer {
   resize();
   window.addEventListener('resize', resize);
 
-  function noise() {
-    var id = ctx.createImageData(cv.width, cv.height);
-    var d  = id.data;
-    for (var i = 0; i < d.length; i += 4) {
-      var v = Math.random() * 255;
-      d[i] = 0; d[i+1] = Math.floor(v * 0.8); d[i+2] = 0; d[i+3] = 255;
+  /* ---- ASCII chars pool ---- */
+  var CHARS = '01{}[]<>/\\|;:!@#$%^&*~`';
+
+  /* ---- torus geometry ---- */
+  // R = major radius, r = tube radius
+  var R = 210, r = 90;
+  var stepsU = 68, stepsV = 38;   // longitude / latitude subdivisions
+  var pts = [];   // {x,y,z,char}
+
+  for (var ui = 0; ui < stepsU; ui++) {
+    var u = (ui / stepsU) * Math.PI * 2;
+    for (var vi = 0; vi < stepsV; vi++) {
+      var v = (vi / stepsV) * Math.PI * 2;
+      pts.push({
+        ox: (R + r * Math.cos(v)) * Math.cos(u),
+        oy: (R + r * Math.cos(v)) * Math.sin(u),
+        oz: r * Math.sin(v),
+        ch: CHARS[Math.floor(Math.random() * CHARS.length)]
+      });
     }
-    ctx.putImageData(id, 0, 0);
-    requestAnimationFrame(noise);
   }
-  noise();
+
+  /* ---- rotation state ---- */
+  var angX = 0.42;   // tilt on X axis (gives the nice diagonal look)
+  var angY = 0;
+  var angZ = 0.0;
+  var mouse = { dx: 0, dy: 0 };
+  var targetAY = 0;
+
+  window.addEventListener('mousemove', function (e) {
+    var rect = hero.getBoundingClientRect();
+    mouse.dx = (e.clientX - rect.left - rect.width  / 2) / rect.width;
+    mouse.dy = (e.clientY - rect.top  - rect.height / 2) / rect.height;
+  });
+
+  /* ---- 3-D rotate helpers ---- */
+  function rotX(p, a) {
+    var c = Math.cos(a), s = Math.sin(a);
+    return { x: p.x, y: c*p.y - s*p.z, z: s*p.y + c*p.z };
+  }
+  function rotY(p, a) {
+    var c = Math.cos(a), s = Math.sin(a);
+    return { x: c*p.x + s*p.z, y: p.y, z: -s*p.x + c*p.z };
+  }
+  function rotZ(p, a) {
+    var c = Math.cos(a), s = Math.sin(a);
+    return { x: c*p.x - s*p.y, y: s*p.x + c*p.y, z: p.z };
+  }
+
+  /* ---- perspective projection ---- */
+  var FOV = 900;
+  function project(p, cx, cy) {
+    var scale = FOV / (FOV + p.z + 420);
+    return {
+      sx: cx + p.x * scale,
+      sy: cy + p.y * scale,
+      sc: scale
+    };
+  }
+
+  /* ---- font size per particle ---- */
+  var BASE_FONT = 11;   // px
+
+  /* ---- main render loop ---- */
+  var RAF_ID;
+  function draw() {
+    RAF_ID = requestAnimationFrame(draw);
+
+    /* clear with very slight trail (motion blur feel) */
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    /* advance rotation – auto-spin + subtle mouse parallax */
+    angY += 0.006;
+    targetAY += mouse.dx * 0.0004;
+
+    /* canvas center – torus lives in the right half of hero */
+    var cx = cv.width  * 0.72;
+    var cy = cv.height * 0.50;
+
+    /* transform & project every point */
+    var projected = pts.map(function (p) {
+      var q = { x: p.ox, y: p.oy, z: p.oz };
+      q = rotX(q, angX + mouse.dy * 0.4);
+      q = rotY(q, angY + targetAY);
+      q = rotZ(q, angZ);
+      var proj = project(q, cx, cy);
+      return { sx: proj.sx, sy: proj.sy, sc: proj.sc, z: q.z, ch: p.ch };
+    });
+
+    /* painter's sort: back-to-front */
+    projected.sort(function (a, b) { return a.z - b.z; });
+
+    /* depth range for brightness mapping */
+    var zMin = projected[0].z;
+    var zMax = projected[projected.length - 1].z;
+    var zRange = zMax - zMin || 1;
+
+    for (var i = 0; i < projected.length; i++) {
+      var pt = projected[i];
+
+      /* 0 = back, 1 = front */
+      var depth = (pt.z - zMin) / zRange;
+
+      /* brightness: front chars are bright & large, back are dim & tiny */
+      var brightness = 30 + Math.round(depth * 225);   // 30 – 255
+      var alpha      = 0.18 + depth * 0.82;            // 0.18 – 1.0
+      var fSize      = (BASE_FONT * (0.55 + depth * 0.9)) | 0;  // 6 – 21 px
+
+      if (fSize < 5) continue;
+
+      /* glow only on front-facing particles (depth > 0.55) */
+      if (depth > 0.55) {
+        ctx.shadowColor = 'rgba(0,255,0,' + (depth * 0.7).toFixed(2) + ')';
+        ctx.shadowBlur  = 4 + depth * 8;
+      } else {
+        ctx.shadowBlur  = 0;
+      }
+
+      ctx.fillStyle = 'rgba(0,' + brightness + ',0,' + alpha.toFixed(2) + ')';
+      ctx.font      = 'bold ' + fSize + 'px "JetBrains Mono",monospace';
+      ctx.fillText(pt.ch, pt.sx, pt.sy);
+    }
+
+    ctx.shadowBlur = 0;
+  }
+
+  draw();
+
+  /* swap char every ~2s to keep the "live data" feel */
+  setInterval(function () {
+    var n = Math.floor(pts.length * 0.08);   // refresh 8% of chars
+    for (var i = 0; i < n; i++) {
+      pts[Math.floor(Math.random() * pts.length)].ch =
+        CHARS[Math.floor(Math.random() * CHARS.length)];
+    }
+  }, 180);
 })();
 </script>
 </body>
