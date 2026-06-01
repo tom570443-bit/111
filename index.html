@@ -1,1352 +1,987 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WealthFlow — 智能财富管理平台</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* ============ DESIGN TOKENS ============ */
-    :root {
-      --color-bg:          #080c14;
-      --color-surface:     #0d1520;
-      --color-surface-2:   #111d2e;
-      --color-border:      rgba(99, 140, 255, 0.15);
-      --color-primary:     #4f8cff;
-      --color-primary-2:   #7b5cfa;
-      --color-gold:        #d4a853;
-      --color-gold-2:      #f0c97a;
-      --color-green:       #22d3a0;
-      --color-red:         #f05b5b;
-      --color-text:        #e8edf5;
-      --color-muted:       #7a8aab;
-      --glass-bg:          rgba(13, 21, 32, 0.6);
-      --glass-border:      rgba(99, 140, 255, 0.18);
-      --glass-blur:        blur(18px);
-      --radius-sm:         8px;
-      --radius-md:         16px;
-      --radius-lg:         24px;
-      --radius-xl:         32px;
-      --shadow-glow:       0 0 40px rgba(79, 140, 255, 0.12);
-      --shadow-card:       0 8px 40px rgba(0, 0, 0, 0.45);
-      --font-display:      'Cormorant', serif;
-      --font-body:         'Montserrat', sans-serif;
-      --ease-out:          cubic-bezier(0.22, 1, 0.36, 1);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WealthFlow — Premium Wealth Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* ============ RESET & BASE ============ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font-body);
-      background: var(--color-bg);
-      color: var(--color-text);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-    a { text-decoration: none; color: inherit; }
-    img { max-width: 100%; display: block; }
-    button { cursor: pointer; border: none; background: none; font-family: inherit; }
-    ul { list-style: none; }
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-mid: #1a1a2e;
+  --blue: #4f8ef7;
+  --purple: #a855f7;
+  --pink: #ec4899;
+  --cyan: #22d3ee;
+  --glass-bg: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.10);
+  --text-primary: #f0f0ff;
+  --text-muted: rgba(200,200,230,0.55);
+  --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
 
-    /* ============ SCROLLBAR ============ */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--color-bg); }
-    ::-webkit-scrollbar-thumb { background: rgba(79,140,255,0.3); border-radius: 3px; }
+html { scroll-behavior: smooth; }
 
-    /* ============ BACKGROUND CANVAS ============ */
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
+body {
+  font-family: var(--font);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
 
-    /* ============ LAYOUT ============ */
-    .container {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    section { position: relative; z-index: 1; }
+/* WebGL Canvas */
+#webgl-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
 
-    /* ============ GLASS CARD ============ */
-    .glass {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-lg);
-    }
+/* Nav */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  background: rgba(10,10,15,0.6);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--glass-border);
+}
 
-    /* ============ GRADIENT TEXT ============ */
-    .grad-text {
-      background: linear-gradient(135deg, var(--color-gold), var(--color-primary), var(--color-primary-2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .grad-text-green {
-      background: linear-gradient(135deg, var(--color-green), #06b6d4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--blue), var(--purple), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-    /* ============ NAV ============ */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      padding: 0 24px;
-      transition: background 0.4s var(--ease-out), border-color 0.4s;
-    }
-    nav.scrolled {
-      background: rgba(8, 12, 20, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .nav-inner {
-      max-width: 1240px;
-      margin: 0 auto;
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-    .nav-logo .logo-icon {
-      width: 36px;
-      height: 36px;
-    }
-    .nav-links {
-      display: flex;
-      gap: 36px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .nav-links a {
-      color: var(--color-muted);
-      transition: color 0.2s;
-      position: relative;
-    }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 0;
-      height: 1px;
-      background: var(--color-gold);
-      transition: width 0.3s var(--ease-out);
-    }
-    .nav-links a:hover { color: var(--color-text); }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-cta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .btn-ghost {
-      padding: 9px 20px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-muted);
-      border: 1px solid var(--color-border);
-      border-radius: 50px;
-      transition: all 0.2s;
-    }
-    .btn-ghost:hover { color: var(--color-text); border-color: rgba(99,140,255,0.4); }
-    .btn-primary {
-      padding: 9px 22px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-2));
-      color: #fff;
-      border-radius: 50px;
-      transition: all 0.25s;
-      box-shadow: 0 4px 20px rgba(79,140,255,0.3);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(79,140,255,0.45);
-    }
+.nav-links {
+  display: flex;
+  gap: 36px;
+  list-style: none;
+}
 
-    /* ============ HERO ============ */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding: 120px 24px 80px;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-content {
-      max-width: 1240px;
-      margin: 0 auto;
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      background: rgba(79,140,255,0.1);
-      border: 1px solid rgba(79,140,255,0.25);
-      border-radius: 50px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      margin-bottom: 28px;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.2s var(--ease-out) forwards;
-    }
-    .hero-badge .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--color-green);
-      animation: pulse 2s infinite;
-    }
-    .hero-title {
-      font-family: var(--font-display);
-      font-size: clamp(3rem, 5.5vw, 5.2rem);
-      font-weight: 600;
-      line-height: 1.05;
-      letter-spacing: -0.01em;
-      margin-bottom: 24px;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.4s var(--ease-out) forwards;
-    }
-    .hero-sub {
-      font-size: 1rem;
-      color: var(--color-muted);
-      line-height: 1.75;
-      max-width: 480px;
-      margin-bottom: 40px;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.6s var(--ease-out) forwards;
-    }
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.75s var(--ease-out) forwards;
-    }
-    .btn-hero {
-      padding: 14px 32px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, var(--color-gold), var(--color-gold-2));
-      color: #0d1520;
-      border-radius: 50px;
-      transition: all 0.3s var(--ease-out);
-      box-shadow: 0 6px 24px rgba(212,168,83,0.35);
-    }
-    .btn-hero:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 36px rgba(212,168,83,0.5);
-    }
-    .btn-outline-hero {
-      padding: 14px 32px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      border: 1px solid var(--color-border);
-      border-radius: 50px;
-      color: var(--color-text);
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-outline-hero:hover {
-      border-color: rgba(99,140,255,0.4);
-      background: rgba(79,140,255,0.05);
-    }
-    .hero-stats {
-      display: flex;
-      gap: 32px;
-      margin-top: 52px;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.9s var(--ease-out) forwards;
-    }
-    .hero-stat-item { display: flex; flex-direction: column; gap: 4px; }
-    .hero-stat-num {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      font-weight: 600;
-      line-height: 1;
-    }
-    .hero-stat-label {
-      font-size: 0.72rem;
-      color: var(--color-muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .hero-stat-divider {
-      width: 1px;
-      background: var(--color-border);
-      align-self: stretch;
-      margin: 4px 0;
-    }
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.2s;
+}
 
-    /* Hero right — dashboard card */
-    .hero-visual {
-      opacity: 0;
-      animation: fadeLeft 1s 0.5s var(--ease-out) forwards;
-      position: relative;
-    }
-    .dashboard-card {
-      padding: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .dashboard-card::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(79,140,255,0.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .dc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
-    .dc-title { font-size: 0.75rem; color: var(--color-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
-    .dc-balance {
-      font-family: var(--font-display);
-      font-size: 2.4rem;
-      font-weight: 600;
-      line-height: 1;
-    }
-    .dc-change {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 5px 12px;
-      background: rgba(34,211,160,0.12);
-      border-radius: 50px;
-      color: var(--color-green);
-      font-size: 0.78rem;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    /* Mini line chart */
-    .chart-area {
-      height: 100px;
-      position: relative;
-      margin: 20px 0;
-    }
-    .chart-svg { width: 100%; height: 100%; }
-    /* Asset rows */
-    .asset-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-    .asset-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 14px;
-      background: rgba(255,255,255,0.03);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(99,140,255,0.08);
-      transition: all 0.2s;
-    }
-    .asset-row:hover { background: rgba(79,140,255,0.06); border-color: rgba(99,140,255,0.18); }
-    .asset-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-    .asset-name { font-size: 0.85rem; font-weight: 500; }
-    .asset-sub { font-size: 0.7rem; color: var(--color-muted); }
-    .asset-right { margin-left: auto; text-align: right; }
-    .asset-val { font-size: 0.9rem; font-weight: 600; }
-    .asset-pct { font-size: 0.7rem; font-weight: 600; }
-    .up { color: var(--color-green); }
-    .dn { color: var(--color-red); }
+.nav-links a:hover { color: var(--text-primary); }
 
-    /* floating mini cards */
-    .float-card-1 {
-      position: absolute;
-      top: -24px;
-      right: -32px;
-      padding: 14px 18px;
-      background: rgba(13,21,32,0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(212,168,83,0.25);
-      border-radius: var(--radius-md);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      animation: floatA 4s ease-in-out infinite;
-    }
-    .float-card-2 {
-      position: absolute;
-      bottom: -20px;
-      left: -28px;
-      padding: 14px 18px;
-      background: rgba(13,21,32,0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(34,211,160,0.2);
-      border-radius: var(--radius-md);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      animation: floatB 5s ease-in-out infinite;
-    }
-    .fc-label { font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-    .fc-val {
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      font-weight: 600;
-      line-height: 1.2;
-      margin-top: 2px;
-    }
-    .fc-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      margin-top: 4px;
-    }
+.nav-cta {
+  padding: 10px 24px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font);
+  transition: opacity 0.2s, transform 0.2s;
+}
 
-    /* ============ TICKER TAPE ============ */
-    .ticker-wrap {
-      padding: 12px 0;
-      background: rgba(79,140,255,0.04);
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
-      overflow: hidden;
-      white-space: nowrap;
-      position: relative;
-      z-index: 1;
-    }
-    .ticker-tape {
-      display: inline-flex;
-      gap: 0;
-      animation: ticker 28s linear infinite;
-    }
-    .ticker-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 40px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--color-muted);
-    }
-    .ticker-item .sym { font-weight: 700; color: var(--color-text); }
-    .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--color-border); }
+.nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
 
-    /* ============ FEATURES ============ */
-    .features {
-      padding: 120px 24px;
-    }
-    .section-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      margin-bottom: 14px;
-    }
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(2.2rem, 4vw, 3.4rem);
-      font-weight: 600;
-      line-height: 1.1;
-      margin-bottom: 16px;
-    }
-    .section-sub {
-      font-size: 0.95rem;
-      color: var(--color-muted);
-      line-height: 1.75;
-      max-width: 540px;
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-top: 60px;
-    }
-    .feat-card {
-      padding: 32px 28px;
-      transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-    .feat-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-2));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s var(--ease-out);
-    }
-    .feat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card); }
-    .feat-card:hover::after { transform: scaleX(1); }
-    .feat-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 22px;
-    }
-    .feat-title {
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-    .feat-desc { font-size: 0.875rem; color: var(--color-muted); line-height: 1.7; }
+/* Sections */
+section { position: relative; z-index: 10; }
 
-    /* ============ STATS BAND ============ */
-    .stats-band {
-      padding: 80px 24px;
-      background: linear-gradient(135deg, rgba(79,140,255,0.05), rgba(123,92,250,0.05));
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .stats-grid {
-      max-width: 1240px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 40px;
-      text-align: center;
-    }
-    .stat-num {
-      font-family: var(--font-display);
-      font-size: clamp(2.4rem, 4vw, 3.6rem);
-      font-weight: 600;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-    .stat-label { font-size: 0.8rem; color: var(--color-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+/* Hero */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+}
 
-    /* ============ PORTFOLIO SECTION ============ */
-    .portfolio-section {
-      padding: 120px 24px;
-    }
-    .portfolio-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-    }
-    .portfolio-visual { position: relative; }
-    .donut-wrap {
-      width: 280px;
-      height: 280px;
-      position: relative;
-      margin: 0 auto;
-    }
-    .donut-svg { width: 100%; height: 100%; }
-    .donut-center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .donut-center-label { font-size: 0.7rem; color: var(--color-muted); letter-spacing: 0.06em; text-transform: uppercase; }
-    .donut-center-val {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-    .legend { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; }
-    .legend-item { display: flex; align-items: center; gap: 12px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .legend-name { font-size: 0.82rem; color: var(--color-muted); flex: 1; }
-    .legend-pct { font-size: 0.82rem; font-weight: 600; }
-    .portfolio-content { }
-    .portfolio-points { margin-top: 36px; display: flex; flex-direction: column; gap: 20px; }
-    .portfolio-point {
-      display: flex;
-      gap: 18px;
-      padding: 20px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      transition: all 0.25s;
-    }
-    .portfolio-point:hover { border-color: rgba(99,140,255,0.3); background: rgba(79,140,255,0.04); }
-    .pp-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: rgba(79,140,255,0.1);
-      border: 1px solid rgba(79,140,255,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .pp-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
-    .pp-desc { font-size: 0.8rem; color: var(--color-muted); line-height: 1.6; }
+.hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 100px;
+  background: rgba(79,142,247,0.12);
+  border: 1px solid rgba(79,142,247,0.3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s 0.2s forwards;
+}
 
-    /* ============ TESTIMONIALS ============ */
-    .testimonials { padding: 120px 24px; }
-    .testi-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-top: 60px;
-    }
-    .testi-card {
-      padding: 32px 28px;
-      transition: transform 0.3s var(--ease-out);
-    }
-    .testi-card:hover { transform: translateY(-4px); }
-    .stars { display: flex; gap: 4px; margin-bottom: 18px; }
-    .star { color: var(--color-gold); font-size: 0.9rem; }
-    .testi-text { font-size: 0.88rem; color: var(--color-muted); line-height: 1.8; margin-bottom: 24px; font-style: italic; }
-    .testi-author { display: flex; align-items: center; gap: 12px; }
-    .testi-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    .testi-name { font-size: 0.85rem; font-weight: 600; }
-    .testi-role { font-size: 0.72rem; color: var(--color-muted); }
+.hero-label::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: pulse-dot 2s infinite;
+}
 
-    /* ============ PRICING ============ */
-    .pricing { padding: 120px 24px; }
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-top: 60px;
-      align-items: stretch;
-    }
-    .price-card {
-      padding: 36px 30px;
-      transition: transform 0.3s var(--ease-out);
-      position: relative;
-      overflow: hidden;
-    }
-    .price-card.featured {
-      background: linear-gradient(160deg, rgba(79,140,255,0.12), rgba(123,92,250,0.1));
-      border-color: rgba(99,140,255,0.35);
-    }
-    .price-card.featured::before {
-      content: 'POPULAR';
-      position: absolute;
-      top: 18px;
-      right: -28px;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-2));
-      color: #fff;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      padding: 4px 36px;
-      transform: rotate(45deg);
-    }
-    .price-card:hover { transform: translateY(-6px); }
-    .price-tier {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      margin-bottom: 14px;
-    }
-    .price-amount {
-      font-family: var(--font-display);
-      font-size: 3rem;
-      font-weight: 600;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .price-period { font-size: 0.78rem; color: var(--color-muted); margin-bottom: 24px; }
-    .price-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
-    .price-feat {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.82rem;
-      color: var(--color-muted);
-    }
-    .price-feat .check { color: var(--color-green); flex-shrink: 0; }
-    .btn-price {
-      width: 100%;
-      padding: 13px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      border-radius: 50px;
-      transition: all 0.25s;
-      text-align: center;
-    }
-    .btn-price-outline {
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-    }
-    .btn-price-outline:hover { border-color: rgba(99,140,255,0.4); background: rgba(79,140,255,0.06); }
-    .btn-price-filled {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-2));
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(79,140,255,0.3);
-    }
-    .btn-price-filled:hover { box-shadow: 0 8px 32px rgba(79,140,255,0.45); transform: translateY(-2px); }
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
 
-    /* ============ CTA BAND ============ */
-    .cta-band {
-      padding: 100px 24px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .cta-band::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(79,140,255,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .cta-band .section-title { margin: 0 auto 20px; }
-    .cta-band .section-sub { margin: 0 auto 40px; text-align: center; }
-    .cta-actions { display: flex; gap: 16px; justify-content: center; }
+h1 {
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  max-width: 900px;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeUp 0.9s 0.4s forwards;
+}
 
-    /* ============ FOOTER ============ */
-    footer {
-      padding: 60px 24px 32px;
-      border-top: 1px solid var(--color-border);
-      position: relative;
-      z-index: 1;
-    }
-    .footer-top {
-      max-width: 1240px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 48px;
-      margin-bottom: 48px;
-    }
-    .footer-brand .nav-logo { margin-bottom: 16px; }
-    .footer-desc { font-size: 0.82rem; color: var(--color-muted); line-height: 1.75; max-width: 280px; }
-    .footer-col-title { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text); margin-bottom: 16px; }
-    .footer-links { display: flex; flex-direction: column; gap: 10px; }
-    .footer-links a { font-size: 0.82rem; color: var(--color-muted); transition: color 0.2s; }
-    .footer-links a:hover { color: var(--color-text); }
-    .footer-bottom {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding-top: 24px;
-      border-top: 1px solid var(--color-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .footer-copy { font-size: 0.75rem; color: var(--color-muted); }
-    .footer-socials { display: flex; gap: 12px; }
-    .social-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 1px solid var(--color-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      color: var(--color-muted);
-    }
-    .social-btn:hover { border-color: rgba(99,140,255,0.4); color: var(--color-text); background: rgba(79,140,255,0.06); }
+h1 .grad {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 50%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-    /* ============ ANIMATIONS ============ */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(28px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeLeft {
-      from { opacity: 0; transform: translateX(40px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(1.4); }
-    }
-    @keyframes floatA {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50%       { transform: translateY(-12px) rotate(1deg); }
-    }
-    @keyframes floatB {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50%       { transform: translateY(-8px) rotate(-1deg); }
-    }
-    @keyframes ticker {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-    @keyframes drawLine {
-      from { stroke-dashoffset: 1000; }
-      to   { stroke-dashoffset: 0; }
-    }
-    @keyframes revealUp {
-      from { opacity: 0; transform: translateY(36px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .reveal {
-      opacity: 0;
-      transform: translateY(36px);
-      transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
-    }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+.hero-sub {
+  margin-top: 24px;
+  max-width: 560px;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeUp 0.9s 0.6s forwards;
+}
 
-    /* ============ RESPONSIVE ============ */
-    @media (max-width: 1024px) {
-      .hero-content { grid-template-columns: 1fr; gap: 60px; }
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-      .testi-grid { grid-template-columns: repeat(2, 1fr); }
-      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
-      .portfolio-layout { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
-    }
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .features-grid { grid-template-columns: 1fr; }
-      .testi-grid { grid-template-columns: 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: 1fr 1fr; }
-      .float-card-1, .float-card-2 { display: none; }
-      .footer-top { grid-template-columns: 1fr; }
-      .cta-actions { flex-direction: column; align-items: center; }
-    }
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.9s 0.8s forwards;
+}
 
-    /* ============ PROGRESS BARS ============ */
-    .prog-bar-wrap { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
-    .prog-bar-item { }
-    .prog-bar-top { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--color-muted); margin-bottom: 6px; }
-    .prog-bar-bg { height: 5px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
-    .prog-bar-fill {
-      height: 100%;
-      border-radius: 10px;
-      width: 0;
-      transition: width 1.4s var(--ease-out);
-    }
-    .prog-bar-fill.animated { /* triggered by JS */ }
-  </style>
+.btn-primary {
+  padding: 14px 32px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font);
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 30px rgba(79,142,247,0.35);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 0 50px rgba(79,142,247,0.5);
+}
+
+.btn-ghost {
+  padding: 13px 32px;
+  border-radius: 100px;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  font-family: var(--font);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-ghost:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  gap: 0;
+  margin-top: 80px;
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  width: 100%;
+  max-width: 800px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 1s 1.1s forwards;
+}
+
+.stat-item {
+  flex: 1;
+  padding: 28px 0;
+  border-right: 1px solid var(--glass-border);
+  text-align: center;
+}
+.stat-item:last-child { border-right: none; }
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Features */
+#features {
+  padding: 120px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  max-width: 600px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 64px;
+}
+
+.feature-card {
+  padding: 36px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.feature-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s, transform 0.7s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(168,85,247,0.3);
+  box-shadow: 0 20px 60px rgba(168,85,247,0.1);
+}
+
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.feature-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.feature-card p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* Performance */
+#performance {
+  padding: 120px 48px;
+  background: linear-gradient(180deg, transparent, rgba(26,26,46,0.6), transparent);
+}
+
+.perf-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.perf-chart-wrap {
+  padding: 36px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+}
+
+.chart-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.chart-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chart-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
+#perf-canvas {
+  width: 100%;
+  height: 200px;
+  margin-top: 24px;
+  display: block;
+}
+
+.allocation-bars { margin-top: 28px; }
+
+.alloc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.alloc-name {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.alloc-bar-bg {
+  flex: 1;
+  height: 6px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.07);
+}
+
+.alloc-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  width: 0%;
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.alloc-pct {
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 36px;
+  text-align: right;
+}
+
+.metric-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.pill {
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(79,142,247,0.08);
+  border: 1px solid rgba(79,142,247,0.2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+/* Testimonials */
+#testimonials { padding: 120px 48px; }
+
+.testi-inner { max-width: 1200px; margin: 0 auto; }
+
+.testi-header { text-align: center; margin-bottom: 64px; }
+
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.testi-card {
+  padding: 32px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.testi-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s, transform 0.7s, box-shadow 0.3s;
+}
+
+.testi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(168,85,247,0.08);
+}
+
+.stars { display: flex; gap: 3px; margin-bottom: 20px; }
+
+.star { width: 14px; height: 14px; fill: var(--purple); }
+
+.testi-card blockquote {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.testi-author { display: flex; align-items: center; gap: 12px; }
+
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.author-name { font-size: 0.88rem; font-weight: 700; }
+.author-role { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Pricing */
+#pricing { padding: 120px 48px; }
+.pricing-inner { max-width: 1100px; margin: 0 auto; }
+.pricing-header { text-align: center; margin-bottom: 64px; }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.pricing-card {
+  padding: 40px 36px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  transform: translateY(28px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.pricing-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s, transform 0.7s, box-shadow 0.3s;
+}
+
+.pricing-card.featured {
+  background: linear-gradient(145deg, rgba(79,142,247,0.12), rgba(168,85,247,0.12));
+  border-color: rgba(168,85,247,0.35);
+  box-shadow: 0 0 60px rgba(168,85,247,0.12);
+}
+
+.pricing-card.featured::before {
+  content: 'Most Popular';
+  position: absolute;
+  top: 20px; right: -28px;
+  padding: 5px 40px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  color: #fff;
+}
+
+.pricing-card:hover { transform: translateY(-6px); }
+
+.plan-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 12px;
+}
+
+.plan-price {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.plan-price span {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  vertical-align: top;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.plan-period { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 28px; }
+.plan-divider { height: 1px; background: var(--glass-border); margin: 24px 0; }
+
+.plan-features { list-style: none; margin-bottom: 32px; }
+
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.check {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.check svg { width: 10px; height: 10px; }
+
+/* CTA */
+#cta { padding: 120px 48px; }
+
+.cta-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 80px 64px;
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(79,142,247,0.1), rgba(168,85,247,0.1), rgba(236,72,153,0.08));
+  border: 1px solid rgba(168,85,247,0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-inner::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cta-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  position: relative;
+}
+
+.cta-sub {
+  margin-top: 16px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 500px;
+  margin-inline: auto;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+/* Footer */
+footer {
+  padding: 60px 48px 40px;
+  border-top: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 10;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.footer-logo {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-links { display: flex; gap: 28px; list-style: none; }
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--text-primary); }
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: rgba(200,200,230,0.3);
+  text-align: center;
+  margin-top: 40px;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Scroll reveal base */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s, transform 0.7s; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* Ticker */
+.ticker-wrap {
+  position: relative;
+  z-index: 10;
+  background: rgba(10,10,15,0.7);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+.ticker-track {
+  display: flex;
+  gap: 60px;
+  white-space: nowrap;
+  animation: ticker 40s linear infinite;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.ticker-sym { color: var(--text-muted); }
+.ticker-price { color: var(--text-primary); }
+.ticker-up { color: #4ade80; }
+.ticker-down { color: #f87171; }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  #features, #performance, #testimonials, #pricing, #cta { padding: 80px 24px; }
+  .perf-inner { grid-template-columns: 1fr; gap: 48px; }
+  .cta-inner { padding: 48px 28px; }
+  footer { padding: 40px 24px 28px; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+}
+</style>
 </head>
 <body>
 
-<!-- ====== BACKGROUND PARTICLE CANVAS ====== -->
-<canvas id="bg-canvas"></canvas>
+<canvas id="webgl-canvas"></canvas>
 
-<!-- ====== NAV ====== -->
-<nav id="main-nav">
-  <div class="nav-inner">
-    <a href="#" class="nav-logo">
-      <svg class="logo-icon" viewBox="0 0 36 36" fill="none">
-        <rect width="36" height="36" rx="10" fill="url(#lg1)"/>
-        <path d="M10 24L16 17L20 21L26 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="26" cy="13" r="2.5" fill="#d4a853"/>
-        <defs>
-          <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36">
-            <stop stop-color="#4f8cff"/>
-            <stop offset="1" stop-color="#7b5cfa"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      WealthFlow
-    </a>
-    <ul class="nav-links">
-      <li><a href="#features">产品功能</a></li>
-      <li><a href="#portfolio">资产配置</a></li>
-      <li><a href="#pricing">服务方案</a></li>
-      <li><a href="#testimonials">用户评价</a></li>
-    </ul>
-    <div class="nav-cta">
-      <button class="btn-ghost">登录</button>
-      <button class="btn-primary">免费开始</button>
-    </div>
-  </div>
+<!-- Nav -->
+<nav>
+  <div class="logo">WealthFlow</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#performance">Portfolio</a></li>
+    <li><a href="#testimonials">Clients</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <button class="nav-cta">Get Started</button>
 </nav>
 
-<!-- ====== HERO ====== -->
-<section class="hero">
-  <div class="hero-content">
-    <!-- Left -->
-    <div class="hero-left">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        全球顶级财富管理平台
-      </div>
-      <h1 class="hero-title">
-        让您的财富<br/>
-        <span class="grad-text">智能增值</span>
-      </h1>
-      <p class="hero-sub">
-        WealthFlow 融合 AI 量化策略与专业投资顾问，为高净值客户提供个性化资产配置方案，年化收益稳定跑赢大盘。
-      </p>
-      <div class="hero-actions">
-        <a href="#" class="btn-hero">开始投资</a>
-        <a href="#features" class="btn-outline-hero">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
-          了解更多
-        </a>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat-item">
-          <span class="hero-stat-num grad-text">¥2.8T</span>
-          <span class="hero-stat-label">管理资产规模</span>
-        </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat-item">
-          <span class="hero-stat-num" style="color:var(--color-green)">+23.6%</span>
-          <span class="hero-stat-label">年化收益率</span>
-        </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat-item">
-          <span class="hero-stat-num" style="color:var(--color-gold)">86万+</span>
-          <span class="hero-stat-label">活跃投资用户</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: Dashboard -->
-    <div class="hero-visual">
-      <!-- Floating mini card 1 -->
-      <div class="float-card-1">
-        <div class="fc-label">今日盈亏</div>
-        <div class="fc-val" style="color:var(--color-green)">+¥12,480</div>
-        <div class="fc-tag up">
-          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
-          +3.24%
-        </div>
-      </div>
-      <!-- Main dashboard card -->
-      <div class="dashboard-card glass" style="box-shadow: var(--shadow-card);">
-        <div class="dc-header">
-          <div>
-            <div class="dc-title">总资产净值</div>
-            <div class="dc-balance grad-text">¥ 1,284,632</div>
-            <div class="dc-change">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
-              本月 +8.42%
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:0.7rem;color:var(--color-muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px">风险等级</div>
-            <div style="display:flex;gap:5px;justify-content:flex-end">
-              <span style="width:8px;height:8px;border-radius:2px;background:var(--color-green);display:block"></span>
-              <span style="width:8px;height:8px;border-radius:2px;background:var(--color-green);display:block"></span>
-              <span style="width:8px;height:8px;border-radius:2px;background:var(--color-green);display:block"></span>
-              <span style="width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,0.1);display:block"></span>
-              <span style="width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,0.1);display:block"></span>
-            </div>
-            <div style="font-size:0.65rem;color:var(--color-green);margin-top:4px;font-weight:600">稳健型</div>
-          </div>
-        </div>
-        <!-- Chart -->
-        <div class="chart-area">
-          <svg class="chart-svg" viewBox="0 0 400 100" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#4f8cff" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#4f8cff" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <path d="M0,80 C30,75 60,60 90,55 S140,40 170,35 S220,25 250,20 S300,18 330,15 S360,12 400,8 L400,100 L0,100 Z"
-              fill="url(#chartGrad)"/>
-            <path id="chartLine"
-              d="M0,80 C30,75 60,60 90,55 S140,40 170,35 S220,25 250,20 S300,18 330,15 S360,12 400,8"
-              fill="none" stroke="#4f8cff" stroke-width="2.5" stroke-linecap="round"
-              stroke-dasharray="1000" stroke-dashoffset="1000"
-              style="animation: drawLine 2s 1s var(--ease-out) forwards"/>
-          </svg>
-        </div>
-        <!-- Assets -->
-        <div class="asset-list">
-          <div class="asset-row">
-            <div class="asset-icon" style="background:rgba(255,183,0,0.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#d4a853" stroke-width="2"/><path d="M12 8v4l3 3" stroke="#d4a853" stroke-width="2" stroke-linecap="round"/></svg>
-            </div>
-            <div>
-              <div class="asset-name">黄金 ETF</div>
-              <div class="asset-sub">GOLD · 35份</div>
-            </div>
-            <div class="asset-right">
-              <div class="asset-val">¥ 324,500</div>
-              <div class="asset-pct up">+12.3%</div>
-            </div>
-          </div>
-          <div class="asset-row">
-            <div class="asset-icon" style="background:rgba(79,140,255,0.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" stroke="#4f8cff" stroke-width="2"/><rect x="13" y="3" width="8" height="8" rx="2" stroke="#4f8cff" stroke-width="2"/><rect x="3" y="13" width="8" height="8" rx="2" stroke="#4f8cff" stroke-width="2"/><rect x="13" y="13" width="8" height="8" rx="2" stroke="#4f8cff" stroke-width="2"/></svg>
-            </div>
-            <div>
-              <div class="asset-name">沪深 300</div>
-              <div class="asset-sub">CSI300 · 1200份</div>
-            </div>
-            <div class="asset-right">
-              <div class="asset-val">¥ 560,132</div>
-              <div class="asset-pct up">+6.8%</div>
-            </div>
-          </div>
-          <div class="asset-row">
-            <div class="asset-icon" style="background:rgba(34,211,160,0.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#22d3a0" stroke-width="2" stroke-linejoin="round"/></svg>
-            </div>
-            <div>
-              <div class="asset-name">债券基金</div>
-              <div class="asset-sub">BOND · 低风险</div>
-            </div>
-            <div class="asset-right">
-              <div class="asset-val">¥ 400,000</div>
-              <div class="asset-pct up">+4.2%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Floating mini card 2 -->
-      <div class="float-card-2">
-        <div class="fc-label">AI 策略信号</div>
-        <div class="fc-val" style="color:var(--color-gold)">强势买入</div>
-        <div class="fc-tag" style="color:var(--color-green)">
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--color-green);display:inline-block"></span>
-          置信度 94.7%
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== TICKER ====== -->
-<div class="ticker-wrap">
-  <div class="ticker-tape" id="ticker">
-    <div class="ticker-item"><span class="sym">沪深300</span> 4,128.36 <span class="up">+1.24%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">纳斯达克</span> 18,492.51 <span class="up">+0.87%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">黄金</span> ¥ 475.20/g <span class="up">+0.43%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">美元/人民币</span> 7.2341 <span class="dn">-0.12%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">比特币</span> $67,420 <span class="up">+2.31%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">原油</span> $82.14/桶 <span class="dn">-0.58%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">标普500</span> 5,312.40 <span class="up">+0.61%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">创业板</span> 2,084.61 <span class="up">+1.92%</span></div>
-    <div class="ticker-dot"></div>
-    <!-- duplicate for seamless loop -->
-    <div class="ticker-item"><span class="sym">沪深300</span> 4,128.36 <span class="up">+1.24%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">纳斯达克</span> 18,492.51 <span class="up">+0.87%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">黄金</span> ¥ 475.20/g <span class="up">+0.43%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">美元/人民币</span> 7.2341 <span class="dn">-0.12%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">比特币</span> $67,420 <span class="up">+2.31%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">原油</span> $82.14/桶 <span class="dn">-0.58%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">标普500</span> 5,312.40 <span class="up">+0.61%</span></div>
-    <div class="ticker-dot"></div>
-    <div class="ticker-item"><span class="sym">创业板</span> 2,084.61 <span class="up">+1.92%</span></div>
-    <div class="ticker-dot"></div>
-  </div>
+<!-- Ticker -->
+<div class="ticker-wrap" style="margin-top:80px;">
+  <div class="ticker-track" id="ticker"></div>
 </div>
 
-<!-- ====== FEATURES ====== -->
-<section class="features" id="features">
-  <div class="container">
-    <div style="max-width:560px" class="reveal">
-      <div class="section-label">核心功能</div>
-      <h2 class="section-title">专业级投资工具<br/><span class="grad-text">一站式体验</span></h2>
-      <p class="section-sub">整合全球市场数据、AI 量化模型、专属投顾三大核心，让每一笔投资决策都有据可依。</p>
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-label">Next-Generation Wealth Management</div>
+  <h1>Grow Your Wealth<br>with <span class="grad">Intelligent</span><br>Precision</h1>
+  <p class="hero-sub">WealthFlow combines AI-driven portfolio optimization with institutional-grade security — giving you the edge that was once reserved for the ultra-wealthy.</p>
+  <div class="hero-actions">
+    <button class="btn-primary">Start Investing Free</button>
+    <button class="btn-ghost">Watch Demo</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-value" data-target="12.4">0</div>
+      <div class="stat-label">Billion AUM</div>
     </div>
-    <div class="features-grid">
-
-      <div class="feat-card glass reveal" style="transition-delay:0.1s">
-        <div class="feat-icon" style="background:rgba(79,140,255,0.12);border:1px solid rgba(79,140,255,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#4f8cff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
-        </div>
-        <div class="feat-title">AI 量化策略</div>
-        <p class="feat-desc">基于深度学习模型，实时分析千万级市场信号，自动生成个性化投资组合，回测年化收益超 22%。</p>
-      </div>
-
-      <div class="feat-card glass reveal" style="transition-delay:0.2s">
-        <div class="feat-icon" style="background:rgba(212,168,83,0.12);border:1px solid rgba(212,168,83,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#d4a853" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg>
-        </div>
-        <div class="feat-title">实时风险监控</div>
-        <p class="feat-desc">7×24 小时全天候监控持仓风险，波动率超阈值立即推送预警，最大回撤控制在 8% 以内。</p>
-      </div>
-
-      <div class="feat-card glass reveal" style="transition-delay:0.3s">
-        <div class="feat-icon" style="background:rgba(34,211,160,0.12);border:1px solid rgba(34,211,160,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#22d3a0" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="feat-title">专属财富顾问</div>
-        <p class="feat-desc">一对一私行级顾问服务，持牌资产管理师专属团队，全程陪跑资产规划与税务优化。</p>
-      </div>
-
-      <div class="feat-card glass reveal" style="transition-delay:0.1s">
-        <div class="feat-icon" style="background:rgba(123,92,250,0.12);border:1px solid rgba(123,92,250,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#7b5cfa" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        </div>
-        <div class="feat-title">全球资产配置</div>
-        <p class="feat-desc">覆盖 A 股、美股、港股、债券、黄金、REITs、数字资产，跨市场多元化分散风险。</p>
-      </div>
-
-      <div class="feat-card glass reveal" style="transition-delay:0.2s">
-        <div class="feat-icon" style="background:rgba(240,91,91,0.12);border:1px solid rgba(240,91,91,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#f05b5b" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <div class="feat-title">高频数据洞察</div>
-        <p class="feat-desc">接入彭博、路透、Wind 数据源，毫秒级行情更新，深度因子分析报告每日推送。</p>
-      </div>
-
-      <div class="feat-card glass reveal" style="transition-delay:0.3s">
-        <div class="feat-icon" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2)">
-          <svg width="24" height="24" fill="none" stroke="#06b6d4" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="feat-title">银行级安全体系</div>
-        <p class="feat-desc">256位 AES 加密、冷热钱包分离存储、多重签名验证，资金托管于持牌金融机构。</p>
-      </div>
-
+    <div class="stat-item">
+      <div class="stat-value" data-target="340">0</div>
+      <div class="stat-label">Thousand Clients</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" data-target="98.7">0</div>
+      <div class="stat-label">% Satisfaction</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" data-target="24.3">0</div>
+      <div class="stat-label">Avg Annual Return %</div>
     </div>
   </div>
 </section>
 
-<!-- ====== STATS BAND ====== -->
-<div class="stats-band">
-  <div class="stats-grid">
-    <div class="reveal">
-      <div class="stat-num grad-text" data-count="2.8" data-suffix="T+">¥0T</div>
-      <div class="stat-label">管理资产规模</div>
+<!-- Features -->
+<section id="features">
+  <div class="section-tag">Why WealthFlow</div>
+  <h2 class="section-title">Built for Serious<br>Investors</h2>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(79,142,247,0.2),rgba(79,142,247,0.05));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <h3>AI Portfolio Engine</h3>
+      <p>Our proprietary model rebalances your holdings in real-time, capturing alpha while minimizing drawdown through dynamic factor exposure.</p>
     </div>
-    <div class="reveal" style="transition-delay:0.15s">
-      <div class="stat-num grad-text-green" data-count="23.6" data-suffix="%">0%</div>
-      <div class="stat-label">年化平均收益</div>
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(168,85,247,0.05));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3>Institutional Security</h3>
+      <p>256-bit AES encryption, biometric authentication, and cold-storage asset custody. Your wealth is protected by bank-grade infrastructure.</p>
     </div>
-    <div class="reveal" style="transition-delay:0.3s">
-      <div class="stat-num" style="color:var(--color-gold)" data-count="86" data-suffix="万+">0万+</div>
-      <div class="stat-label">活跃投资用户</div>
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(236,72,153,0.2),rgba(236,72,153,0.05));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <h3>Real-Time Analytics</h3>
+      <p>Monitor every position, risk metric, and opportunity with microsecond-precision market data across 120+ global exchanges.</p>
     </div>
-    <div class="reveal" style="transition-delay:0.45s">
-      <div class="stat-num" style="color:var(--color-primary-2)" data-count="99.9" data-suffix="%">0%</div>
-      <div class="stat-label">平台可用率</div>
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(34,211,238,0.2),rgba(34,211,238,0.05));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h3>Expert Advisory</h3>
+      <p>Access certified wealth advisors 24/7. Our human-in-the-loop model ensures complex decisions always have expert oversight.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(79,142,247,0.2),rgba(168,85,247,0.1));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+      </div>
+      <h3>Tax Optimization</h3>
+      <p>Automated tax-loss harvesting and asset location strategies save high-net-worth clients an average of $28K annually.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon" style="background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(236,72,153,0.1));">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      </div>
+      <h3>Global Diversification</h3>
+      <p>One-click exposure to equities, fixed income, commodities, private credit, and alternative assets across 60+ countries.</p>
     </div>
   </div>
-</div>
+</section>
 
-<!-- ====== PORTFOLIO ====== -->
-<section class="portfolio-section" id="portfolio">
-  <div class="container">
-    <div class="portfolio-layout">
-      <div class="portfolio-visual reveal">
-        <div class="donut-wrap">
-          <svg class="donut-svg" viewBox="0 0 200 200">
-            <defs>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <!-- Background ring -->
-            <circle cx="100" cy="100" r="75" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="28"/>
-            <!-- Segments (stroke-dasharray tricks) -->
-            <circle cx="100" cy="100" r="75" fill="none" stroke="#4f8cff" stroke-width="28"
-              stroke-dasharray="176 295" stroke-dashoffset="0"
-              stroke-linecap="round" filter="url(#glow)"
-              style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dasharray 1.5s var(--ease-out)"/>
-            <circle cx="100" cy="100" r="75" fill="none" stroke="#d4a853" stroke-width="28"
-              stroke-dasharray="106 365" stroke-dashoffset="-180"
-              stroke-linecap="round"
-              style="transform:rotate(-90deg);transform-origin:center"/>
-            <circle cx="100" cy="100" r="75" fill="none" stroke="#22d3a0" stroke-width="28"
-              stroke-dasharray="71 400" stroke-dashoffset="-290"
-              stroke-linecap="round"
-              style="transform:rotate(-90deg);transform-origin:center"/>
-            <circle cx="100" cy="100" r="75" fill="none" stroke="#7b5cfa" stroke-width="28"
-              stroke-dasharray="47 424" stroke-dashoffset="-365"
-              stroke-linecap="round"
-              style="transform:rotate(-90deg);transform-origin:center"/>
-          </svg>
-          <div class="donut-center">
-            <div class="donut-center-label">总资产</div>
-            <div class="donut-center-val grad-text">¥128万</div>
-          </div>
+<!-- Performance -->
+<section id="performance">
+  <div class="perf-inner">
+    <div class="perf-chart-wrap reveal">
+      <div class="chart-label">Portfolio Value</div>
+      <div>
+        <span class="chart-value">$2,847,320</span>
+        <span class="chart-delta">&#8593; 24.3%</span>
+      </div>
+      <canvas id="perf-canvas"></canvas>
+      <div class="allocation-bars" id="alloc-bars">
+        <div class="alloc-row">
+          <span class="alloc-name">Equities</span>
+          <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="background:linear-gradient(90deg,var(--blue),var(--purple))" data-w="58"></div></div>
+          <span class="alloc-pct">58%</span>
         </div>
-        <div class="legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#4f8cff"></div>
-            <span class="legend-name">A 股 / 港股</span>
-            <span class="legend-pct" style="color:#4f8cff">37.5%</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#d4a853"></div>
-            <span class="legend-name">黄金 / 大宗</span>
-            <span class="legend-pct" style="color:#d4a853">22.6%</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#22d3a0"></div>
-            <span class="legend-name">债券 / 固收</span>
-            <span class="legend-pct" style="color:#22d3a0">15.1%</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#7b5cfa"></div>
-            <span class="legend-name">数字资产</span>
-            <span class="legend-pct" style="color:#7b5cfa">10.0%</span>
-          </div>
+        <div class="alloc-row">
+          <span class="alloc-name">Bonds</span>
+          <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="background:linear-gradient(90deg,var(--purple),var(--pink))" data-w="20"></div></div>
+          <span class="alloc-pct">20%</span>
         </div>
-
-        <!-- Progress bars -->
-        <div class="prog-bar-wrap reveal" id="prog-bars" style="transition-delay:0.3s">
-          <div class="prog-bar-item">
-            <div class="prog-bar-top"><span>收益目标完成度</span><span style="color:var(--color-green)">87%</span></div>
-            <div class="prog-bar-bg"><div class="prog-bar-fill" data-width="87" style="background:linear-gradient(90deg,#22d3a0,#06b6d4)"></div></div>
-          </div>
-          <div class="prog-bar-item">
-            <div class="prog-bar-top"><span>风险敞口控制</span><span style="color:var(--color-primary)">94%</span></div>
-            <div class="prog-bar-bg"><div class="prog-bar-fill" data-width="94" style="background:linear-gradient(90deg,#4f8cff,#7b5cfa)"></div></div>
-          </div>
-          <div class="prog-bar-item">
-            <div class="prog-bar-top"><span>资产多样化评分</span><span style="color:var(--color-gold)">78%</span></div>
-            <div class="prog-bar-bg"><div class="prog-bar-fill" data-width="78" style="background:linear-gradient(90deg,#d4a853,#f0c97a)"></div></div>
-          </div>
+        <div class="alloc-row">
+          <span class="alloc-name">Alts</span>
+          <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="background:linear-gradient(90deg,var(--pink),var(--cyan))" data-w="14"></div></div>
+          <span class="alloc-pct">14%</span>
+        </div>
+        <div class="alloc-row">
+          <span class="alloc-name">Cash</span>
+          <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="background:linear-gradient(90deg,var(--cyan),var(--blue))" data-w="8"></div></div>
+          <span class="alloc-pct">8%</span>
         </div>
       </div>
-
-      <div class="portfolio-content reveal" style="transition-delay:0.2s">
-        <div class="section-label">智能配置</div>
-        <h2 class="section-title">动态再平衡<br/><span class="grad-text">持续优化组合</span></h2>
-        <p class="section-sub">平台每日运行 200 万次组合优化运算，根据市场变化实时调仓，确保资产始终处于最优配置状态。</p>
-        <div class="portfolio-points">
-          <div class="portfolio-point">
-            <div class="pp-icon">
-              <svg width="20" height="20" fill="none" stroke="#4f8cff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
-            </div>
-            <div>
-              <div class="pp-title">智能因子模型</div>
-              <div class="pp-desc">融合价值、动量、质量等 150 个量化因子，构建多因子阿尔法组合。</div>
-            </div>
-          </div>
-          <div class="portfolio-point">
-            <div class="pp-icon">
-              <svg width="20" height="20" fill="none" stroke="#22d3a0" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div>
-              <div class="pp-title">压力测试与情景模拟</div>
-              <div class="pp-desc">模拟 2008 金融危机、2020 疫情等极端市场，验证组合韧性与抗压能力。</div>
-            </div>
-          </div>
-          <div class="portfolio-point">
-            <div class="pp-icon">
-              <svg width="20" height="20" fill="none" stroke="#d4a853" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg>
-            </div>
-            <div>
-              <div class="pp-title">税务效率最优化</div>
-              <div class="pp-desc">自动识别亏损锁仓抵税机会，提升税后实际收益率最高 1.8 个百分点。</div>
-            </div>
-          </div>
-        </div>
+    </div>
+    <div class="perf-content reveal">
+      <div class="section-tag">Performance</div>
+      <h2 class="section-title">Returns That<br>Speak for Themselves</h2>
+      <p style="margin-top:20px;font-size:0.95rem;line-height:1.75;color:var(--text-muted);max-width:440px;">WealthFlow's AI engine has delivered consistent alpha across market cycles, outperforming the S&amp;P 500 by an average of 11.2 percentage points annually since inception.</p>
+      <div class="metric-pills">
+        <span class="pill">Sharpe 2.4</span>
+        <span class="pill">Max DD 8.1%</span>
+        <span class="pill">Sortino 3.1</span>
+        <span class="pill">Beta 0.72</span>
+      </div>
+      <div style="margin-top:40px;display:flex;gap:16px;flex-wrap:wrap;">
+        <button class="btn-primary">View Full Report</button>
+        <button class="btn-ghost">Compare Strategies</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== TESTIMONIALS ====== -->
-<section class="testimonials" id="testimonials">
-  <div class="container">
-    <div style="text-align:center;max-width:560px;margin:0 auto" class="reveal">
-      <div class="section-label">用户评价</div>
-      <h2 class="section-title">86万投资者的<br/><span class="grad-text">共同选择</span></h2>
+<!-- Testimonials -->
+<section id="testimonials">
+  <div class="testi-inner">
+    <div class="testi-header reveal">
+      <div class="section-tag">Testimonials</div>
+      <h2 class="section-title" style="margin-inline:auto;text-align:center;max-width:500px;">Trusted by Wealth Builders</h2>
     </div>
     <div class="testi-grid">
-      <div class="testi-card glass reveal" style="transition-delay:0.1s">
-        <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
-        <p class="testi-text">"从传统银行转到 WealthFlow 后，同样的本金今年多赚了将近 18 万。AI 策略精准得让我惊讶，完全颠覆了我对理财的认知。"</p>
+      <div class="testi-card reveal">
+        <div class="stars">
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+        </div>
+        <blockquote>"WealthFlow transformed my approach to wealth management. The AI rebalancing caught opportunities I would have missed, and my portfolio is up 31% this year alone."</blockquote>
         <div class="testi-author">
-          <div class="testi-avatar">张</div>
+          <div class="avatar" style="background:linear-gradient(135deg,var(--blue),var(--purple))">JH</div>
           <div>
-            <div class="testi-name">张伟明</div>
-            <div class="testi-role">企业主 · 资产规模 ¥500 万+</div>
+            <div class="author-name">James Hartwell</div>
+            <div class="author-role">Partner, Hartwell Capital</div>
           </div>
         </div>
       </div>
-      <div class="testi-card glass reveal" style="transition-delay:0.2s">
-        <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
-        <p class="testi-text">"专属顾问每周都会主动联系复盘，市场大跌那次他们在波动前已经帮我降仓，避免了很大损失。服务水平媲美顶级私行。"</p>
+      <div class="testi-card reveal">
+        <div class="stars">
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+        </div>
+        <blockquote>"The tax optimization alone paid for the subscription 40 times over. The platform's sophistication is genuinely on par with what major private banks offer."</blockquote>
         <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,#d4a853,#f0c97a);color:#0d1520">李</div>
+          <div class="avatar" style="background:linear-gradient(135deg,var(--purple),var(--pink))">SM</div>
           <div>
-            <div class="testi-name">李思琴</div>
-            <div class="testi-role">CFO · 连续使用 3 年</div>
+            <div class="author-name">Sophia Mitchell</div>
+            <div class="author-role">CFO, Meridian Technologies</div>
           </div>
         </div>
       </div>
-      <div class="testi-card glass reveal" style="transition-delay:0.3s">
-        <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
-        <p class="testi-text">"界面设计非常好用，持仓分析一目了然。最重要的是收益真的稳定，近两年年化稳定在 19% 以上，远超银行理财。"</p>
+      <div class="testi-card reveal">
+        <div class="stars">
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+          <svg class="star" viewBox="0 0 20 20"><path d="M10 1l2.39 7.26H19l-5.47 3.97 2.09 7.2L10 15.27l-5.62 4.16 2.09-7.2L1 8.26h6.61z"/></svg>
+        </div>
+        <blockquote>"From onboarding to execution, WealthFlow is the most seamless financial platform I've used. My family office now runs entirely through their system."</blockquote>
         <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,#22d3a0,#06b6d4);color:#0d1520">王</div>
+          <div class="avatar" style="background:linear-gradient(135deg,var(--cyan),var(--blue))">RK</div>
           <div>
-            <div class="testi-name">王浩然</div>
-            <div class="testi-role">高级工程师 · 稳健投资者</div>
+            <div class="author-name">Robert Kim</div>
+            <div class="author-role">Family Office Director</div>
           </div>
         </div>
       </div>
@@ -1354,311 +989,426 @@
   </div>
 </section>
 
-<!-- ====== PRICING ====== -->
-<section class="pricing" id="pricing">
-  <div class="container">
-    <div style="text-align:center;max-width:560px;margin:0 auto" class="reveal">
-      <div class="section-label">服务方案</div>
-      <h2 class="section-title">透明定价<br/><span class="grad-text">按需选择</span></h2>
-      <p class="section-sub" style="text-align:center;margin:0 auto">无隐藏费用，所有方案均含核心 AI 功能，随时可升级降级。</p>
+<!-- Pricing -->
+<section id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-header reveal">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title" style="margin-inline:auto;text-align:center;max-width:480px;">Transparent Pricing,<br>Exceptional Value</h2>
     </div>
     <div class="pricing-grid">
-
-      <div class="price-card glass reveal" style="transition-delay:0.1s">
-        <div class="price-tier">入门版</div>
-        <div class="price-amount">免费</div>
-        <div class="price-period">永久免费，无条件</div>
-        <div class="price-features">
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>基础 AI 策略推荐</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>5 个持仓追踪</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>每日行情简报</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>基础风险评估</div>
-        </div>
-        <button class="btn-price btn-price-outline">免费注册</button>
+      <div class="pricing-card reveal">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><span>$</span>29</div>
+        <div class="plan-period">per month, billed annually</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>AI-powered portfolio analysis</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Up to $500K AUM</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Automated rebalancing</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Real-time dashboard</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Email support</li>
+        </ul>
+        <button class="btn-ghost" style="width:100%;">Get Started</button>
       </div>
-
-      <div class="price-card glass featured reveal" style="transition-delay:0.2s">
-        <div class="price-tier" style="color:var(--color-gold)">专业版</div>
-        <div class="price-amount"><span style="font-size:1.4rem;font-family:var(--font-body)">¥</span>299</div>
-        <div class="price-period">每月 · 按年付享 8 折</div>
-        <div class="price-features">
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>全量 AI 量化策略</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>无限持仓追踪</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>实时风险预警</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>深度因子分析报告</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>全球资产配置</div>
-        </div>
-        <button class="btn-price btn-price-filled">立即升级</button>
+      <div class="pricing-card featured reveal">
+        <div class="plan-name">Professional</div>
+        <div class="plan-price"><span>$</span>149</div>
+        <div class="plan-period">per month, billed annually</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Everything in Starter</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Unlimited AUM</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Tax-loss harvesting</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Multi-asset class access</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Priority 24/7 support</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Custom reporting</li>
+        </ul>
+        <button class="btn-primary" style="width:100%;">Start Free Trial</button>
       </div>
-
-      <div class="price-card glass reveal" style="transition-delay:0.3s">
-        <div class="price-tier" style="color:var(--color-primary-2)">私行版</div>
-        <div class="price-amount"><span style="font-size:1.4rem;font-family:var(--font-body)">¥</span>1,999</div>
-        <div class="price-period">每月 · 起投门槛 ¥100 万</div>
-        <div class="price-features">
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>一对一私行顾问</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>专属量化策略定制</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>税务 + 法律专项咨询</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>跨境资产配置服务</div>
-          <div class="price-feat"><svg class="check" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>优先接入新产品</div>
-        </div>
-        <button class="btn-price btn-price-outline">预约咨询</button>
+      <div class="pricing-card reveal">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:2rem;letter-spacing:-0.02em">Custom</div>
+        <div class="plan-period">tailored for your institution</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Everything in Professional</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Dedicated wealth advisor</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>White-label options</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>Custom integrations &amp; API</li>
+          <li><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg></span>SLA guarantee</li>
+        </ul>
+        <button class="btn-ghost" style="width:100%;">Contact Sales</button>
       </div>
-
     </div>
   </div>
 </section>
 
-<!-- ====== CTA BAND ====== -->
-<section class="cta-band reveal">
-  <div class="container" style="position:relative;z-index:1">
-    <div class="section-label" style="text-align:center;margin-bottom:16px">立即开始</div>
-    <h2 class="section-title" style="text-align:center">让 AI 为您的<br/><span class="grad-text">财富加速</span></h2>
-    <p class="section-sub" style="text-align:center;margin:16px auto 40px">注册即享 30 天专业版免费体验，无需信用卡，随时取消。</p>
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-inner reveal">
+    <h2 class="cta-title">Ready to Transform<br>Your <span class="grad">Financial Future?</span></h2>
+    <p class="cta-sub">Join 340,000+ investors who have already put their wealth to work smarter. Start with a free 30-day trial — no credit card required.</p>
     <div class="cta-actions">
-      <a href="#" class="btn-hero">免费开始体验</a>
-      <a href="#" class="btn-outline-hero">预约专属顾问</a>
+      <button class="btn-primary">Start Free Trial</button>
+      <button class="btn-ghost">Schedule a Demo</button>
     </div>
-    <p style="margin-top:24px;font-size:0.72rem;color:var(--color-muted);text-align:center">
-      已有超过 86 万用户信任 WealthFlow · 受中国证监会监管 · 资金由招商银行托管
-    </p>
   </div>
 </section>
 
-<!-- ====== FOOTER ====== -->
+<!-- Footer -->
 <footer>
-  <div class="footer-top">
-    <div class="footer-brand">
-      <a href="#" class="nav-logo" style="font-size:1.4rem">
-        <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-          <rect width="36" height="36" rx="10" fill="url(#lg2)"/>
-          <path d="M10 24L16 17L20 21L26 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="26" cy="13" r="2.5" fill="#d4a853"/>
-          <defs>
-            <linearGradient id="lg2" x1="0" y1="0" x2="36" y2="36">
-              <stop stop-color="#4f8cff"/>
-              <stop offset="1" stop-color="#7b5cfa"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        WealthFlow
-      </a>
-      <p class="footer-desc">智能财富管理平台，融合 AI 量化策略与专业投资顾问，为高净值客户创造长期复利价值。</p>
-    </div>
-    <div>
-      <div class="footer-col-title">产品</div>
-      <ul class="footer-links">
-        <li><a href="#">AI 量化策略</a></li>
-        <li><a href="#">资产配置</a></li>
-        <li><a href="#">风险管理</a></li>
-        <li><a href="#">私行服务</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-col-title">公司</div>
-      <ul class="footer-links">
-        <li><a href="#">关于我们</a></li>
-        <li><a href="#">团队介绍</a></li>
-        <li><a href="#">新闻动态</a></li>
-        <li><a href="#">加入我们</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-col-title">合规</div>
-      <ul class="footer-links">
-        <li><a href="#">用户协议</a></li>
-        <li><a href="#">隐私政策</a></li>
-        <li><a href="#">风险提示</a></li>
-        <li><a href="#">监管信息</a></li>
-      </ul>
-    </div>
+  <div class="footer-inner">
+    <div class="footer-logo">WealthFlow</div>
+    <ul class="footer-links">
+      <li><a href="#">About</a></li>
+      <li><a href="#">Careers</a></li>
+      <li><a href="#">Security</a></li>
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+    </ul>
   </div>
-  <div class="footer-bottom">
-    <span class="footer-copy">© 2024 WealthFlow Inc. 沪ICP备XXXXXXXX号 · 投资有风险，入市需谨慎</span>
-    <div class="footer-socials">
-      <a class="social-btn" href="#" aria-label="微信">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8.5 3C4.36 3 1 5.8 1 9.27c0 1.95 1.04 3.68 2.68 4.87L3 16l2.24-1.12c.73.2 1.5.3 2.27.3.22 0 .43 0 .64-.02A5.8 5.8 0 0 1 8 14.5c0-3.03 2.9-5.5 6.5-5.5h.2C14.1 6.03 11.6 3 8.5 3zm-2 4.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm4 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM14.5 10c-3.03 0-5.5 2.02-5.5 4.5S11.47 19 14.5 19c.64 0 1.26-.1 1.84-.27L18.5 20l-.6-1.82A4.27 4.27 0 0 0 20 14.5c0-2.48-2.47-4.5-5.5-4.5zm-1.5 3a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5zm3 0a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5z"/></svg>
-      </a>
-      <a class="social-btn" href="#" aria-label="微博">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 11.2c-.3-.1-.5-.1-.5-.3 0-.2.1-.5.1-.8 0-2.6-3.1-4.7-6.9-4.7S6 7.5 6 10.1c0 2.6 3.1 4.7 6.9 4.7.4 0 .8 0 1.2-.1l.3.3c.5.4 1.1.5 1.7.3.5-.2.9-.7.9-1.2v-.1c1.3-.8 2.2-2 2.2-3.3v-.3l-.1-.2z"/></svg>
-      </a>
-      <a class="social-btn" href="#" aria-label="LinkedIn">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-      </a>
-    </div>
-  </div>
+  <p class="footer-copy">&#169; 2026 WealthFlow Inc. All rights reserved. Investment involves risk. Past performance does not guarantee future results.</p>
 </footer>
 
-<!-- ====== SCRIPTS ====== -->
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script>
-// ── Particle background ──────────────────────────────────────────────────────
+// ── WebGL Morphing Blob ───────────────────────────────────────────────────────
 (function () {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
+  var canvas = document.getElementById('webgl-canvas');
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 3.5);
+
+  // Animated background gradient
+  var bgMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    new THREE.ShaderMaterial({
+      depthTest: false,
+      depthWrite: false,
+      uniforms: { uTime: { value: 0 } },
+      vertexShader: 'void main(){gl_Position=vec4(position.xy,1.0,1.0);}',
+      fragmentShader: [
+        'uniform float uTime;',
+        'void main(){',
+        '  vec2 uv=gl_FragCoord.xy/vec2(', window.innerWidth.toFixed(1), ',', window.innerHeight.toFixed(1), ');',
+        '  vec3 a=vec3(0.039,0.039,0.059);',
+        '  vec3 b=vec3(0.102,0.102,0.180);',
+        '  vec3 c=vec3(0.07,0.02,0.16);',
+        '  float t=uv.y+0.18*sin(uv.x*2.0+uTime*0.25);',
+        '  vec3 col=mix(a,mix(b,c,uv.x*0.7+0.15),t);',
+        '  gl_FragColor=vec4(col,1.0);',
+        '}'
+      ].join('')
+    })
+  );
+  bgMesh.renderOrder = -1;
+  scene.add(bgMesh);
+
+  // Simplex noise for GLSL (compact 3D version)
+  var noiseGLSL = [
+    'vec3 mod289v3(vec3 x){return x-floor(x*(1./289.))*289.;}',
+    'vec4 mod289v4(vec4 x){return x-floor(x*(1./289.))*289.;}',
+    'vec4 permute(vec4 x){return mod289v4(((x*34.)+1.)*x);}',
+    'vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}',
+    'float snoise(vec3 v){',
+    '  const vec2 C=vec2(1./6.,1./3.);',
+    '  vec3 i=floor(v+dot(v,C.yyy));',
+    '  vec3 x0=v-i+dot(i,C.xxx);',
+    '  vec3 g=step(x0.yzx,x0.xyz);',
+    '  vec3 l=1.-g;',
+    '  vec3 i1=min(g.xyz,l.zxy);',
+    '  vec3 i2=max(g.xyz,l.zxy);',
+    '  vec3 x1=x0-i1+C.xxx;',
+    '  vec3 x2=x0-i2+C.yyy;',
+    '  vec3 x3=x0-vec3(0.5);',
+    '  i=mod289v3(i);',
+    '  vec4 p=permute(permute(permute(',
+    '    i.z+vec4(0.,i1.z,i2.z,1.))',
+    '    +i.y+vec4(0.,i1.y,i2.y,1.))',
+    '    +i.x+vec4(0.,i1.x,i2.x,1.));',
+    '  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);',
+    '  m=m*m;',
+    '  vec4 x2b=2.*fract(p*vec4(0.0243902439))-1.;',
+    '  vec4 h=abs(x2b)-0.5;',
+    '  vec4 a0b=x2b-floor(x2b+0.5);',
+    '  vec4 norm2=taylorInvSqrt(a0b*a0b+h*h);',
+    '  vec3 gv0=vec3(a0b.x,h.x,0.)*norm2.x;',
+    '  vec3 gv1=vec3(a0b.y,h.y,0.)*norm2.y;',
+    '  vec3 gv2=vec3(a0b.z,h.z,0.)*norm2.z;',
+    '  vec3 gv3=vec3(a0b.w,h.w,0.)*norm2.w;',
+    '  return 32.*dot(m*m,vec4(dot(gv0,x0),dot(gv1,x1),dot(gv2,x2),dot(gv3,x3)));',
+    '}'
+  ].join('\n');
+
+  // Blob mesh
+  var blobGeo = new THREE.IcosahedronGeometry(1.05, 48);
+  var blobMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime:  { value: 0 },
+      uMouse: { value: new THREE.Vector2(0, 0) }
+    },
+    vertexShader: [
+      noiseGLSL,
+      'uniform float uTime;',
+      'uniform vec2 uMouse;',
+      'varying vec3 vNormal;',
+      'varying vec3 vPosition;',
+      'varying float vNoise;',
+      'void main(){',
+      '  vNormal=normal;',
+      '  vec3 pos=position;',
+      '  float n1=snoise(pos*1.4+uTime*0.28);',
+      '  float n2=snoise(pos*2.6-uTime*0.19);',
+      '  float n3=snoise(pos*0.7+uTime*0.13);',
+      '  float d=n1*0.22+n2*0.09+n3*0.14;',
+      '  vec3 md=vec3(uMouse.x,uMouse.y,0.);',
+      '  float mf=1.-clamp(length(md-pos)*0.5,0.,1.);',
+      '  d+=mf*0.1*sin(uTime*1.8);',
+      '  vNoise=d;',
+      '  pos+=normal*d;',
+      '  vPosition=pos;',
+      '  gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'varying vec3 vNormal;',
+      'varying vec3 vPosition;',
+      'varying float vNoise;',
+      'vec3 iriColor(float t){',
+      '  vec3 c0=vec3(0.31,0.55,0.97);',
+      '  vec3 c1=vec3(0.66,0.33,0.97);',
+      '  vec3 c2=vec3(0.93,0.28,0.60);',
+      '  vec3 c3=vec3(0.13,0.83,0.93);',
+      '  float s=fract(t);',
+      '  if(s<0.33)return mix(c0,c1,s/0.33);',
+      '  if(s<0.66)return mix(c1,c2,(s-0.33)/0.33);',
+      '  return mix(c2,c3,(s-0.66)/0.34);',
+      '}',
+      'void main(){',
+      '  vec3 vd=normalize(cameraPosition-vPosition);',
+      '  float fr=pow(1.-abs(dot(normalize(vNormal),vd)),2.5);',
+      '  float hue=fr*1.4+vNoise*2.+uTime*0.07;',
+      '  vec3 iri=iriColor(hue);',
+      '  vec3 base=vec3(0.08,0.06,0.16);',
+      '  vec3 ld=normalize(vec3(2.,3.,4.));',
+      '  float spec=pow(max(dot(reflect(-ld,normalize(vNormal)),vd),0.),48.);',
+      '  vec3 col=mix(base,iri,fr*0.85+0.15);',
+      '  col+=iri*0.18+vec3(1.)*spec*0.45+iri*fr*0.45;',
+      '  gl_FragColor=vec4(col,0.72+fr*0.22);',
+      '}'
+    ].join('\n'),
+    transparent: true
+  });
+  var blob = new THREE.Mesh(blobGeo, blobMat);
+  scene.add(blob);
+
+  // Wireframe glass overlay
+  var wireMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: [
+      noiseGLSL,
+      'uniform float uTime;',
+      'void main(){',
+      '  vec3 pos=position;',
+      '  float d=snoise(pos*1.4+uTime*0.28)*0.22+snoise(pos*2.6-uTime*0.19)*0.09+snoise(pos*0.7+uTime*0.13)*0.14;',
+      '  pos+=normal*d;',
+      '  gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.);',
+      '}'
+    ].join('\n'),
+    fragmentShader: 'void main(){gl_FragColor=vec4(0.55,0.45,1.0,0.06);}',
+    transparent: true,
+    wireframe: true
+  });
+  var wireMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.07, 10), wireMat);
+  scene.add(wireMesh);
+
+  // Floating particles
+  var N = 180;
+  var pos = new Float32Array(N * 3);
+  var spd = new Float32Array(N);
+  for (var i = 0; i < N; i++) {
+    pos[i*3]   = (Math.random() - 0.5) * 10;
+    pos[i*3+1] = (Math.random() - 0.5) * 10;
+    pos[i*3+2] = (Math.random() - 0.5) * 6;
+    spd[i] = 0.002 + Math.random() * 0.004;
   }
-  resize();
-  window.addEventListener('resize', resize);
+  var pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  var particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
+    size: 0.022, color: 0x7755ff, transparent: true, opacity: 0.45, sizeAttenuation: true
+  }));
+  scene.add(particles);
 
-  const COLORS = ['rgba(79,140,255,', 'rgba(123,92,250,', 'rgba(212,168,83,', 'rgba(34,211,160,'];
-  const N = 80;
+  // Mouse
+  var mouse = new THREE.Vector2();
+  var targetRot = new THREE.Vector2();
+  window.addEventListener('mousemove', function(e) {
+    mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouse.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+  });
 
-  for (let i = 0; i < N; i++) {
-    const c = COLORS[Math.floor(Math.random() * COLORS.length)];
-    particles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.6 + 0.4,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      color: c,
-      alpha: Math.random() * 0.5 + 0.1
-    });
-  }
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    // Draw connections
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(79,140,255,${0.06 * (1 - dist / 120)})`;
-          ctx.lineWidth = 0.6;
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.stroke();
-        }
-      }
+  var t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.008;
+
+    targetRot.x += (mouse.y * 0.28 - targetRot.x) * 0.05;
+    targetRot.y += (mouse.x * 0.28 - targetRot.y) * 0.05;
+
+    blob.rotation.x = targetRot.x + Math.sin(t * 0.35) * 0.07;
+    blob.rotation.y = targetRot.y + t * 0.14;
+    blob.rotation.z = Math.sin(t * 0.22) * 0.05;
+    wireMesh.rotation.copy(blob.rotation);
+
+    blobMat.uniforms.uTime.value = t;
+    blobMat.uniforms.uMouse.value.set(mouse.x, mouse.y);
+    wireMat.uniforms.uTime.value = t;
+    bgMesh.material.uniforms.uTime.value = t;
+
+    var pa = pGeo.attributes.position.array;
+    for (var i = 0; i < N; i++) {
+      pa[i*3+1] += spd[i];
+      if (pa[i*3+1] > 5) pa[i*3+1] = -5;
     }
-    // Draw dots
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + p.alpha + ')';
+    pGeo.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+// ── Ticker ────────────────────────────────────────────────────────────────────
+(function() {
+  var items = [
+    {sym:'AAPL', price:'$196.83', change:'+1.42%', up:true},
+    {sym:'MSFT', price:'$423.51', change:'+0.87%', up:true},
+    {sym:'NVDA', price:'$875.20', change:'+3.14%', up:true},
+    {sym:'GOOGL',price:'$178.44', change:'-0.32%', up:false},
+    {sym:'AMZN', price:'$195.67', change:'+1.03%', up:true},
+    {sym:'TSLA', price:'$248.90', change:'-1.15%', up:false},
+    {sym:'BTC',  price:'$67,420', change:'+2.71%', up:true},
+    {sym:'ETH',  price:'$3,541',  change:'+1.88%', up:true},
+    {sym:'GLD',  price:'$239.12', change:'+0.44%', up:true},
+    {sym:'SPY',  price:'$548.73', change:'+0.61%', up:true},
+  ];
+  var doubled = items.concat(items);
+  var track = document.getElementById('ticker');
+  track.innerHTML = doubled.map(function(i) {
+    return '<div class="ticker-item"><span class="ticker-sym">'+i.sym+'</span><span class="ticker-price">'+i.price+'</span><span class="'+(i.up?'ticker-up':'ticker-down')+'">'+i.change+'</span></div>';
+  }).join('');
+})();
+
+// ── Performance chart ─────────────────────────────────────────────────────────
+(function() {
+  var canvas = document.getElementById('perf-canvas');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio || 1;
+  var w = canvas.parentElement.clientWidth - 72 || 400;
+  var h = 200;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  var data  = [100,108,104,115,112,120,118,128,124,132,138,135,145,142,152,148,160,155,165,162,172,169,180,176,186];
+  var bench = [100,103,101,106,104,108,107,111,109,113,116,114,118,116,120,118,122,120,124,122,126,124,128,126,130];
+  var pad = {t:10, r:10, b:24, l:10};
+  var maxV = Math.max.apply(null,data)*1.05;
+  var minV = Math.min.apply(null,bench)*0.97;
+  var xStep = (w - pad.l - pad.r) / (data.length - 1);
+
+  function plotLine(vals, c1, c2, fill) {
+    ctx.beginPath();
+    vals.forEach(function(v,i){
+      var x = pad.l + i * xStep;
+      var y = pad.t + (h - pad.t - pad.b) * (1 - (v - minV)/(maxV - minV));
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    if (fill) {
+      ctx.save();
+      var fg = ctx.createLinearGradient(0,pad.t,0,h-pad.b);
+      fg.addColorStop(0, c1+'55'); fg.addColorStop(1, c1+'00');
+      ctx.lineTo(pad.l+(vals.length-1)*xStep, h-pad.b);
+      ctx.lineTo(pad.l, h-pad.b);
+      ctx.closePath();
+      ctx.fillStyle = fg;
       ctx.fill();
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0 || p.x > W) p.vx *= -1;
-      if (p.y < 0 || p.y > H) p.vy *= -1;
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-
-// ── Navbar scroll ────────────────────────────────────────────────────────────
-(function () {
-  const nav = document.getElementById('main-nav');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 40);
-  });
-})();
-
-// ── Intersection Observer (reveal + counter + progress bars) ─────────────────
-(function () {
-  // Reveal animations
-  const reveals = document.querySelectorAll('.reveal');
-  const revealObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        revealObs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  reveals.forEach(el => revealObs.observe(el));
-
-  // Counter animation
-  function animateCount(el, target, suffix, duration) {
-    const start = performance.now();
-    const isDecimal = String(target).includes('.');
-    function step(now) {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      const val = target * ease;
-      el.textContent = (isDecimal ? val.toFixed(1) : Math.round(val)) + suffix;
-      if (t < 1) requestAnimationFrame(step);
+      ctx.restore();
+      ctx.beginPath();
+      vals.forEach(function(v,i){
+        var x=pad.l+i*xStep, y=pad.t+(h-pad.t-pad.b)*(1-(v-minV)/(maxV-minV));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
     }
-    requestAnimationFrame(step);
+    var lg = ctx.createLinearGradient(pad.l,0,w-pad.r,0);
+    lg.addColorStop(0,c1); lg.addColorStop(1,c2);
+    ctx.strokeStyle=lg; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
   }
 
-  const statNums = document.querySelectorAll('[data-count]');
-  const counterObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        const el = e.target;
-        animateCount(el, parseFloat(el.dataset.count), el.dataset.suffix || '', 1800);
-        counterObs.unobserve(el);
-      }
-    });
-  }, { threshold: 0.3 });
-  statNums.forEach(el => counterObs.observe(el));
+  plotLine(bench,'#6b7280','#9ca3af',false);
+  plotLine(data,'#4f8ef7','#a855f7',true);
 
-  // Progress bars
-  const progBars = document.querySelectorAll('.prog-bar-fill');
-  const progObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.style.width = e.target.dataset.width + '%';
-        progObs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.3 });
-  progBars.forEach(el => progObs.observe(el));
-})();
-
-// ── Ticker clone for seamless loop ──────────────────────────────────────────
-(function () {
-  // Already duplicated inline; CSS handles animation
-})();
-
-// ── Smooth hover tilt on cards ───────────────────────────────────────────────
-(function () {
-  document.querySelectorAll('.feat-card, .testi-card, .price-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      card.style.transform = `translateY(-4px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg)`;
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-    });
+  var months=['Jan','Mar','May','Jul','Sep'];
+  ctx.fillStyle='rgba(160,160,200,0.45)';
+  ctx.font='9px Inter,sans-serif';
+  ctx.textAlign='center';
+  [0,6,12,18,24].forEach(function(i,j){
+    ctx.fillText(months[j], pad.l+i*xStep, h-6);
   });
 })();
 
-// ── Ripple effect on buttons ─────────────────────────────────────────────────
-(function () {
-  document.querySelectorAll('.btn-hero, .btn-primary, .btn-price-filled').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      const ripple = document.createElement('span');
-      const rect = this.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      ripple.style.cssText = `
-        position:absolute;width:${size}px;height:${size}px;
-        border-radius:50%;background:rgba(255,255,255,0.25);
-        top:${e.clientY - rect.top - size / 2}px;
-        left:${e.clientX - rect.left - size / 2}px;
-        transform:scale(0);animation:ripple 0.6s ease-out;
-        pointer-events:none;
-      `;
-      this.style.position = 'relative';
-      this.style.overflow = 'hidden';
-      this.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 700);
+// ── Scroll reveal ─────────────────────────────────────────────────────────────
+(function() {
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold:0.12});
+  document.querySelectorAll('.reveal,.feature-card,.testi-card,.pricing-card').forEach(function(el){ obs.observe(el); });
+
+  var barObs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.alloc-bar-fill').forEach(function(bar){
+          bar.style.width = bar.dataset.w + '%';
+        });
+      }
     });
-  });
-  const style = document.createElement('style');
-  style.textContent = '@keyframes ripple{to{transform:scale(2.5);opacity:0}}';
-  document.head.appendChild(style);
+  },{threshold:0.3});
+  var ab = document.getElementById('alloc-bars');
+  if(ab) barObs.observe(ab);
+})();
+
+// ── Counter animation ─────────────────────────────────────────────────────────
+(function() {
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el=e.target, target=parseFloat(el.dataset.target);
+      var decimals=target%1!==0?1:0, dur=1800, start=performance.now();
+      function step(now){
+        var p=Math.min((now-start)/dur,1), ease=1-Math.pow(1-p,3);
+        el.textContent=(target*ease).toFixed(decimals);
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      obs.unobserve(el);
+    });
+  },{threshold:0.5});
+  document.querySelectorAll('[data-target]').forEach(function(el){ obs.observe(el); });
 })();
 </script>
 </body>
