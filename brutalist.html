@@ -78,7 +78,7 @@ body::before {
   z-index: 1000;
 }
 
-/* ── Nav ── */
+/* ── Nav — hidden until mouse reaches top ── */
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -86,11 +86,21 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 40px;
   height: 56px;
-  border-bottom: 1px solid var(--gray3);
-  background: rgba(0,0,0,0.92);
-  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+
+nav.nav-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
 }
 
 .nav-logo {
@@ -138,80 +148,9 @@ nav {
 
 @keyframes blink { 50% { opacity: 0; } }
 
-/* ── Layout shell ── */
-.page-shell {
-  display: flex;
-  min-height: 100vh;
-  padding-top: 56px;
-}
-
-/* ── Left vertical ticker ── */
-.vticker-left {
-  position: fixed;
-  left: 0; top: 56px;
-  width: 32px;
-  height: calc(100vh - 56px);
-  border-right: 1px solid var(--gray3);
-  overflow: hidden;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--black);
-}
-
-.vticker-track {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  animation: vtick 18s linear infinite;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-}
-
-.vticker-item {
-  font-size: 0.6rem;
-  letter-spacing: 0.18em;
-  color: var(--gray3);
-  text-transform: uppercase;
-  white-space: nowrap;
-  font-family: var(--mono);
-}
-
-@keyframes vtick {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
-
-/* ── Right vertical ── */
-.vright {
-  position: fixed;
-  right: 0; top: 56px;
-  width: 32px;
-  height: calc(100vh - 56px);
-  border-left: 1px solid var(--gray3);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0;
-  background: var(--black);
-}
-
-.vright-label {
-  font-size: 0.55rem;
-  color: var(--gray3);
-  writing-mode: vertical-rl;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
 /* ── Main content ── */
 main {
   flex: 1;
-  margin-left: 32px;
-  margin-right: 32px;
 }
 
 /* ── HERO — centred overlap layout ── */
@@ -293,6 +232,17 @@ main {
   -webkit-text-stroke: 2px var(--green);
   color: transparent;
   text-shadow: none;
+}
+
+/* glitch pseudo-elements on outline word: use stroke too */
+.word-outline.glitch-wrap::before {
+  -webkit-text-stroke: 2px var(--green);
+  color: transparent;
+}
+
+.word-outline.glitch-wrap::after {
+  -webkit-text-stroke: 2px #ff00ff;
+  color: transparent;
 }
 
 /* glitch layer lives on the solid word */
@@ -1046,11 +996,9 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .vticker-left, .vright { display: none; }
-  main { margin: 0; }
   .works-grid { grid-template-columns: 1fr; }
   #system, #contact { grid-template-columns: 1fr; gap: 40px; }
-  #hero, #works, #belief, #system, #contact { padding-left: 24px; padding-right: 24px; }
+  #works, #belief, #system, #contact { padding-left: 24px; padding-right: 24px; }
   footer { padding: 20px 24px; flex-direction: column; gap: 12px; align-items: flex-start; }
 }
 
@@ -1088,40 +1036,6 @@ footer {
   </div>
 </nav>
 
-<!-- Left vertical ticker -->
-<div class="vticker-left">
-  <div class="vticker-track" id="vticker">
-    <span class="vticker-item">ASCII ART</span>
-    <span class="vticker-item">RAW CODE</span>
-    <span class="vticker-item">KINETIC TYPE</span>
-    <span class="vticker-item">BRUTALISM</span>
-    <span class="vticker-item">DARK DATA</span>
-    <span class="vticker-item">SYSTEM</span>
-    <span class="vticker-item">01001011</span>
-    <span class="vticker-item">TERMINAL</span>
-    <span class="vticker-item">OVERFLOW</span>
-    <span class="vticker-item">GLITCH</span>
-    <!-- duplicated for seamless loop -->
-    <span class="vticker-item">ASCII ART</span>
-    <span class="vticker-item">RAW CODE</span>
-    <span class="vticker-item">KINETIC TYPE</span>
-    <span class="vticker-item">BRUTALISM</span>
-    <span class="vticker-item">DARK DATA</span>
-    <span class="vticker-item">SYSTEM</span>
-    <span class="vticker-item">01001011</span>
-    <span class="vticker-item">TERMINAL</span>
-    <span class="vticker-item">OVERFLOW</span>
-    <span class="vticker-item">GLITCH</span>
-  </div>
-</div>
-
-<!-- Right label column -->
-<div class="vright">
-  <span class="vright-label">PORTFOLIO</span>
-  <span class="vright-label" style="color:var(--green);">2026</span>
-  <span class="vright-label">V2.4</span>
-</div>
-
 <main>
 
   <!-- HERO -->
@@ -1133,7 +1047,7 @@ footer {
 
       <h1 class="hero-title">
         <span class="word-solid glitch-wrap" data-text="DIGITAL">DIGITAL</span>
-        <span class="word-outline">REALITY</span>
+        <span class="word-outline glitch-wrap" data-text="REALITY">REALITY</span>
       </h1>
 
       <div class="hero-sub">
@@ -1647,227 +1561,263 @@ footer {
   if (sl) barObs.observe(sl);
 })();
 
-// ── Glitch text random flicker ────────────────────────────────────────────────
-(function() {
-  var chars = '!@#$%^&*<>[]{}|/\\?~`X0';
-  var el = document.querySelector('.glitch-wrap');
-  if (!el) return;
-  var original = el.getAttribute('data-text');
-
-  function corrupt() {
-    var out = '';
-    for (var i = 0; i < original.length; i++) {
-      out += Math.random() > 0.60
-        ? chars[(Math.random() * chars.length) | 0]
-        : original[i];
-    }
-    el.childNodes[0]
-      ? (el.firstChild.nodeType === 3 ? el.firstChild.textContent = out : el.textContent = out)
-      : (el.textContent = out);
-  }
-
-  setInterval(function() {
-    if (Math.random() > 0.88) {
-      var flashes = 2 + Math.floor(Math.random() * 3);   // 2–4 rapid flashes
-      for (var f = 0; f < flashes; f++) {
-        setTimeout(corrupt, f * 55);
-        setTimeout(function() { el.textContent = original; }, f * 55 + 45);
-      }
-    }
-  }, 220);   // fires more often → feels alive
+// ── Nav auto-reveal on mouse near top ────────────────────────────────────────
+(function () {
+  var nav = document.querySelector('nav');
+  var ZONE = 72; // px from top that triggers reveal
+  document.addEventListener('mousemove', function (e) {
+    if (e.clientY < ZONE) nav.classList.add('nav-visible');
+    else                  nav.classList.remove('nav-visible');
+  });
 })();
 
-// ── ASCII Particle Torus — optimised centred version ─────────────────────────
+// ── Glitch text random flicker (both title words) ─────────────────────────────
+(function () {
+  var chars = '!@#$%^&*<>[]{}|/\\?~`X01';
+  var els   = document.querySelectorAll('.glitch-wrap');
+
+  els.forEach(function (el) {
+    var original = el.getAttribute('data-text');
+
+    function corrupt() {
+      var out = '';
+      for (var i = 0; i < original.length; i++) {
+        out += Math.random() > 0.58
+          ? chars[(Math.random() * chars.length) | 0]
+          : original[i];
+      }
+      // text node is first child when pseudo-elements haven't replaced it
+      if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
+        el.childNodes[0].textContent = out;
+      } else {
+        el.textContent = out;
+      }
+    }
+
+    function restore() {
+      if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
+        el.childNodes[0].textContent = original;
+      } else {
+        el.textContent = original;
+      }
+    }
+
+    setInterval(function () {
+      if (Math.random() > 0.86) {
+        var flashes = 2 + ((Math.random() * 3) | 0);
+        for (var f = 0; f < flashes; f++) {
+          setTimeout(corrupt,  f * 50);
+          setTimeout(restore,  f * 50 + 42);
+        }
+      }
+    }, 200);
+  });
+})();
+
+// ── ASCII Particle Torus — click + scroll interactions ───────────────────────
 (function () {
   var hero = document.getElementById('hero');
   var cv   = document.createElement('canvas');
-  cv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;';
+  cv.style.cssText = 'position:absolute;inset:0;pointer-events:all;z-index:1;';
   hero.insertBefore(cv, hero.firstChild);
   var ctx = cv.getContext('2d');
 
-  /* --- sizing --- */
+  /* ── size ── */
   var W, H;
   function resize() {
     W = cv.width  = hero.offsetWidth;
     H = cv.height = hero.offsetHeight;
+    glowCv.width = W; glowCv.height = H;
   }
-  resize();
-  window.addEventListener('resize', resize);
 
-  /* --- geometry: torus parameterised at build-time --- */
+  /* ── geometry ── */
   var CHARS = '01{}[]<>/\\|;:!@#$%^&*';
-  var NU = 56, NV = 28;                // fewer subdivisions → faster + cleaner
-  var R = 0, r = 0;                    // set in draw() based on viewport
+  var NU = 56, NV = 28;
   var BASE_PTS = [];
-
-  // pre-compute unit-scale torus (R=1, r=0.42) → scale at draw time
   for (var ui = 0; ui < NU; ui++) {
     var u = (ui / NU) * Math.PI * 2;
     for (var vi = 0; vi < NV; vi++) {
-      var v = (vi / NV) * Math.PI * 2;
+      var v  = (vi / NV) * Math.PI * 2;
       var cu = Math.cos(u), su = Math.sin(u);
       var cv2 = Math.cos(v), sv = Math.sin(v);
+      /* unit torus: R=1, r=0.42 */
+      var bx = (1 + 0.42 * cv2) * cu;
+      var by = (1 + 0.42 * cv2) * su;
+      var bz = 0.42 * sv;
+      /* store base + outward scatter direction (unit normal from torus centre) */
+      var len = Math.sqrt(bx*bx + by*by + bz*bz) || 1;
       BASE_PTS.push({
-        bx: (1 + 0.42 * cv2) * cu,
-        by: (1 + 0.42 * cv2) * su,
-        bz: 0.42 * sv,
-        ch: CHARS[Math.floor(Math.random() * CHARS.length)]
+        bx: bx, by: by, bz: bz,
+        nx: bx/len, ny: by/len, nz: bz/len,   // scatter direction
+        ch: CHARS[(Math.random() * CHARS.length) | 0]
       });
     }
   }
   var N = BASE_PTS.length;
 
-  /* --- working arrays (no per-frame allocation) --- */
-  var wx = new Float32Array(N);
-  var wy = new Float32Array(N);
-  var wz = new Float32Array(N);
-  var sx = new Float32Array(N);
-  var sy = new Float32Array(N);
-  var sz = new Float32Array(N);         // depth
-  var idx_arr = new Uint16Array(N);     // sort indices
+  /* ── typed arrays ── */
+  var wx = new Float32Array(N), wy = new Float32Array(N), wz = new Float32Array(N);
+  var sx = new Float32Array(N), sy = new Float32Array(N), sz_arr = new Float32Array(N);
+  var offX = new Float32Array(N), offY = new Float32Array(N); // click impulse offsets
+  var velX = new Float32Array(N), velY = new Float32Array(N); // click velocities
+  var idx_arr = new Uint16Array(N);
 
-  /* --- rotation state --- */
+  /* ── glow off-screen canvas ── */
+  var glowCv = document.createElement('canvas');
+  var glowCtx = glowCv.getContext('2d');
+
+  /* ── sizing (call after glowCv created) ── */
+  W = cv.width  = hero.offsetWidth;
+  H = cv.height = hero.offsetHeight;
+  glowCv.width = W; glowCv.height = H;
+  window.addEventListener('resize', resize);
+
+  /* ── rotation & mouse ── */
   var angX = 0.38, angY = 0;
-  var mDX = 0, mDY = 0;               // smoothed mouse delta
+  var mDX = 0, mDY = 0;
+  var cosX, sinX, cosY, sinY;
 
   window.addEventListener('mousemove', function (e) {
     var rect = hero.getBoundingClientRect();
-    mDX = (e.clientX - rect.left  - rect.width  * 0.5) / rect.width;
-    mDY = (e.clientY - rect.top   - rect.height * 0.5) / rect.height;
+    mDX = (e.clientX - rect.left - W * 0.5) / W;
+    mDY = (e.clientY - rect.top  - H * 0.5) / H;
   });
 
-  /* --- sin/cos cache updated once per frame --- */
-  var cosX, sinX, cosY, sinY;
   function updateTrig() {
-    var ax = angX + mDY * 0.35;
-    var ay = angY + mDX * 0.22;
-    cosX = Math.cos(ax); sinX = Math.sin(ax);
-    cosY = Math.cos(ay); sinY = Math.sin(ay);
+    cosX = Math.cos(angX + mDY * 0.32);
+    sinX = Math.sin(angX + mDY * 0.32);
+    cosY = Math.cos(angY + mDX * 0.20);
+    sinY = Math.sin(angY + mDX * 0.20);
   }
 
-  /* --- font bucket cache: avoid setting ctx.font every particle --- */
-  // map fSize → string, built lazily
-  var fontCache = {};
-  function getFont(sz) {
-    return fontCache[sz] || (fontCache[sz] = 'bold ' + sz + 'px "JetBrains Mono",monospace');
-  }
-
-  /* --- pre-built colour strings: depth 0-255 → 'rgba(0,g,0,a)' --- */
+  /* ── colour LUT — dimmed (max brightness ~62% of before) ── */
   var colorCache = new Array(256);
   for (var d = 0; d < 256; d++) {
-    var g  = 28 + Math.round(d * 0.89);   // 28 – 255
-    var al = (0.14 + (d / 255) * 0.86).toFixed(2);
+    var g  = 18 + Math.round(d * 0.55);          // 18 – 158  (was 28–255)
+    var al = (0.08 + (d / 255) * 0.55).toFixed(2); // 0.08 – 0.63 (was 0.14–1.0)
     colorCache[d] = 'rgba(0,' + g + ',0,' + al + ')';
   }
 
-  /* --- off-screen buffer for glow pass (avoids shadowBlur on main ctx) --- */
-  var glowCv  = document.createElement('canvas');
-  var glowCtx = glowCv.getContext('2d');
+  /* ── font cache ── */
+  var fontCache = {};
+  function getFont(s) { return fontCache[s] || (fontCache[s] = 'bold ' + s + 'px "JetBrains Mono",monospace'); }
 
-  function syncGlowCanvas() {
-    glowCv.width  = W;
-    glowCv.height = H;
-  }
-  syncGlowCanvas();
-  window.addEventListener('resize', syncGlowCanvas);
+  /* ── scroll expansion state ── */
+  var scrollFactor = 0;  // 0 = normal torus, 1 = fully scattered
+  window.addEventListener('scroll', function () {
+    var heroH = hero.offsetHeight;
+    scrollFactor = Math.min(Math.max(window.scrollY / (heroH * 0.75), 0), 1);
+  }, { passive: true });
 
-  /* --- main loop --- */
-  var scale3d = 0;   // updated in draw to fit viewport
+  /* ── click ripple ── */
+  cv.addEventListener('click', function (e) {
+    var rect = cv.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var RADIUS = 220, FORCE = 18;
+    for (var i = 0; i < N; i++) {
+      var dx = sx[i] - mx, dy = sy[i] - my;
+      var dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (dist < RADIUS) {
+        var strength = (1 - dist / RADIUS) * FORCE;
+        velX[i] += (dx / dist) * strength;
+        velY[i] += (dy / dist) * strength;
+      }
+    }
+  });
+
+  /* ── FOV ── */
   var FOV = 850;
 
+  /* ── main render loop ── */
   function draw() {
     requestAnimationFrame(draw);
 
-    scale3d = Math.min(W, H) * 0.30;   // torus radius ~ 30% of shorter edge
+    var scale3d = Math.min(W, H) * (0.30 + scrollFactor * 0.85);
+    var scatterAmt = scrollFactor * scale3d * 1.1;
     var cx = W * 0.5, cy = H * 0.5;
 
     angY += 0.0055;
     updateTrig();
 
-    /* --- transform all points (inline rotX then rotY, no obj alloc) --- */
+    /* transform */
     for (var i = 0; i < N; i++) {
-      var bx = BASE_PTS[i].bx * scale3d;
-      var by = BASE_PTS[i].by * scale3d;
-      var bz = BASE_PTS[i].bz * scale3d;
-      // rotateX
+      var p = BASE_PTS[i];
+      /* apply scatter along outward normal */
+      var bx = (p.bx + p.nx * scatterAmt / scale3d) * scale3d;
+      var by = (p.by + p.ny * scatterAmt / scale3d) * scale3d;
+      var bz = (p.bz + p.nz * scatterAmt / scale3d) * scale3d;
+      /* rotateX */
       var ry = cosX * by - sinX * bz;
       var rz = sinX * by + cosX * bz;
-      // rotateY
+      /* rotateY */
       wx[i] = cosY * bx + sinY * rz;
       wy[i] = ry;
       wz[i] = -sinY * bx + cosY * rz;
     }
 
-    /* --- perspective project --- */
+    /* project */
     for (var i = 0; i < N; i++) {
       var sc = FOV / (FOV + wz[i] + scale3d * 1.4);
-      sx[i] = cx + wx[i] * sc;
-      sy[i] = cy + wy[i] * sc;
-      sz[i] = wz[i];
+      /* apply click impulse offset */
+      offX[i] += velX[i]; velX[i] *= 0.84; offX[i] *= 0.88;
+      offY[i] += velY[i]; velY[i] *= 0.84; offY[i] *= 0.88;
+      sx[i] = cx + wx[i] * sc + offX[i];
+      sy[i] = cy + wy[i] * sc + offY[i];
+      sz_arr[i] = wz[i];
     }
 
-    /* --- depth sort (insertion sort works well; N ≈ 1568) --- */
+    /* depth sort */
     for (var i = 0; i < N; i++) idx_arr[i] = i;
-    idx_arr.sort(function (a, b) { return sz[a] - sz[b]; });
+    idx_arr.sort(function (a, b) { return sz_arr[a] - sz_arr[b]; });
 
-    var zMin = sz[idx_arr[0]];
-    var zMax = sz[idx_arr[N-1]];
+    var zMin = sz_arr[idx_arr[0]];
+    var zMax = sz_arr[idx_arr[N-1]];
     var zRng = zMax - zMin || 1;
 
-    /* --- clear main canvas with motion-blur trail --- */
-    ctx.fillStyle = 'rgba(0,0,0,0.20)';
+    /* clear */
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
     ctx.fillRect(0, 0, W, H);
-
-    /* --- clear glow canvas --- */
     glowCtx.clearRect(0, 0, W, H);
 
-    /* --- render back-to-front, split into glow/normal buckets --- */
-    var curFont = '';
-    var curColor = '';
-
+    /* render */
+    var curFont = '', curColor = '';
     for (var ii = 0; ii < N; ii++) {
       var i   = idx_arr[ii];
-      var dep = (sz[i] - zMin) / zRng;   // 0=back … 1=front
+      var dep = (sz_arr[i] - zMin) / zRng;
       var d8  = (dep * 255) | 0;
-
-      var fSz = ((7 + dep * 11) | 0);    // 7 – 18 px
-      if (fSz < 6) continue;
-
+      var fSz = (6 + dep * 10) | 0;   // 6 – 16 px
+      if (fSz < 5) continue;
       var col  = colorCache[d8];
       var font = getFont(fSz);
-      var ch   = BASE_PTS[i].ch;
-      var px   = sx[i];
-      var py   = sy[i];
+      var px = sx[i], py = sy[i];
+      var ch = BASE_PTS[i].ch;
 
-      /* front-facing particles → glow buffer */
-      if (dep > 0.60) {
-        if (font !== glowCtx._font) { glowCtx.font = font; glowCtx._font = font; }
+      if (dep > 0.62) {
+        if (font !== glowCtx._cf) { glowCtx.font = font; glowCtx._cf = font; }
         glowCtx.fillStyle = col;
         glowCtx.fillText(ch, px, py);
       }
-
-      /* all particles → main buffer */
-      if (font !== curFont) { ctx.font = font; curFont = font; }
-      if (col  !== curColor){ ctx.fillStyle = col; curColor = col; }
+      if (font !== curFont)  { ctx.font      = font; curFont  = font; }
+      if (col  !== curColor) { ctx.fillStyle = col;  curColor = col;  }
       ctx.fillText(ch, px, py);
     }
 
-    /* --- apply glow: draw glow layer with blur on main ctx --- */
+    /* composite glow — reduced blur */
     ctx.save();
-    ctx.shadowColor = 'rgba(0,255,0,0.55)';
-    ctx.shadowBlur  = 9;
+    ctx.shadowColor = 'rgba(0,220,0,0.35)';
+    ctx.shadowBlur  = 6;
     ctx.drawImage(glowCv, 0, 0);
     ctx.restore();
   }
 
   draw();
 
-  /* refresh ~8% of chars every 160ms */
+  /* char refresh */
   setInterval(function () {
     var n = (N * 0.08) | 0;
-    for (var i = 0; i < n; i++) {
+    for (var i = 0; i < n; i++)
       BASE_PTS[(Math.random() * N) | 0].ch = CHARS[(Math.random() * CHARS.length) | 0];
-    }
   }, 160);
 })();
 </script>
