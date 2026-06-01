@@ -154,6 +154,11 @@ main {
 }
 
 /* ── HERO — sticky, full-height ── */
+#hero-zone {
+  position: relative;
+  height: 350vh;
+}
+
 #hero {
   height: 100vh;
   position: sticky;
@@ -163,14 +168,13 @@ main {
   align-items: center;
   justify-content: center;
   padding: 0;
-  position: sticky;
-  top: 0;
   overflow: hidden;
+  z-index: 1;
 }
 
 /* ── Hero spacer (provides scroll room for the transition) ── */
 #hero-spacer {
-  height: 150vh;
+  height: 250vh;
   background: var(--black);
 }
 
@@ -179,10 +183,10 @@ main {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(0.28);
   transform-origin: center center;
   font-family: var(--sans);
-  font-size: clamp(5rem, 14vw, 13rem);
+  font-size: 50vw;
   font-weight: 900;
   letter-spacing: -0.05em;
   text-transform: uppercase;
@@ -355,6 +359,8 @@ main {
 
 /* ── MARQUEE STRIP ── */
 .marquee-strip {
+  position: relative;
+  z-index: 10;
   border-top: 1px solid var(--gray3);
   border-bottom: 1px solid var(--gray3);
   background: var(--black);
@@ -394,6 +400,9 @@ main {
 
 /* ── WORKS SECTION ── */
 #works {
+  position: relative;
+  z-index: 10;
+  background: var(--black);
   padding: 80px 48px;
   border-bottom: 1px solid var(--gray3);
 }
@@ -603,6 +612,7 @@ main {
   padding: 100px 48px;
   border-bottom: 1px solid var(--gray3);
   position: relative;
+  z-index: 10;
   overflow: hidden;
 }
 
@@ -699,6 +709,9 @@ main {
 
 /* ── SKILLS / SYSTEM ── */
 #system {
+  position: relative;
+  z-index: 10;
+  background: var(--black);
   padding: 80px 48px;
   border-bottom: 1px solid var(--gray3);
   display: grid;
@@ -792,6 +805,9 @@ main {
 
 /* ── CONTACT ── */
 #contact {
+  position: relative;
+  z-index: 10;
+  background: var(--black);
   padding: 80px 48px 100px;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -872,6 +888,9 @@ main {
 
 /* ── FOOTER ── */
 footer {
+  position: relative;
+  z-index: 10;
+  background: var(--black);
   border-top: 1px solid var(--gray3);
   padding: 20px 48px 20px 80px;
   display: flex;
@@ -1001,6 +1020,9 @@ footer {
 
 <main>
 
+  <!-- HERO ZONE: sticky scoped here so hero doesn't bleed into later sections -->
+  <div id="hero-zone">
+
   <!-- HERO -->
   <section id="hero">
     <!-- torus canvas injected by JS -->
@@ -1047,8 +1069,10 @@ footer {
     </div>
   </section>
 
-  <!-- Transition scroll space (150 vh gives room for the portal animation) -->
+  <!-- Transition scroll space (250 vh gives room for the portal animation) -->
   <div id="hero-spacer"></div>
+
+  </div><!-- /hero-zone -->
 
   <!-- Marquee -->
   <div class="marquee-strip">
@@ -1550,39 +1574,33 @@ window._sf = 0; // scatter factor 0→1
   var wordTrans   = document.getElementById('word-trans');
   var worksEl     = document.getElementById('works');
   var heroContent = document.querySelector('.hero-content');
-  var TRANS_START = vh;          // spacer begins
-  var TRANS_END   = vh * 2.5;   // spacer ends, works naturally at viewport top
+  // Transition occupies the 250vh spacer: starts after hero (1×vh), ends at 3×vh
+  var TRANS_START = vh;
+  var TRANS_END   = vh * 3;
   var active      = false;
 
-  // Approximate text geometry (re-measured on resize)
-  var textH = 0, textW = 0;
-  function measureText() {
+  function measureVP() {
     vh = window.innerHeight;
     vw = window.innerWidth;
     TRANS_START = vh;
-    TRANS_END   = vh * 2.5;
-    // hero-title font-size is clamped(5rem, 14vw, 13rem)
-    var fs = Math.min(Math.max(vw * 0.14, 80), 208); // px
-    textH = fs * 0.82;              // cap-height ≈ 0.82 em
-    textW = fs * 4.6;               // "DIGITAL" ≈ 4.6 em wide
+    TRANS_END   = vh * 3;
   }
-  measureText();
-  window.addEventListener('resize', measureText);
+  measureVP();
+  window.addEventListener('resize', measureVP);
 
-  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; } // ease in-out
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
   window.addEventListener('scroll', function () {
     var sy = window.scrollY;
 
-    /* ── before transition zone: normal torus scatter from scroll ── */
+    /* ── before transition zone: torus stays static ── */
     if (sy < TRANS_START) {
-      window._sf = Math.min(sy / (TRANS_START * 0.8), 0.5);
+      window._sf = 0;
       if (active) {
-        // reset everything
-        wordTrans.style.opacity        = '0';
-        wordTrans.style.transform      = 'translate(-50%,-50%) scale(1)';
-        worksEl.style.cssText          = '';
-        heroContent.style.opacity      = '';
+        wordTrans.style.opacity   = '0';
+        wordTrans.style.transform = 'translate(-50%,-50%) scale(0.28)';
+        worksEl.style.cssText     = '';
+        heroContent.style.opacity = '';
         active = false;
       }
       return;
@@ -1590,36 +1608,38 @@ window._sf = 0; // scatter factor 0→1
 
     /* ── transition zone ── */
     active = true;
-    var raw = (sy - TRANS_START) / (TRANS_END - TRANS_START); // 0→1 linear
+    var raw = (sy - TRANS_START) / (TRANS_END - TRANS_START);
     var p   = Math.min(Math.max(raw, 0), 1);
     var ep  = ease(p);
 
-    // Torus: fully scattered as transition progresses
-    window._sf = 0.5 + ep * 0.5;
+    // Torus scatters in sync with text (both driven by same ep)
+    window._sf = ep;
 
-    // Hero content fades away quickly
-    heroContent.style.opacity = Math.max(0, 1 - p * 5).toFixed(3);
+    // Hero title fades out quickly
+    heroContent.style.opacity = Math.max(0, 1 - p * 4).toFixed(3);
 
-    // Portal text: appear, then scale out to fill screen
-    var wtOpacity = p < 0.08
-      ? (p / 0.08)                        // fade in fast
-      : Math.max(0, 1 - (p - 0.5) / 0.5); // then fade out after p=0.5
+    // Portal text: snaps visible instantly, stays opaque until p=0.85, then fades
+    var wtOpacity = p <= 0 ? 0 : (p < 0.85 ? 1 : Math.max(0, 1 - (p - 0.85) / 0.15));
     wordTrans.style.opacity   = wtOpacity.toFixed(3);
-    var scale = 1 + ep * 32;              // 1 → 33×
-    wordTrans.style.transform = 'translate(-50%,-50%) scale(' + scale.toFixed(3) + ')';
 
-    // Works section: clip-path expands from text-shaped rect to full screen
-    var inTop    = Math.max(0, (vh / 2 - textH * 0.5) * (1 - ep));
-    var inBottom = Math.max(0, (vh / 2 - textH * 0.5) * (1 - ep));
-    var inLeft   = Math.max(0, (vw / 2 - textW * 0.5) * (1 - ep));
-    var inRight  = Math.max(0, (vw / 2 - textW * 0.5) * (1 - ep));
+    // Scale range: 0.28 (matches title size at 50vw font) → 1.5 (covers full screen)
+    // No huge multiplier = no blur
+    var scale = 0.28 + ep * (1.5 - 0.28);
+    wordTrans.style.transform = 'translate(-50%,-50%) scale(' + scale.toFixed(4) + ')';
+
+    // Works section: clip-path expands from center out, reaching full screen by p=0.8
+    var clipP = Math.min(ep / 0.8, 1);
+    var inTop    = Math.max(0, (vh * 0.5) * (1 - clipP));
+    var inBottom = Math.max(0, (vh * 0.5) * (1 - clipP));
+    var inLeft   = Math.max(0, (vw * 0.5) * (1 - clipP));
+    var inRight  = Math.max(0, (vw * 0.5) * (1 - clipP));
 
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
     worksEl.style.zIndex     = '500';
     worksEl.style.background = '#000';
     worksEl.style.overflowY  = 'auto';
-    worksEl.style.opacity    = Math.min(1, ep * 2).toFixed(3);
+    worksEl.style.opacity    = clipP.toFixed(3);
     worksEl.style.clipPath   = 'inset(' +
       inTop.toFixed(1)    + 'px ' +
       inRight.toFixed(1)  + 'px ' +
@@ -1628,7 +1648,7 @@ window._sf = 0; // scatter factor 0→1
 
     /* ── transition complete ── */
     if (p >= 1) {
-      worksEl.style.cssText     = '';   // back to normal flow
+      worksEl.style.cssText     = '';
       wordTrans.style.opacity   = '0';
       heroContent.style.opacity = '';
       active = false;
