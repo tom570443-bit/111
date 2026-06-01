@@ -1674,19 +1674,19 @@ window._sf = 0; // scatter factor 0→1
 
     window._sf = 1; // torus stays fully scattered
 
-    // Hero slides out to the right
+    // Hero slides out to the LEFT
     heroEl.style.position  = 'fixed';
     heroEl.style.inset     = '0';
     heroEl.style.zIndex    = '2';
-    heroEl.style.transform = 'translateX(' + (sep * 100).toFixed(2) + 'vw)';
+    heroEl.style.transform = 'translateX(' + (-sep * 100).toFixed(2) + 'vw)';
 
-    // Works slides in from left
+    // Works slides in from the RIGHT
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
-    worksEl.style.zIndex     = '9';
+    worksEl.style.zIndex     = '20'; // above all sections (which are z-index:10)
     worksEl.style.background = '#000';
     worksEl.style.overflowY  = 'hidden';
-    worksEl.style.transform  = 'translateX(' + ((sep - 1) * 100).toFixed(2) + 'vw)';
+    worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
     // Torus ghost: detach from hero, show on left half of screen behind works
     if (cv) {
@@ -1694,7 +1694,7 @@ window._sf = 0; // scatter factor 0→1
       cv.style.inset       = '0';
       cv.style.zIndex      = '8';
       cv.style.pointerEvents = 'none';
-      cv.style.clipPath    = 'inset(0 50% 0 0)'; // left half only
+      cv.style.clipPath    = 'inset(0 0 0 50%)'; // right half — visible on works left edge as it enters
       cv.style.opacity     = (0.22 * (1 - sep * 0.6)).toFixed(3);
     }
 
