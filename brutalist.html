@@ -1614,10 +1614,10 @@ window._sf = 0; // scatter factor 0→1
 
     // Title scales up: 1× → ~6× fills screen dramatically, letters become architecture
     var scale = 1 + ep * 5.5;
-    // Blur dissolves the title when letters fill screen
-    var blur  = p > 0.82 ? ((p - 0.82) / 0.18) * 22 : 0;
-    // Opacity holds until p=0.88, then fades
-    var op    = p < 0.88 ? 1 : Math.max(0, 1 - (p - 0.88) / 0.12);
+    // Blur starts early (p>0.45) — as letters fill screen they dissolve into light
+    var blur  = p > 0.45 ? ((p - 0.45) / 0.55) * 28 : 0;
+    // Opacity holds until p=0.75, then fades
+    var op    = p < 0.75 ? 1 : Math.max(0, 1 - (p - 0.75) / 0.25);
 
     heroTitle.style.transform  = 'scale(' + scale.toFixed(4) + ')';
     heroTitle.style.filter     = blur > 0.5 ? 'blur(' + blur.toFixed(1) + 'px)' : '';
