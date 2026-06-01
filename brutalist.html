@@ -170,7 +170,7 @@ main {
   align-items: center;
   justify-content: center;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   z-index: 1;
 }
 
@@ -180,26 +180,8 @@ main {
   background: var(--black);
 }
 
-/* ── Transition: expanding DIGITAL portal text ── */
-#word-trans {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.28);
-  transform-origin: center center;
-  font-family: var(--sans);
-  font-size: 50vw;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
-  color: #ffffff;
-  pointer-events: none;
-  z-index: 600;
-  opacity: 0;
-  white-space: nowrap;
-  will-change: transform, opacity;
-  user-select: none;
-}
+/* word-trans no longer used — title scales directly */
+#word-trans { display: none; }
 
 /* torus canvas fills the whole hero and sits behind text */
 #hero canvas {
@@ -251,8 +233,10 @@ main {
   text-transform: uppercase;
   color: var(--white);
   position: relative;
-  /* allow torus to show through the text stack */
   mix-blend-mode: normal;
+  transform-origin: center center;
+  will-change: transform, filter, opacity;
+  z-index: 5;
 }
 
 /* first word — clean solid white */
@@ -1581,109 +1565,65 @@ window._sf = 0; // scatter factor 0→1
   });
 })();
 
-// ── Scroll-driven page transition ─────────────────────────────────────────────
+// ── Scroll-driven page transition — hero title scales up as portal ────────────
 (function () {
-  var vh          = window.innerHeight;
-  var vw          = window.innerWidth;
-  var wordTrans   = document.getElementById('word-trans');
-  var worksEl     = document.getElementById('works');
-  var heroContent = document.querySelector('.hero-content');
-  var wordSolid   = document.querySelector('.hero-title .word-solid');
-  var heroZone    = document.getElementById('hero-zone');
+  var vh         = window.innerHeight;
+  var heroTitle  = document.querySelector('.hero-title');
+  var heroSys    = document.querySelector('.hero-sys-line');
+  var heroSub    = document.querySelector('.hero-sub');
+  var heroMeta   = document.querySelector('.hero-meta');
+  var heroScroll = document.querySelector('.hero-scroll-hint');
+  // Transition: 1vh (end of hero) → 3.5vh (end of spacer - 50vh buffer)
   var TRANS_START = vh;
-  var TRANS_END   = vh * 3;
-  var active = false, jumped = false;
+  var TRANS_END   = vh * 3.5;
 
-  function measureVP() {
-    vh = window.innerHeight; vw = window.innerWidth;
-    TRANS_START = vh; TRANS_END = vh * 3;
-  }
+  function measureVP() { vh = window.innerHeight; TRANS_START = vh; TRANS_END = vh * 3.5; }
   measureVP();
   window.addEventListener('resize', measureVP);
 
+  // cubic-bezier(0.16, 1, 0.3, 1) — fast start, long elegant deceleration
   function easeOut4(t) { return 1 - Math.pow(1 - t, 4); }
 
   window.addEventListener('scroll', function () {
     var sy = window.scrollY;
 
-    /* ── before transition: everything static ── */
     if (sy < TRANS_START) {
       window._sf = 0;
-      if (active) {
-        wordTrans.style.opacity   = '0';
-        wordTrans.style.filter    = 'none';
-        wordTrans.style.transform = 'translate(-50%,-50%) scale(0.28)';
-        worksEl.style.cssText     = '';
-        heroContent.style.opacity = '';
-        if (wordSolid) wordSolid.style.opacity = '';
-        active = false;
-        jumped = false;
-      }
+      heroTitle.style.transform = '';
+      heroTitle.style.filter    = '';
+      heroTitle.style.opacity   = '';
+      heroTitle.style.zIndex    = '';
+      if (heroSys)    heroSys.style.opacity    = '';
+      if (heroSub)    heroSub.style.opacity    = '';
+      if (heroMeta)   heroMeta.style.opacity   = '';
+      if (heroScroll) heroScroll.style.opacity = '';
       return;
     }
 
-    active = true;
-    var raw = (sy - TRANS_START) / (TRANS_END - TRANS_START);
-    var p   = Math.min(Math.max(raw, 0), 1);
-    var ep  = easeOut4(p);
+    var p  = Math.min((sy - TRANS_START) / (TRANS_END - TRANS_START), 1);
+    var ep = easeOut4(p);
 
     window._sf = ep;
 
-    // Hero content fades fast
-    heroContent.style.opacity = Math.max(0, 1 - p * 5).toFixed(3);
+    // Supporting elements fade out fast, leaving only the title
+    var fade = Math.max(0, 1 - p * 6).toFixed(3);
+    if (heroSys)    heroSys.style.opacity    = fade;
+    if (heroSub)    heroSub.style.opacity    = fade;
+    if (heroMeta)   heroMeta.style.opacity   = fade;
+    if (heroScroll) heroScroll.style.opacity = fade;
 
-    // Fade out original DIGITAL word as word-trans appears — prevents duplicate look
-    if (wordSolid) wordSolid.style.opacity = Math.max(0, 1 - p * 12).toFixed(3);
+    // Title scales up: 1× → ~6× fills screen dramatically, letters become architecture
+    var scale = 1 + ep * 5.5;
+    // Blur dissolves the title when letters fill screen
+    var blur  = p > 0.82 ? ((p - 0.82) / 0.18) * 22 : 0;
+    // Opacity holds until p=0.88, then fades
+    var op    = p < 0.88 ? 1 : Math.max(0, 1 - (p - 0.88) / 0.12);
 
-    // word-trans: instantly visible, blurs + fades only late (p>0.75)
-    var wtOpacity = p <= 0 ? 0 : (p < 0.78 ? 1 : Math.max(0, 1 - (p - 0.78) / 0.22));
-    var wtBlur    = p > 0.75 ? ((p - 0.75) / 0.25) * 32 : 0;
-    wordTrans.style.opacity   = wtOpacity.toFixed(3);
-    wordTrans.style.filter    = wtBlur > 0.5 ? 'blur(' + wtBlur.toFixed(1) + 'px)' : 'none';
-    var scale = 0.28 + ep * (1.5 - 0.28);
-    wordTrans.style.transform = 'translate(-50%,-50%) scale(' + scale.toFixed(4) + ')';
-
-    // Works: only start clip-path reveal after p=0.55 (word-trans covers most of screen)
-    if (p >= 0.55) {
-      var clipRaw = (p - 0.55) / 0.45;
-      var clipP   = Math.min(easeOut4(clipRaw), 1);
-      var inTop    = Math.max(0, (vh * 0.5) * (1 - clipP));
-      var inBottom = Math.max(0, (vh * 0.5) * (1 - clipP));
-      var inLeft   = Math.max(0, (vw * 0.5) * (1 - clipP));
-      var inRight  = Math.max(0, (vw * 0.5) * (1 - clipP));
-      worksEl.style.position   = 'fixed';
-      worksEl.style.inset      = '0';
-      worksEl.style.zIndex     = '500';
-      worksEl.style.background = '#000';
-      worksEl.style.overflowY  = 'hidden';
-      worksEl.style.opacity    = clipP.toFixed(3);
-      worksEl.style.clipPath   = 'inset(' +
-        inTop.toFixed(1)    + 'px ' +
-        inRight.toFixed(1)  + 'px ' +
-        inBottom.toFixed(1) + 'px ' +
-        inLeft.toFixed(1)   + 'px)';
-    }
-
-    /* ── transition complete: snap scroll to works natural position ── */
-    if (p >= 1 && !jumped) {
-      jumped = true;
-      // Clean up overlay elements
-      wordTrans.style.opacity = '0';
-      wordTrans.style.filter  = 'none';
-      heroContent.style.opacity = '';
-      if (wordSolid) wordSolid.style.opacity = '';
-      // Release works from fixed, then instantly scroll to its natural position
-      worksEl.style.cssText = '';
-      active = false;
-      var targetY = heroZone
-        ? heroZone.offsetTop + heroZone.offsetHeight
-        : vh * 3.5;
-      if (window._lenis) {
-        window._lenis.scrollTo(targetY, { immediate: true });
-      } else {
-        window.scrollTo({ top: targetY, behavior: 'instant' });
-      }
-    }
+    heroTitle.style.transform  = 'scale(' + scale.toFixed(4) + ')';
+    heroTitle.style.filter     = blur > 0.5 ? 'blur(' + blur.toFixed(1) + 'px)' : '';
+    heroTitle.style.opacity    = op.toFixed(3);
+    heroTitle.style.position   = 'relative';
+    heroTitle.style.zIndex     = '999';  // above all sections while scaling
   }, { passive: true });
 })();
 
