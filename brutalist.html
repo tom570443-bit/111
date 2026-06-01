@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEMS_ONLY — Digital Brutalism Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --black:  #000000;
+  --green:  #00FF00;
+  --green2: #00cc00;
+  --green3: rgba(0,255,0,0.08);
+  --gray:   #111111;
+  --gray2:  #1a1a1a;
+  --gray3:  #333333;
+  --white:  #f0f0f0;
+  --mono:   'JetBrains Mono', 'Courier New', monospace;
+  --sans:   'Inter', Arial, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── Custom Cursor ── */
+#cursor {
+  position: fixed;
+  width: 20px; height: 20px;
+  border: 2px solid var(--green);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s, height 0.15s, background 0.15s, border-color 0.15s;
+  mix-blend-mode: difference;
+}
+
+#cursor.hovered {
+  width: 48px; height: 48px;
+  background: rgba(0,255,0,0.15);
+  border-color: var(--green);
+}
+
+#cursor-dot {
+  position: fixed;
+  width: 4px; height: 4px;
+  background: var(--green);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Scanline overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.03) 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── Nav ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  border-bottom: 1px solid var(--gray3);
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(8px);
+}
+
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--gray3);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--green); }
+
+.nav-status {
+  font-size: 0.68rem;
+  color: var(--green);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.4s step-start infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── Layout shell ── */
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 56px;
+}
+
+/* ── Left vertical ticker ── */
+.vticker-left {
+  position: fixed;
+  left: 0; top: 56px;
+  width: 32px;
+  height: calc(100vh - 56px);
+  border-right: 1px solid var(--gray3);
+  overflow: hidden;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+}
+
+.vticker-track {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: vtick 18s linear infinite;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.vticker-item {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: var(--gray3);
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+
+@keyframes vtick {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+/* ── Right vertical ── */
+.vright {
+  position: fixed;
+  right: 0; top: 56px;
+  width: 32px;
+  height: calc(100vh - 56px);
+  border-left: 1px solid var(--gray3);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  background: var(--black);
+}
+
+.vright-label {
+  font-size: 0.55rem;
+  color: var(--gray3);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── Main content ── */
+main {
+  flex: 1;
+  margin-left: 32px;
+  margin-right: 32px;
+}
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 0 48px;
+  border-bottom: 1px solid var(--gray3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 0 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-sys-line {
+  font-size: 0.7rem;
+  color: var(--green);
+  letter-spacing: 0.15em;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-sys-line::before {
+  content: '';
+  width: 40px; height: 1px;
+  background: var(--green);
+}
+
+.hero-title {
+  font-family: var(--sans);
+  font-size: clamp(4.5rem, 12vw, 11rem);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--white);
+  position: relative;
+}
+
+.hero-title .green-stroke {
+  -webkit-text-stroke: 2px var(--green);
+  color: transparent;
+}
+
+.hero-title .glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-title .glitch::before,
+.hero-title .glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+}
+
+.hero-title .glitch::before {
+  color: var(--green);
+  animation: glitch1 3.5s infinite;
+  clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+}
+
+.hero-title .glitch::after {
+  color: #ff00ff;
+  animation: glitch2 3.5s infinite;
+  clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+}
+
+@keyframes glitch1 {
+  0%,90%,100% { transform: translate(0); opacity: 0; }
+  92% { transform: translate(-3px,1px); opacity: 0.7; }
+  94% { transform: translate(3px,-1px); opacity: 0.7; }
+  96% { transform: translate(-2px,2px); opacity: 0.5; }
+  98% { transform: translate(0); opacity: 0; }
+}
+
+@keyframes glitch2 {
+  0%,90%,100% { transform: translate(0); opacity: 0; }
+  91% { transform: translate(4px,-2px); opacity: 0.6; }
+  93% { transform: translate(-4px,2px); opacity: 0.6; }
+  95% { transform: translate(2px,1px); opacity: 0.4; }
+  97% { transform: translate(0); opacity: 0; }
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--gray3);
+  margin-top: 40px;
+}
+
+.hero-meta-item {
+  padding: 20px 0;
+  border-right: 1px solid var(--gray3);
+}
+
+.hero-meta-item:last-child { border-right: none; }
+
+.meta-label {
+  font-size: 0.62rem;
+  color: var(--gray3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.meta-value {
+  font-size: 0.88rem;
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* ASCII art decoration */
+.hero-ascii {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.55rem;
+  line-height: 1.3;
+  color: rgba(0,255,0,0.18);
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--mono);
+  z-index: 1;
+}
+
+/* Terminal prompt */
+.terminal-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--gray3);
+  margin-top: 16px;
+}
+
+.terminal-line .prompt { color: var(--green); }
+
+.cursor-blink {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--green);
+  animation: blink 0.9s step-start infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* ── MARQUEE STRIP ── */
+.marquee-strip {
+  border-top: 1px solid var(--gray3);
+  border-bottom: 1px solid var(--gray3);
+  background: var(--black);
+  overflow: hidden;
+  padding: 12px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 48px;
+  animation: marquee 22s linear infinite;
+  white-space: nowrap;
+}
+
+.marquee-item {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray3);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.marquee-item .sep {
+  color: var(--green);
+  font-size: 0.6rem;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ── WORKS SECTION ── */
+#works {
+  padding: 80px 48px;
+  border-bottom: 1px solid var(--gray3);
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--gray3);
+}
+
+.section-label {
+  font-size: 0.65rem;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: var(--sans);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.section-count {
+  font-size: 0.65rem;
+  color: var(--gray3);
+  letter-spacing: 0.1em;
+}
+
+/* Project cards grid */
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--gray3);
+  border: 1px solid var(--gray3);
+}
+
+.project-card {
+  background: var(--black);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+  transition: background 0.25s;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 0px solid var(--green);
+  transition: border-width 0.2s, box-shadow 0.2s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.project-card:hover::before {
+  border-width: 2px;
+  box-shadow: inset 0 0 24px rgba(0,255,0,0.06), 0 0 0 1px var(--green);
+}
+
+.project-card:hover { background: rgba(0,255,0,0.03); }
+
+/* Cube container */
+.cube-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 120px; height: 120px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.project-card:hover .cube-wrap { opacity: 1; }
+
+/* CSS 3D Cube */
+.cube-scene {
+  width: 120px; height: 120px;
+  perspective: 300px;
+}
+
+.cube {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotateCube 4s linear infinite;
+}
+
+@keyframes rotateCube {
+  from { transform: rotateX(20deg) rotateY(0deg); }
+  to   { transform: rotateX(20deg) rotateY(360deg); }
+}
+
+.cube-face {
+  position: absolute;
+  width: 80px; height: 80px;
+  border: 1.5px solid var(--green);
+  background: transparent;
+  opacity: 0.55;
+  top: 20px; left: 20px;
+}
+
+.cube-face.front  { transform: translateZ(40px); }
+.cube-face.back   { transform: rotateY(180deg) translateZ(40px); }
+.cube-face.left   { transform: rotateY(-90deg) translateZ(40px); }
+.cube-face.right  { transform: rotateY(90deg) translateZ(40px); }
+.cube-face.top    { transform: rotateX(90deg) translateZ(40px); }
+.cube-face.bottom { transform: rotateX(-90deg) translateZ(40px); }
+
+/* Wireframe cross lines on faces */
+.cube-face::before,
+.cube-face::after {
+  content: '';
+  position: absolute;
+  background: var(--green);
+  opacity: 0.3;
+}
+
+.cube-face::before { width: 1px; height: 100%; top: 0; left: 50%; }
+.cube-face::after  { width: 100%; height: 1px; top: 50%; left: 0; }
+
+/* Card content */
+.card-top { position: relative; z-index: 2; }
+.card-bottom { position: relative; z-index: 2; }
+
+.card-index {
+  font-size: 0.62rem;
+  color: var(--gray3);
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.project-card:hover .card-index { color: var(--green); }
+
+.card-title {
+  font-family: var(--sans);
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+
+.project-card:hover .card-title { color: var(--green); }
+
+.card-type {
+  font-size: 0.62rem;
+  color: var(--gray3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.tag {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--gray3);
+  padding: 3px 8px;
+  color: var(--gray3);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.project-card:hover .tag {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.card-arrow {
+  font-size: 1rem;
+  color: var(--gray3);
+  transition: color 0.2s, transform 0.2s;
+  display: inline-block;
+}
+
+.project-card:hover .card-arrow {
+  color: var(--green);
+  transform: translate(4px, -4px);
+}
+
+/* ── BELIEF SECTION ── */
+#belief {
+  background: var(--green);
+  padding: 100px 48px;
+  border-bottom: 1px solid var(--gray3);
+  position: relative;
+  overflow: hidden;
+}
+
+.belief-bg-text {
+  position: absolute;
+  font-family: var(--sans);
+  font-size: 18vw;
+  font-weight: 900;
+  color: rgba(0,0,0,0.08);
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  top: 50%;
+  left: -2%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.belief-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+}
+
+.belief-label {
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  color: rgba(0,0,0,0.5);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.belief-label::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: rgba(0,0,0,0.4);
+}
+
+.belief-statement {
+  font-family: var(--sans);
+  font-size: clamp(2.2rem, 6vw, 5.5rem);
+  font-weight: 900;
+  color: var(--black);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 0.9;
+}
+
+.belief-statement em {
+  font-style: normal;
+  -webkit-text-stroke: 2px var(--black);
+  color: transparent;
+}
+
+.belief-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 60px;
+  padding-top: 28px;
+  border-top: 2px solid rgba(0,0,0,0.2);
+}
+
+.belief-data {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: rgba(0,0,0,0.6);
+  letter-spacing: 0.08em;
+}
+
+.belief-cta {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--black);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 2px solid var(--black);
+  padding: 14px 32px;
+  cursor: none;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+
+.belief-cta:hover {
+  background: var(--black);
+  color: var(--green);
+}
+
+/* ── SKILLS / SYSTEM ── */
+#system {
+  padding: 80px 48px;
+  border-bottom: 1px solid var(--gray3);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+}
+
+.sys-panel {
+  border: 1px solid var(--gray3);
+  padding: 32px;
+}
+
+.sys-title {
+  font-size: 0.65rem;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sys-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray3);
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.skill-name {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.skill-bar-bg {
+  flex: 1;
+  height: 2px;
+  background: var(--gray3);
+  position: relative;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: width 1.4s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+}
+
+.skill-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+.skill-pct {
+  font-size: 0.65rem;
+  color: var(--green);
+  width: 32px;
+  text-align: right;
+  letter-spacing: 0.05em;
+}
+
+/* Terminal log */
+.terminal-log {
+  font-size: 0.7rem;
+  line-height: 1.9;
+  color: var(--gray3);
+}
+
+.log-line { display: flex; gap: 8px; }
+.log-time { color: rgba(0,255,0,0.4); flex-shrink: 0; }
+.log-text .ok  { color: var(--green); }
+.log-text .warn { color: #ffaa00; }
+.log-text .err  { color: #ff3333; }
+
+/* ── CONTACT ── */
+#contact {
+  padding: 80px 48px 100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.contact-big {
+  font-family: var(--sans);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 0.9;
+}
+
+.contact-big .green { color: var(--green); }
+
+.contact-sub {
+  font-size: 0.78rem;
+  color: var(--gray3);
+  line-height: 1.8;
+  margin-top: 24px;
+  max-width: 420px;
+}
+
+.contact-form { display: flex; flex-direction: column; gap: 2px; }
+
+.form-field {
+  border: 1px solid var(--gray3);
+  padding: 14px 16px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s;
+}
+
+.form-field:focus-within { border-color: var(--green); }
+
+.form-field label {
+  font-size: 0.58rem;
+  color: var(--green);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.form-field input,
+.form-field textarea {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  resize: none;
+}
+
+.form-field textarea { min-height: 80px; }
+
+.form-submit {
+  margin-top: 8px;
+  background: var(--green);
+  color: var(--black);
+  border: none;
+  padding: 16px 32px;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: background 0.2s, color 0.2s;
+  align-self: flex-start;
+}
+
+.form-submit:hover { background: var(--white); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--gray3);
+  padding: 20px 48px 20px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-left {
+  font-size: 0.62rem;
+  color: var(--gray3);
+  letter-spacing: 0.1em;
+}
+
+.footer-right {
+  display: flex;
+  gap: 28px;
+}
+
+.footer-link {
+  font-size: 0.62rem;
+  color: var(--gray3);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.footer-link:hover { color: var(--green); }
+
+/* ── Loading screen ── */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+
+#loader.hidden { opacity: 0; visibility: hidden; }
+
+.loader-text {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.loader-bar {
+  width: 300px;
+  height: 1px;
+  background: var(--gray3);
+  position: relative;
+  overflow: hidden;
+}
+
+.loader-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: width 0.05s linear;
+}
+
+.loader-log {
+  font-size: 0.6rem;
+  color: rgba(0,255,0,0.5);
+  letter-spacing: 0.1em;
+  height: 14px;
+}
+
+/* ── Scroll reveal ── */
+.s-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+
+.s-reveal.visible { opacity: 1; transform: none; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .vticker-left, .vright { display: none; }
+  main { margin: 0; }
+  .works-grid { grid-template-columns: 1fr; }
+  #system, #contact { grid-template-columns: 1fr; gap: 40px; }
+  #hero, #works, #belief, #system, #contact { padding-left: 24px; padding-right: 24px; }
+  footer { padding: 20px 24px; flex-direction: column; gap: 12px; align-items: flex-start; }
+}
+
+@media (max-width: 600px) {
+  .hero-meta { grid-template-columns: 1fr 1fr; }
+  .hero-meta-item:last-child { border-right: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-text">SYSTEM_BOOT v2.4.1</div>
+  <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+  <div class="loader-log" id="loader-log">initializing modules...</div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">SYS_ONLY://</div>
+  <ul class="nav-links">
+    <li><a href="#works">Works</a></li>
+    <li><a href="#belief">Manifesto</a></li>
+    <li><a href="#system">System</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot"></span>
+    ONLINE — LOC:SFO
+  </div>
+</nav>
+
+<!-- Left vertical ticker -->
+<div class="vticker-left">
+  <div class="vticker-track" id="vticker">
+    <span class="vticker-item">ASCII ART</span>
+    <span class="vticker-item">RAW CODE</span>
+    <span class="vticker-item">KINETIC TYPE</span>
+    <span class="vticker-item">BRUTALISM</span>
+    <span class="vticker-item">DARK DATA</span>
+    <span class="vticker-item">SYSTEM</span>
+    <span class="vticker-item">01001011</span>
+    <span class="vticker-item">TERMINAL</span>
+    <span class="vticker-item">OVERFLOW</span>
+    <span class="vticker-item">GLITCH</span>
+    <!-- duplicated for seamless loop -->
+    <span class="vticker-item">ASCII ART</span>
+    <span class="vticker-item">RAW CODE</span>
+    <span class="vticker-item">KINETIC TYPE</span>
+    <span class="vticker-item">BRUTALISM</span>
+    <span class="vticker-item">DARK DATA</span>
+    <span class="vticker-item">SYSTEM</span>
+    <span class="vticker-item">01001011</span>
+    <span class="vticker-item">TERMINAL</span>
+    <span class="vticker-item">OVERFLOW</span>
+    <span class="vticker-item">GLITCH</span>
+  </div>
+</div>
+
+<!-- Right label column -->
+<div class="vright">
+  <span class="vright-label">PORTFOLIO</span>
+  <span class="vright-label" style="color:var(--green);">2026</span>
+  <span class="vright-label">V2.4</span>
+</div>
+
+<main>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="hero-sys-line">DIGITAL_REALITY.EXE — PROCESS ID: 4096</div>
+      <h1 class="hero-title">
+        <span class="glitch" data-text="DIGITAL">DIGITAL</span><br>
+        <span class="green-stroke">REALITY</span>
+      </h1>
+      <div class="terminal-line">
+        <span class="prompt">root@sys:~$</span>
+        <span id="typewriter"></span>
+        <span class="cursor-blink"></span>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="meta-label">Status</div>
+          <div class="meta-value" style="color:var(--green);">AVAILABLE</div>
+        </div>
+        <div class="hero-meta-item" style="padding-left:24px;">
+          <div class="meta-label">Specialty</div>
+          <div class="meta-value">UI / SYSTEMS</div>
+        </div>
+        <div class="hero-meta-item" style="padding-left:24px;">
+          <div class="meta-label">Projects</div>
+          <div class="meta-value">48 DEPLOYED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASCII decoration -->
+    <div class="hero-ascii" aria-hidden="true">
+  ██████╗ ██╗ ██████╗
+  ██╔══██╗██║██╔════╝
+  ██║  ██║██║██║  ███╗
+  ██║  ██║██║██║   ██║
+  ██████╔╝██║╚██████╔╝
+  ╚═════╝ ╚═╝ ╚═════╝
+
+  [SYSTEM: ONLINE]
+  [CPU: 12%       ]
+  [RAM: 4.2 / 16GB]
+  [NET: 1.2Gbps   ]
+  [PRC: 247 ACTIVE]
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee-strip">
+    <div class="marquee-track" id="marquee-track">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- SELECTED WORKS -->
+  <section id="works">
+    <div class="section-header s-reveal">
+      <div>
+        <div class="section-label">// selected_works</div>
+        <h2 class="section-title">Projects</h2>
+      </div>
+      <div class="section-count">[ 01 — 03 ]</div>
+    </div>
+
+    <div class="works-grid">
+      <!-- Card 1 -->
+      <div class="project-card" data-hoverable>
+        <div class="cube-wrap">
+          <div class="cube-scene">
+            <div class="cube">
+              <div class="cube-face front"></div>
+              <div class="cube-face back"></div>
+              <div class="cube-face left"></div>
+              <div class="cube-face right"></div>
+              <div class="cube-face top"></div>
+              <div class="cube-face bottom"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-top">
+          <div class="card-index">// 001</div>
+          <div class="card-title">CYBER_CUBE</div>
+          <div class="card-type">Interactive Installation</div>
+          <div class="card-tags">
+            <span class="tag">WebGL</span>
+            <span class="tag">Three.js</span>
+            <span class="tag">GLSL</span>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
+            &gt; Real-time 3D data visualization<br>
+            &gt; Procedural geometry engine<br>
+            &gt; 60fps render pipeline
+          </div>
+          <div class="card-arrow">&#8599;</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="project-card" data-hoverable>
+        <div class="cube-wrap">
+          <div class="cube-scene">
+            <div class="cube" style="animation-direction:reverse; animation-duration:3s;">
+              <div class="cube-face front"></div>
+              <div class="cube-face back"></div>
+              <div class="cube-face left"></div>
+              <div class="cube-face right"></div>
+              <div class="cube-face top"></div>
+              <div class="cube-face bottom"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-top">
+          <div class="card-index">// 002</div>
+          <div class="card-title">FACE_02</div>
+          <div class="card-type">AI Portrait System</div>
+          <div class="card-tags">
+            <span class="tag">ML</span>
+            <span class="tag">Canvas API</span>
+            <span class="tag">Python</span>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
+            &gt; Generative facial mapping<br>
+            &gt; Neural style transfer<br>
+            &gt; Real-time inference &lt;8ms
+          </div>
+          <div class="card-arrow">&#8599;</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="project-card" data-hoverable>
+        <div class="cube-wrap">
+          <div class="cube-scene">
+            <div class="cube" style="animation-duration:5s;">
+              <div class="cube-face front"></div>
+              <div class="cube-face back"></div>
+              <div class="cube-face left"></div>
+              <div class="cube-face right"></div>
+              <div class="cube-face top"></div>
+              <div class="cube-face bottom"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-top">
+          <div class="card-index">// 003</div>
+          <div class="card-title">DATA_LAKE</div>
+          <div class="card-type">Analytics Dashboard</div>
+          <div class="card-tags">
+            <span class="tag">D3.js</span>
+            <span class="tag">Rust</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
+            &gt; 1B+ row streaming queries<br>
+            &gt; Live anomaly detection<br>
+            &gt; Custom DSL query engine
+          </div>
+          <div class="card-arrow">&#8599;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BELIEF / MANIFESTO -->
+  <section id="belief">
+    <div class="belief-bg-text" aria-hidden="true">DATA</div>
+    <div class="belief-content">
+      <div class="belief-label">// manifesto.txt</div>
+      <p class="belief-statement">
+        WE BELIEVE IN<br>
+        THE <em>RAW</em> BEAUTY<br>
+        OF DATA.
+      </p>
+      <div class="belief-footer">
+        <div class="belief-data">
+          SYSTEM_CLOCK: <span id="sys-clock">00:00:00</span> &nbsp;|&nbsp;
+          UPTIME: 847d 14h 22m &nbsp;|&nbsp;
+          PACKETS: 2,847,391
+        </div>
+        <a href="#contact" class="belief-cta">INITIATE CONTACT &#8599;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYSTEM / SKILLS -->
+  <section id="system">
+    <div class="s-reveal">
+      <div class="section-label" style="margin-bottom:24px;">// skill_matrix</div>
+      <h2 class="section-title" style="font-size:2rem;">Capabilities</h2>
+      <div style="margin-top:40px;">
+        <div class="sys-panel">
+          <div class="sys-title">TECH_STACK</div>
+          <div id="skills-list">
+            <div class="skill-row">
+              <span class="skill-name">WebGL/GLSL</span>
+              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="95"></div></div>
+              <span class="skill-pct">95%</span>
+            </div>
+            <div class="skill-row">
+              <span class="skill-name">Three.js</span>
+              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="90"></div></div>
+              <span class="skill-pct">90%</span>
+            </div>
+            <div class="skill-row">
+              <span class="skill-name">React/Next</span>
+              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="88"></div></div>
+              <span class="skill-pct">88%</span>
+            </div>
+            <div class="skill-row">
+              <span class="skill-name">Rust</span>
+              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="72"></div></div>
+              <span class="skill-pct">72%</span>
+            </div>
+            <div class="skill-row">
+              <span class="skill-name">ML / AI</span>
+              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="80"></div></div>
+              <span class="skill-pct">80%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-reveal">
+      <div class="section-label" style="margin-bottom:24px;">// system_log</div>
+      <h2 class="section-title" style="font-size:2rem;">Log Stream</h2>
+      <div style="margin-top:40px;">
+        <div class="sys-panel" style="height:260px;overflow:hidden;">
+          <div class="sys-title">RUNTIME_LOG</div>
+          <div class="terminal-log" id="log-output"></div>
+        </div>
+        <div style="margin-top:1px; border: 1px solid var(--gray3); padding: 14px 16px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="color:var(--green);font-size:0.72rem;">root@sys:~$</span>
+            <input id="terminal-input" type="text"
+              style="flex:1;background:transparent;border:none;outline:none;color:var(--white);font-family:var(--mono);font-size:0.72rem;letter-spacing:0.05em;"
+              placeholder="type a command..." autocomplete="off">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="s-reveal">
+      <div class="contact-big">
+        LET'S<br>
+        <span class="green">BUILD</span><br>
+        TOGETHER
+      </div>
+      <p class="contact-sub">
+        Open for select projects, collaborations, and systems that push the boundaries of digital experience. Response time: &lt;24h.
+      </p>
+      <div style="margin-top:36px;font-size:0.7rem;color:var(--gray3);line-height:2;letter-spacing:0.08em;">
+        <div>MAIL___ hello@systems-only.io</div>
+        <div>BASE___ San Francisco, CA</div>
+        <div>TZ_____ UTC-8</div>
+      </div>
+    </div>
+
+    <div class="s-reveal">
+      <div class="section-label" style="margin-bottom:24px;">// contact.form</div>
+      <form class="contact-form" onsubmit="return false;">
+        <div class="form-field">
+          <label>NAME_</label>
+          <input type="text" placeholder="your_name">
+        </div>
+        <div class="form-field">
+          <label>EMAIL_</label>
+          <input type="email" placeholder="your@email.io">
+        </div>
+        <div class="form-field">
+          <label>PROJECT_TYPE_</label>
+          <input type="text" placeholder="e.g. WebGL / AI / Dashboard">
+        </div>
+        <div class="form-field">
+          <label>MESSAGE_</label>
+          <textarea placeholder="describe your system..."></textarea>
+        </div>
+        <button class="form-submit" type="submit">SEND_TRANSMISSION &#8594;</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">
+      &copy; 2026 SYSTEMS_ONLY — ALL RIGHTS RESERVED &nbsp;|&nbsp; BUILT WITH RAW CODE
+    </div>
+    <div class="footer-right">
+      <a href="#" class="footer-link">Github</a>
+      <a href="#" class="footer-link">Dribbble</a>
+      <a href="#" class="footer-link">Twitter</a>
+      <a href="#" class="footer-link">Resume</a>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+// ── Loader ────────────────────────────────────────────────────────────────────
+(function() {
+  var steps = [
+    'loading kernel modules...',
+    'mounting filesystem...',
+    'initializing display driver...',
+    'compiling shaders...',
+    'activating cursor daemon...',
+    'system ready.'
+  ];
+  var fill = document.getElementById('loader-fill');
+  var log  = document.getElementById('loader-log');
+  var pct  = 0;
+  var step = 0;
+
+  var iv = setInterval(function() {
+    pct += Math.random() * 22 + 8;
+    if (pct > 100) pct = 100;
+    fill.style.width = pct + '%';
+    if (step < steps.length) {
+      log.textContent = '> ' + steps[step++];
+    }
+    if (pct >= 100) {
+      clearInterval(iv);
+      setTimeout(function() {
+        document.getElementById('loader').classList.add('hidden');
+      }, 300);
+    }
+  }, 160);
+})();
+
+// ── Cursor ────────────────────────────────────────────────────────────────────
+(function() {
+  var cur = document.getElementById('cursor');
+  var dot = document.getElementById('cursor-dot');
+  var mx = 0, my = 0, cx = 0, cy = 0;
+
+  document.addEventListener('mousemove', function(e) {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+  });
+
+  (function lerp() {
+    cx += (mx - cx) * 0.12;
+    cy += (my - cy) * 0.12;
+    cur.style.left = cx + 'px';
+    cur.style.top  = cy + 'px';
+    requestAnimationFrame(lerp);
+  })();
+
+  document.querySelectorAll('[data-hoverable], a, button, input, textarea, .nav-cta, .belief-cta, .form-submit').forEach(function(el) {
+    el.addEventListener('mouseenter', function() { cur.classList.add('hovered'); });
+    el.addEventListener('mouseleave', function() { cur.classList.remove('hovered'); });
+  });
+})();
+
+// ── Marquee content ───────────────────────────────────────────────────────────
+(function() {
+  var items = ['ASCII ART','RAW CODE','KINETIC TYPE','DIGITAL BRUTALISM','DARK DATA','SYSTEMS ONLY','TERMINAL UX','GLITCH ART','OVERFLOW','01001011'];
+  var doubled = items.concat(items);
+  var track = document.getElementById('marquee-track');
+  track.innerHTML = doubled.map(function(t, i) {
+    return '<div class="marquee-item">' + t + (i < doubled.length - 1 ? '<span class="sep">///</span>' : '') + '</div>';
+  }).join('');
+})();
+
+// ── Typewriter ────────────────────────────────────────────────────────────────
+(function() {
+  var phrases = [
+    'designing systems that breathe_',
+    'building at the edge of the stack_',
+    'raw data, beautiful interfaces_',
+    'code is the new typography_'
+  ];
+  var el = document.getElementById('typewriter');
+  var pi = 0, ci = 0, deleting = false;
+
+  function tick() {
+    var phrase = phrases[pi];
+    if (!deleting) {
+      el.textContent = phrase.slice(0, ++ci);
+      if (ci === phrase.length) {
+        deleting = true;
+        setTimeout(tick, 1800);
+        return;
+      }
+    } else {
+      el.textContent = phrase.slice(0, --ci);
+      if (ci === 0) {
+        deleting = false;
+        pi = (pi + 1) % phrases.length;
+      }
+    }
+    setTimeout(tick, deleting ? 38 : 68);
+  }
+  tick();
+})();
+
+// ── System clock ──────────────────────────────────────────────────────────────
+(function() {
+  var el = document.getElementById('sys-clock');
+  function update() {
+    var d = new Date();
+    el.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map(function(n) { return ('0'+n).slice(-2); }).join(':');
+  }
+  update();
+  setInterval(update, 1000);
+})();
+
+// ── Terminal log stream ───────────────────────────────────────────────────────
+(function() {
+  var out = document.getElementById('log-output');
+  var logs = [
+    {t:'00:00:01', msg:'<span class="ok">[OK]</span> kernel loaded — 4.19.88-rt56'},
+    {t:'00:00:02', msg:'<span class="ok">[OK]</span> GPU driver: NVIDIA 535.104'},
+    {t:'00:00:04', msg:'<span class="ok">[OK]</span> WebGL context initialized'},
+    {t:'00:00:06', msg:'<span class="warn">[WRN]</span> shader cache miss — recompiling'},
+    {t:'00:00:08', msg:'<span class="ok">[OK]</span> shader pipeline ready'},
+    {t:'00:00:12', msg:'<span class="ok">[OK]</span> particle system: 180 entities'},
+    {t:'00:00:15', msg:'<span class="ok">[OK]</span> network socket established'},
+    {t:'00:00:22', msg:'<span class="warn">[WRN]</span> high memory usage: 78%'},
+    {t:'00:00:31', msg:'<span class="ok">[OK]</span> GC sweep complete — freed 214MB'},
+  ];
+  var idx = 0;
+
+  function appendLog(time, msg) {
+    var line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = '<span class="log-time">['+time+']</span><span class="log-text"> '+msg+'</span>';
+    out.appendChild(line);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function streamLogs() {
+    if (idx < logs.length) {
+      appendLog(logs[idx].t, logs[idx].msg);
+      idx++;
+      setTimeout(streamLogs, 400 + Math.random() * 600);
+    } else {
+      setInterval(function() {
+        var now = new Date();
+        var ts = [now.getHours(), now.getMinutes(), now.getSeconds()]
+          .map(function(n){ return ('0'+n).slice(-2); }).join(':');
+        var live = [
+          '<span class="ok">[OK]</span> heartbeat — latency 2ms',
+          '<span class="ok">[OK]</span> cache hit — ratio 94.2%',
+          '<span class="warn">[WRN]</span> rate limit approaching',
+          '<span class="ok">[OK]</span> packet processed — seq:' + Math.floor(Math.random()*9999),
+          '<span class="ok">[OK]</span> render frame: ' + (16 + Math.floor(Math.random()*4)) + 'ms',
+        ];
+        appendLog(ts, live[Math.floor(Math.random()*live.length)]);
+        // keep max 20 lines
+        while (out.children.length > 20) out.removeChild(out.firstChild);
+      }, 2200);
+    }
+  }
+
+  setTimeout(streamLogs, 1200);
+
+  // Terminal input
+  var input = document.getElementById('terminal-input');
+  if (input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var cmd = input.value.trim();
+        if (cmd) {
+          var now = new Date();
+          var ts = [now.getHours(), now.getMinutes(), now.getSeconds()]
+            .map(function(n){ return ('0'+n).slice(-2); }).join(':');
+          appendLog(ts, '<span style="color:var(--white);">$ '+cmd+'</span>');
+          var responses = {
+            'help': '<span class="ok">commands: help, whoami, ls, clear, status</span>',
+            'whoami': '<span class="ok">systems_only — digital brutalism engineer</span>',
+            'ls': '<span class="ok">cyber_cube/  face_02/  data_lake/  README.md</span>',
+            'status': '<span class="ok">all systems operational ✓</span>',
+            'clear': null
+          };
+          if (cmd === 'clear') {
+            out.innerHTML = '';
+          } else {
+            var res = responses[cmd.toLowerCase()] || '<span class="err">[ERR]</span> command not found: ' + cmd + '. type "help"';
+            appendLog(ts, res);
+          }
+          input.value = '';
+        }
+      }
+    });
+  }
+})();
+
+// ── Scroll reveal ─────────────────────────────────────────────────────────────
+(function() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.s-reveal').forEach(function(el) { obs.observe(el); });
+
+  // Skill bars
+  var barObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.skill-bar-fill').forEach(function(b) {
+          b.style.width = b.dataset.w + '%';
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  var sl = document.getElementById('skills-list');
+  if (sl) barObs.observe(sl);
+})();
+
+// ── Glitch text random flicker ────────────────────────────────────────────────
+(function() {
+  var chars = '!@#$%^&*<>[]{}|/\\?~`';
+  var el = document.querySelector('.glitch');
+  if (!el) return;
+  var original = el.getAttribute('data-text');
+
+  setInterval(function() {
+    if (Math.random() > 0.92) {
+      var corrupted = original.split('').map(function(c) {
+        return Math.random() > 0.75 ? chars[Math.floor(Math.random()*chars.length)] : c;
+      }).join('');
+      el.textContent = corrupted;
+      setTimeout(function() { el.textContent = original; }, 80);
+    }
+  }, 300);
+})();
+
+// ── Noise canvas on hero ──────────────────────────────────────────────────────
+(function() {
+  var hero = document.getElementById('hero');
+  var cv = document.createElement('canvas');
+  cv.style.cssText = 'position:absolute;inset:0;opacity:0.03;pointer-events:none;z-index:0;';
+  hero.appendChild(cv);
+  var ctx = cv.getContext('2d');
+
+  function resize() {
+    cv.width  = hero.offsetWidth;
+    cv.height = hero.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function noise() {
+    var id = ctx.createImageData(cv.width, cv.height);
+    var d  = id.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = Math.random() * 255;
+      d[i] = 0; d[i+1] = Math.floor(v * 0.8); d[i+2] = 0; d[i+3] = 255;
+    }
+    ctx.putImageData(id, 0, 0);
+    requestAnimationFrame(noise);
+  }
+  noise();
+})();
+</script>
+</body>
+</html>
