@@ -1675,27 +1675,32 @@ window._sf = 0; // scatter factor 0→1
     window._sf = 1; // torus stays fully scattered
 
     // Hero slides out to the LEFT
+    // z-index 15: above belief/system/contact (z-index:10) so those sections don't bleed through
     heroEl.style.position  = 'fixed';
     heroEl.style.inset     = '0';
-    heroEl.style.zIndex    = '2';
+    heroEl.style.zIndex    = '15';
     heroEl.style.transform = 'translateX(' + (-sep * 100).toFixed(2) + 'vw)';
 
-    // Works slides in from the RIGHT
+    // Works slides in from the RIGHT — z-index 20, above hero (15) and all sections (10)
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
-    worksEl.style.zIndex     = '20'; // above all sections (which are z-index:10)
+    worksEl.style.zIndex     = '20';
     worksEl.style.background = '#000';
     worksEl.style.overflowY  = 'hidden';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
-    // Torus ghost: detach from hero, show on left half of screen behind works
+    // Torus ghost: detach from hero, haunt works left half
+    // — no sudden opacity drop; clip gradually as hero exits; z-index above works so visible
     if (cv) {
-      cv.style.position    = 'fixed';
-      cv.style.inset       = '0';
-      cv.style.zIndex      = '8';
+      cv.style.position      = 'fixed';
+      cv.style.inset         = '0';
+      cv.style.zIndex        = '22'; // above works (20) so ghost shows through
       cv.style.pointerEvents = 'none';
-      cv.style.clipPath    = 'inset(0 0 0 50%)'; // right half — visible on works left edge as it enters
-      cv.style.opacity     = (0.22 * (1 - sep * 0.6)).toFixed(3);
+      // Clip right side progressively so at sp=1 only left 50% shows (torus "stays" on left)
+      var rightInset = (sep * 50).toFixed(1);
+      cv.style.clipPath = 'inset(0 ' + rightInset + '% 0 0)';
+      // Smooth opacity: starts at natural brightness, fades to gentle ghost
+      cv.style.opacity = Math.max(0.08, 0.5 - sep * 0.38).toFixed(3);
     }
 
     /* ── slide complete: release to normal flow ── */
