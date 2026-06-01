@@ -158,7 +158,7 @@ main {
 /* ── HERO — sticky, full-height ── */
 #hero-zone {
   position: relative;
-  height: 350vh;
+  height: 450vh;
 }
 
 #hero {
@@ -176,7 +176,7 @@ main {
 
 /* ── Hero spacer (provides scroll room for the transition) ── */
 #hero-spacer {
-  height: 250vh;
+  height: 350vh;
   background: var(--black);
 }
 
@@ -1565,65 +1565,144 @@ window._sf = 0; // scatter factor 0→1
   });
 })();
 
-// ── Scroll-driven page transition — hero title scales up as portal ────────────
+// ── Scroll-driven page transition ─────────────────────────────────────────────
 (function () {
-  var vh         = window.innerHeight;
-  var heroTitle  = document.querySelector('.hero-title');
-  var heroSys    = document.querySelector('.hero-sys-line');
-  var heroSub    = document.querySelector('.hero-sub');
-  var heroMeta   = document.querySelector('.hero-meta');
-  var heroScroll = document.querySelector('.hero-scroll-hint');
-  // Transition: 1vh (end of hero) → 3.5vh (end of spacer - 50vh buffer)
+  var vh          = window.innerHeight;
+  var heroEl      = document.getElementById('hero');
+  var heroTitle   = document.querySelector('.hero-title');
+  var heroSys     = document.querySelector('.hero-sys-line');
+  var heroSub     = document.querySelector('.hero-sub');
+  var heroMeta    = document.querySelector('.hero-meta');
+  var heroScroll  = document.querySelector('.hero-scroll-hint');
+  var worksEl     = document.getElementById('works');
+
+  // Phase 1: title dissolves   scrollY 1vh → 3.5vh
+  // Phase 2: horizontal slide  scrollY 3.5vh → 4.5vh  (hero-zone = 450vh)
   var TRANS_START = vh;
   var TRANS_END   = vh * 3.5;
+  var SLIDE_START = vh * 3.5;
+  var SLIDE_END   = vh * 4.5;
 
-  function measureVP() { vh = window.innerHeight; TRANS_START = vh; TRANS_END = vh * 3.5; }
+  var slideActive = false;
+
+  function measureVP() {
+    vh = window.innerHeight;
+    TRANS_START = vh; TRANS_END = vh * 3.5;
+    SLIDE_START = vh * 3.5; SLIDE_END = vh * 4.5;
+  }
   measureVP();
   window.addEventListener('resize', measureVP);
 
-  // cubic-bezier(0.16, 1, 0.3, 1) — fast start, long elegant deceleration
   function easeOut4(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function resetTitle() {
+    heroTitle.style.transform = '';
+    heroTitle.style.filter    = '';
+    heroTitle.style.opacity   = '';
+    heroTitle.style.zIndex    = '';
+    if (heroSys)    heroSys.style.opacity    = '';
+    if (heroSub)    heroSub.style.opacity    = '';
+    if (heroMeta)   heroMeta.style.opacity   = '';
+    if (heroScroll) heroScroll.style.opacity = '';
+  }
+
+  function resetSlide() {
+    heroEl.style.transform  = '';
+    heroEl.style.position   = '';
+    heroEl.style.zIndex     = '';
+    worksEl.style.transform = '';
+    worksEl.style.position  = '';
+    worksEl.style.zIndex    = '';
+    worksEl.style.background = '';
+    var cv = window._torusCanvas;
+    if (cv) {
+      cv.style.position    = 'absolute';
+      cv.style.inset       = '0';
+      cv.style.zIndex      = '1';
+      cv.style.opacity     = '';
+      cv.style.clipPath    = '';
+      cv.style.pointerEvents = 'all';
+    }
+    slideActive = false;
+  }
 
   window.addEventListener('scroll', function () {
     var sy = window.scrollY;
 
+    /* ── before title phase ── */
     if (sy < TRANS_START) {
       window._sf = 0;
-      heroTitle.style.transform = '';
-      heroTitle.style.filter    = '';
-      heroTitle.style.opacity   = '';
-      heroTitle.style.zIndex    = '';
-      if (heroSys)    heroSys.style.opacity    = '';
-      if (heroSub)    heroSub.style.opacity    = '';
-      if (heroMeta)   heroMeta.style.opacity   = '';
-      if (heroScroll) heroScroll.style.opacity = '';
+      resetTitle();
+      if (slideActive) resetSlide();
       return;
     }
 
-    var p  = Math.min((sy - TRANS_START) / (TRANS_END - TRANS_START), 1);
-    var ep = easeOut4(p);
+    /* ── Phase 1: title scale + dissolve ── */
+    if (sy < SLIDE_START) {
+      if (slideActive) resetSlide();
+      var p  = Math.min((sy - TRANS_START) / (TRANS_END - TRANS_START), 1);
+      var ep = easeOut4(p);
+      window._sf = ep;
 
-    window._sf = ep;
+      var fade = Math.max(0, 1 - p * 6).toFixed(3);
+      if (heroSys)    heroSys.style.opacity    = fade;
+      if (heroSub)    heroSub.style.opacity    = fade;
+      if (heroMeta)   heroMeta.style.opacity   = fade;
+      if (heroScroll) heroScroll.style.opacity = fade;
 
-    // Supporting elements fade out fast, leaving only the title
-    var fade = Math.max(0, 1 - p * 6).toFixed(3);
-    if (heroSys)    heroSys.style.opacity    = fade;
-    if (heroSub)    heroSub.style.opacity    = fade;
-    if (heroMeta)   heroMeta.style.opacity   = fade;
-    if (heroScroll) heroScroll.style.opacity = fade;
+      var scale = 1 + ep * 5.5;
+      var blur  = p > 0.15 ? ((p - 0.15) / 0.85) * 32 : 0;
+      var op    = p < 0.45 ? 1 : Math.max(0, 1 - (p - 0.45) / 0.55);
 
-    // Title scales up: 1× → ~6× fills screen dramatically, letters become architecture
-    var scale = 1 + ep * 5.5;
-    // Blur starts early (p>0.45) — as letters fill screen they dissolve into light
-    var blur  = p > 0.15 ? ((p - 0.15) / 0.85) * 32 : 0;
-    // Opacity holds until p=0.45, then fades
-    var op    = p < 0.45 ? 1 : Math.max(0, 1 - (p - 0.45) / 0.55);
+      heroTitle.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      heroTitle.style.filter    = blur > 0.5 ? 'blur(' + blur.toFixed(1) + 'px)' : '';
+      heroTitle.style.opacity   = op.toFixed(3);
+      heroTitle.style.zIndex    = '999';
+      return;
+    }
 
-    heroTitle.style.transform  = 'scale(' + scale.toFixed(4) + ')';
-    heroTitle.style.filter     = blur > 0.5 ? 'blur(' + blur.toFixed(1) + 'px)' : '';
-    heroTitle.style.opacity    = op.toFixed(3);
-    heroTitle.style.position   = 'relative';
-    heroTitle.style.zIndex     = '999';  // above all sections while scaling
+    /* ── Phase 2: horizontal slide ── */
+    slideActive = true;
+    // Freeze title at fully dissolved state
+    heroTitle.style.transform = 'scale(6.5)';
+    heroTitle.style.opacity   = '0';
+    heroTitle.style.filter    = 'blur(32px)';
+
+    var cv = window._torusCanvas;
+    var sp  = Math.min((sy - SLIDE_START) / (SLIDE_END - SLIDE_START), 1);
+    var sep = easeOut4(sp);
+
+    window._sf = 1; // torus stays fully scattered
+
+    // Hero slides out to the right
+    heroEl.style.position  = 'fixed';
+    heroEl.style.inset     = '0';
+    heroEl.style.zIndex    = '2';
+    heroEl.style.transform = 'translateX(' + (sep * 100).toFixed(2) + 'vw)';
+
+    // Works slides in from left
+    worksEl.style.position   = 'fixed';
+    worksEl.style.inset      = '0';
+    worksEl.style.zIndex     = '9';
+    worksEl.style.background = '#000';
+    worksEl.style.overflowY  = 'hidden';
+    worksEl.style.transform  = 'translateX(' + ((sep - 1) * 100).toFixed(2) + 'vw)';
+
+    // Torus ghost: detach from hero, show on left half of screen behind works
+    if (cv) {
+      cv.style.position    = 'fixed';
+      cv.style.inset       = '0';
+      cv.style.zIndex      = '8';
+      cv.style.pointerEvents = 'none';
+      cv.style.clipPath    = 'inset(0 50% 0 0)'; // left half only
+      cv.style.opacity     = (0.22 * (1 - sep * 0.6)).toFixed(3);
+    }
+
+    /* ── slide complete: release to normal flow ── */
+    if (sp >= 1) {
+      resetSlide();
+      resetTitle();
+    }
   }, { passive: true });
 })();
 
@@ -1633,6 +1712,7 @@ window._sf = 0; // scatter factor 0→1
   var cv   = document.createElement('canvas');
   cv.style.cssText = 'position:absolute;inset:0;pointer-events:all;z-index:1;';
   hero.insertBefore(cv, hero.firstChild);
+  window._torusCanvas = cv; // expose for slide transition
   var ctx = cv.getContext('2d');
 
   /* ── size ── */
