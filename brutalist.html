@@ -385,6 +385,15 @@ main {
   to   { transform: translateX(-50%); }
 }
 
+@keyframes marquee-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+.marquee-track-reverse {
+  animation: marquee-reverse 28s linear infinite;
+}
+
 /* ── WORKS SECTION ── */
 #works {
   position: relative;
@@ -1238,6 +1247,13 @@ footer { border-top-color: #e0e0e0; }
     </div>
   </section>
 
+  <!-- Marquee 2 — between works and belief -->
+  <div class="marquee-strip marquee-strip-2">
+    <div class="marquee-track marquee-track-reverse" id="marquee-track-2">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
   <!-- BELIEF / MANIFESTO -->
   <section id="belief">
     <div class="belief-bg-text" aria-hidden="true">DATA</div>
@@ -1444,6 +1460,16 @@ footer { border-top-color: #e0e0e0; }
   track.innerHTML = doubled.map(function(t, i) {
     return '<div class="marquee-item">' + t + (i < doubled.length - 1 ? '<span class="sep">///</span>' : '') + '</div>';
   }).join('');
+
+  // Second marquee (reversed, between works and belief)
+  var items2 = ['PROVENANCE','OPEN SOURCE','INTERACTION DESIGN','NO FRAMEWORK','PURE SIGNAL','ZERO BLOAT','TYPE AS DATA','SYSTEMS ONLY','MONOSPACE','BRUTALIST WEB'];
+  var doubled2 = items2.concat(items2);
+  var track2 = document.getElementById('marquee-track-2');
+  if (track2) {
+    track2.innerHTML = doubled2.map(function(t, i) {
+      return '<div class="marquee-item">' + t + (i < doubled2.length - 1 ? '<span class="sep">///</span>' : '') + '</div>';
+    }).join('');
+  }
 })();
 
 // ── Typewriter ────────────────────────────────────────────────────────────────
@@ -1637,8 +1663,7 @@ window._sf = 0; // scatter factor 0→1
     });
     var ft = document.querySelector('footer');
     if (ft) ft.style.visibility = 'hidden';
-    var mq = document.querySelector('.marquee-strip');
-    if (mq) mq.style.visibility = 'hidden';
+    document.querySelectorAll('.marquee-strip').forEach(function(mq) { mq.style.visibility = 'hidden'; });
   }
 
   function showSections() {
@@ -1648,8 +1673,7 @@ window._sf = 0; // scatter factor 0→1
     });
     var ft = document.querySelector('footer');
     if (ft) ft.style.visibility = '';
-    var mq = document.querySelector('.marquee-strip');
-    if (mq) mq.style.visibility = '';
+    document.querySelectorAll('.marquee-strip').forEach(function(mq) { mq.style.visibility = ''; });
   }
 
   function measureVP() {
