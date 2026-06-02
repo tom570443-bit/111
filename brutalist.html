@@ -480,15 +480,6 @@ main {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.strip-img {
-  cursor: none;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), filter 0.4s ease;
-}
-.strip-img-hover {
-  transform: scale(1.08) !important;
-  filter: grayscale(0) brightness(1) contrast(1) !important;
-  cursor: none;
-}
 
 /* ── Image detail overlay ── */
 #img-detail {
@@ -2180,7 +2171,7 @@ window._sf = 0; // scatter factor 0→1
 
     /* depth sort */
     for (var i = 0; i < N; i++) idx_arr[i] = i;
-    Array.prototype.sort.call(idx_arr, function (a, b) { return sz_arr[a] - sz_arr[b]; });
+    idx_arr.sort(function (a, b) { return sz_arr[a] - sz_arr[b]; });
 
     var zMin = sz_arr[idx_arr[0]];
     var zMax = sz_arr[idx_arr[N-1]];
