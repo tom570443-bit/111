@@ -394,6 +394,61 @@ main {
   animation: marquee-reverse 28s linear infinite;
 }
 
+/* ── Card 1: rotating line segments ── */
+.lines-wrap {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 120px; height: 120px;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none; z-index: 0;
+}
+.project-card:hover .lines-wrap { opacity: 1; }
+.lines-scene { width: 120px; height: 120px; perspective: 300px; }
+.lines-obj {
+  width: 100%; height: 100%;
+  position: relative; transform-style: preserve-3d;
+  animation: rotateLines 3.5s linear infinite;
+}
+@keyframes rotateLines {
+  from { transform: rotateX(15deg) rotateY(0deg); }
+  to   { transform: rotateX(15deg) rotateY(360deg); }
+}
+.ln {
+  position: absolute;
+  background: #000;
+  opacity: 0.55;
+  transform-origin: center center;
+}
+/* Card 2: rotating flat square ── */
+.square-wrap {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 120px; height: 120px;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none; z-index: 0;
+}
+.project-card:hover .square-wrap { opacity: 1; }
+.square-scene { width: 120px; height: 120px; perspective: 300px; }
+.square-obj {
+  width: 80px; height: 80px;
+  position: relative; margin: 20px;
+  transform-style: preserve-3d;
+  animation: rotateSquare 3s ease-in-out infinite;
+  border: 1.5px solid #000;
+  opacity: 0.55;
+}
+.square-obj::before, .square-obj::after {
+  content: ''; position: absolute;
+  background: #000; opacity: 0.3;
+}
+.square-obj::before { width: 1px; height: 100%; top: 0; left: 50%; }
+.square-obj::after  { width: 100%; height: 1px; top: 50%; left: 0; }
+@keyframes rotateSquare {
+  0%   { transform: rotateY(0deg) rotateX(10deg); }
+  50%  { transform: rotateY(180deg) rotateX(30deg); }
+  100% { transform: rotateY(360deg) rotateX(10deg); }
+}
+
 /* ── WORKS SECTION ── */
 #works {
   position: relative;
@@ -1145,15 +1200,17 @@ footer { border-top-color: #e0e0e0; }
     <div class="works-grid">
       <!-- Card 1 -->
       <div class="project-card" data-hoverable>
-        <div class="cube-wrap">
-          <div class="cube-scene">
-            <div class="cube">
-              <div class="cube-face front"></div>
-              <div class="cube-face back"></div>
-              <div class="cube-face left"></div>
-              <div class="cube-face right"></div>
-              <div class="cube-face top"></div>
-              <div class="cube-face bottom"></div>
+        <div class="lines-wrap">
+          <div class="lines-scene">
+            <div class="lines-obj">
+              <!-- 6 line segments at varying 3D angles -->
+              <div class="ln" style="width:70px;height:1.5px;top:30px;left:25px;transform:rotateZ(30deg) rotateX(60deg);"></div>
+              <div class="ln" style="width:50px;height:1.5px;top:55px;left:35px;transform:rotateZ(-45deg) rotateY(50deg);"></div>
+              <div class="ln" style="width:60px;height:1.5px;top:75px;left:20px;transform:rotateZ(15deg) rotateX(-40deg);"></div>
+              <div class="ln" style="width:1.5px;height:65px;top:15px;left:60px;transform:rotateY(30deg) rotateZ(-20deg);"></div>
+              <div class="ln" style="width:1.5px;height:50px;top:40px;left:85px;transform:rotateY(-50deg) rotateZ(40deg);"></div>
+              <div class="ln" style="width:55px;height:1.5px;top:95px;left:30px;transform:rotateZ(-25deg) rotateX(55deg);"></div>
+              <div class="ln" style="width:40px;height:1.5px;top:20px;left:65px;transform:rotateZ(60deg) rotateY(-35deg);"></div>
             </div>
           </div>
         </div>
@@ -1179,16 +1236,9 @@ footer { border-top-color: #e0e0e0; }
 
       <!-- Card 2 -->
       <div class="project-card" data-hoverable>
-        <div class="cube-wrap">
-          <div class="cube-scene">
-            <div class="cube" style="animation-direction:reverse; animation-duration:3s;">
-              <div class="cube-face front"></div>
-              <div class="cube-face back"></div>
-              <div class="cube-face left"></div>
-              <div class="cube-face right"></div>
-              <div class="cube-face top"></div>
-              <div class="cube-face bottom"></div>
-            </div>
+        <div class="square-wrap">
+          <div class="square-scene">
+            <div class="square-obj"></div>
           </div>
         </div>
         <div class="card-top">
