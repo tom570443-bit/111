@@ -445,16 +445,15 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* stagger entrance */
   opacity: 0;
-  transform: translateY(32px);
+  transform: translateY(40px);
 }
 
 .project-card.card-visible {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
               background 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1727,10 +1726,13 @@ window._sf = 0; // scatter factor 0→1
     heroEl.style.transform = 'translateX(' + (-sep * 100).toFixed(2) + 'vw)';
 
     // Works slides in from the RIGHT — z-index 20, above hero (15) and all sections (10)
+    // Background interpolates black→white as slide progresses
+    var bgVal = Math.round(sep * 255);
+    var bgHex = bgVal.toString(16).padStart(2, '0');
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
     worksEl.style.zIndex     = '20';
-    worksEl.style.background = '#000';
+    worksEl.style.background = '#' + bgHex + bgHex + bgHex;
     worksEl.style.overflowY  = 'hidden';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
@@ -1836,8 +1838,8 @@ window._sf = 0; // scatter factor 0→1
   /* ── colour LUT — dimmed (max brightness ~62% of before) ── */
   var colorCache = new Array(256);
   for (var d = 0; d < 256; d++) {
-    var bv = 120 + Math.round(d * 0.53);
-    var al = (0.10 + (d / 255) * 0.60).toFixed(2);
+    var bv = 55 + Math.round(d * 0.30);
+    var al = (0.05 + (d / 255) * 0.32).toFixed(2);
     colorCache[d] = 'rgba(' + bv + ',' + bv + ',' + bv + ',' + al + ')';
   }
 
@@ -1985,24 +1987,28 @@ window._sf = 0; // scatter factor 0→1
 (function () {
   var cards = document.querySelectorAll('.project-card');
   if (!cards.length || !window.IntersectionObserver) {
-    // Fallback: show all immediately
     cards.forEach(function (c) { c.classList.add('card-visible'); });
     return;
   }
-  var obs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      var card  = entry.target;
-      var delay = (parseInt(card.dataset.cardIdx) || 0) * 120; // 120ms stagger
-      setTimeout(function () { card.classList.add('card-visible'); }, delay);
-      obs.unobserve(card);
-    });
-  }, { threshold: 0.12 });
 
-  cards.forEach(function (card, i) {
-    card.dataset.cardIdx = i;
-    obs.observe(card);
-  });
+  // Watch the works grid container — when it fully enters, fire all cards in sequence
+  var grid = document.querySelector('.works-grid');
+  var fired = false;
+
+  var gridObs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting || fired) return;
+      fired = true;
+      cards.forEach(function (card, i) {
+        setTimeout(function () {
+          card.classList.add('card-visible');
+        }, 80 + i * 160); // 160ms stagger, slight initial delay
+      });
+      gridObs.disconnect();
+    });
+  }, { threshold: 0.15 });
+
+  if (grid) gridObs.observe(grid);
 })();
 </script>
 </body>
