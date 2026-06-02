@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracing Art — Getty Provenance Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  :root {
+    --cream: #F9F6F0;
+    --charcoal: #121212;
+    --gold: #C9A96E;
+    --muted: #8A8070;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom cursor ── */
+  #cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--charcoal);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: width .2s, height .2s, background .2s;
+    mix-blend-mode: multiply;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--charcoal);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: width .35s, height .35s, opacity .3s;
+    opacity: .5;
+  }
+  body.dark-mode #cursor { background: #fff; }
+  body.dark-mode #cursor-ring { border-color: #fff; }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top:0; left:0; right:0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 48px;
+    mix-blend-mode: multiply;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: .85rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--charcoal);
+    opacity: .7;
+  }
+  body.dark-mode .nav-logo { color: #fff; }
+  #menu-btn {
+    width: 42px; height: 28px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    cursor: none;
+    mix-blend-mode: normal;
+    z-index: 600;
+  }
+  #menu-btn span {
+    display: block; height: 1px;
+    background: var(--charcoal);
+    transition: transform .4s, opacity .3s, background .3s;
+  }
+  body.dark-mode #menu-btn span { background: #fff; }
+  #menu-btn.open span:nth-child(1) { transform: translateY(13.5px) rotate(45deg); }
+  #menu-btn.open span:nth-child(2) { opacity: 0; }
+  #menu-btn.open span:nth-child(3) { transform: translateY(-13.5px) rotate(-45deg); }
+
+  /* ── Drawer ── */
+  #drawer {
+    position: fixed; inset: 0;
+    background: var(--charcoal);
+    z-index: 490;
+    display: flex; align-items: center; justify-content: center;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path .65s cubic-bezier(.77,0,.175,1);
+  }
+  #drawer.open { clip-path: inset(0 0 0% 0); }
+  #drawer nav-links a {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: #fff;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    opacity: .8;
+    transition: opacity .2s;
+  }
+  #drawer-links a { display: block; }
+  #drawer-links a:hover { opacity: 1; }
+
+  /* ── Section 1: Hero ── */
+  #hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: -.03em;
+    line-height: 1;
+    position: relative;
+    z-index: 10;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero-sub {
+    font-size: .8rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* S-curve container */
+  #scurve {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .thumb {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: all;
+  }
+  .thumb img {
+    display: block;
+    border-radius: 4px;
+    filter: saturate(.6) brightness(.95);
+    transition: filter .3s;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    will-change: transform;
+  }
+  .thumb:hover img { filter: saturate(1) brightness(1.05); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted);
+    font-size: .65rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    z-index: 10;
+    animation: scrollBob 2s ease-in-out infinite;
+  }
+  .scroll-hint::after {
+    content: '';
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+  }
+  @keyframes scrollBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+  /* ── Section 2: Timeline ── */
+  #timeline-section {
+    position: relative;
+    background: var(--cream);
+  }
+  .timeline-sticky {
+    display: flex;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow: hidden;
+  }
+  .timeline-left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 64px;
+    position: relative;
+    z-index: 5;
+  }
+  .timeline-right {
+    width: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .center-artwork {
+    position: relative;
+    width: 380px;
+    z-index: 5;
+  }
+  .center-artwork img {
+    width: 100%;
+    border-radius: 2px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.25);
+    display: block;
+  }
+  .artwork-frame {
+    position: absolute;
+    inset: -12px;
+    border: 1px solid rgba(201,169,110,.4);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .artwork-label {
+    position: absolute;
+    bottom: -44px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: .7rem;
+    letter-spacing: .2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Timeline events scroll container */
+  #timeline-events {
+    position: relative;
+  }
+  .timeline-event {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 64px;
+  }
+  .event-inner {
+    max-width: 440px;
+  }
+  .event-year {
+    font-size: .7rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .event-year::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--gold);
+  }
+  .event-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .event-body {
+    font-size: .95rem;
+    line-height: 1.8;
+    color: #555;
+    font-weight: 300;
+  }
+  .dark-event .event-title { color: #fff; }
+  .dark-event .event-body { color: rgba(255,255,255,.65); }
+  .dark-event .event-year { color: var(--gold); }
+
+  /* BG floating art */
+  .bg-float {
+    position: absolute;
+    pointer-events: none;
+    opacity: .06;
+    filter: blur(2px) grayscale(1);
+    will-change: transform;
+  }
+
+  /* ── Section 3: Kinetic Type ── */
+  #kinetic-section {
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+    padding: 120px 0;
+  }
+  .marquee-row {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 0;
+    white-space: nowrap;
+    position: relative;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 80px;
+    will-change: transform;
+  }
+  .marquee-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 10vw, 9rem);
+    font-weight: 900;
+    letter-spacing: -.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(0,0,0,.15);
+    user-select: none;
+    flex-shrink: 0;
+    transition: -webkit-text-stroke .4s, color .4s;
+    cursor: none;
+  }
+  .marquee-name.active {
+    color: var(--charcoal);
+    -webkit-text-stroke: 0px;
+  }
+  .artist-artworks {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex; gap: 16px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+  }
+  .artist-artwork-item {
+    width: 160px; height: 200px;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.15);
+  }
+  .artist-artwork-item img { width:100%; height:100%; object-fit:cover; }
+
+  /* ── Section 4: Particles ── */
+  #particle-section {
+    position: relative;
+    background: var(--charcoal);
+    min-height: 400vh;
+  }
+  .particle-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  #particle-canvas { display: block; }
+  .particle-label {
+    position: absolute;
+    font-size: .75rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity .5s;
+  }
+  .particle-ui {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .particle-stat {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+  }
+  .particle-stat .big-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    display: block;
+  }
+  .particle-stat .small-label {
+    font-size: .7rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+    margin-top: 8px;
+    display: block;
+  }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--charcoal);
+    color: rgba(255,255,255,.4);
+    padding: 80px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  footer .f-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: rgba(255,255,255,.8);
+    margin-bottom: 8px;
+  }
+  footer .f-sub { font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; }
+
+  /* Utility */
+  .serif { font-family: 'Playfair Display', serif; }
+  .will-change { will-change: transform; }
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Nav -->
+<nav id="main-nav">
+  <span class="nav-logo">GPI — Getty Provenance Index</span>
+  <button id="menu-btn" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Drawer -->
+<div id="drawer">
+  <div id="drawer-links" style="text-align:center;">
+    <a href="#hero" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.8rem);color:#fff;text-decoration:none;display:block;margin-bottom:2.5rem;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">
+      <small style="display:block;font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.5rem;">Chapter I</small>
+      Tracing a Painting
+    </a>
+    <a href="#timeline-section" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.8rem);color:#fff;text-decoration:none;display:block;margin-bottom:2.5rem;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">
+      <small style="display:block;font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.5rem;">Chapter II</small>
+      Artists as Collectors
+    </a>
+    <a href="#kinetic-section" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.8rem);color:#fff;text-decoration:none;display:block;margin-bottom:2.5rem;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">
+      <small style="display:block;font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.5rem;">Chapter III</small>
+      Collectors &amp; The Market
+    </a>
+    <a href="#particle-section" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.8rem);color:#fff;text-decoration:none;display:block;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">
+      <small style="display:block;font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.5rem;">Chapter IV</small>
+      The Provenance Network
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1: HERO
+═══════════════════════════════════════════ -->
+<section id="hero">
+  <div id="scurve"></div>
+
+  <div style="position:relative;z-index:10;text-align:center;pointer-events:none;">
+    <h1 class="hero-title">Tracing<br><em>Provenance</em></h1>
+    <p class="hero-sub">Getty Provenance Index — 500 Years of Ownership</p>
+  </div>
+
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2: TIMELINE
+═══════════════════════════════════════════ -->
+<section id="timeline-section">
+
+  <!-- Floating BG elements -->
+  <img class="bg-float" src="https://picsum.photos/300/400?random=91" style="top:10%;left:5%;width:200px;" alt="">
+  <img class="bg-float" src="https://picsum.photos/280/360?random=92" style="top:60%;left:2%;width:180px;" alt="">
+  <img class="bg-float" src="https://picsum.photos/320/400?random=93" style="top:30%;right:3%;width:190px;" alt="">
+
+  <div class="timeline-sticky" id="timeline-sticky">
+
+    <!-- Right: Sticky artwork -->
+    <div class="timeline-right" id="artwork-panel">
+      <div class="center-artwork" id="center-artwork">
+        <div class="artwork-frame"></div>
+        <img src="https://picsum.photos/380/500?random=50" alt="Flemish Still Life, c.1689" id="main-artwork-img">
+        <div class="artwork-label">Flemish Still Life, c.1689 — Unknown Master</div>
+      </div>
+    </div>
+
+    <!-- Left: Scrolling text events -->
+    <div class="timeline-left" id="timeline-left-panel">
+      <div id="event-display">
+        <div class="event-year" id="ev-year">c. 1689</div>
+        <h2 class="event-title serif" id="ev-title">Painted in Antwerp</h2>
+        <p class="event-body" id="ev-body">A Flemish master completes this still life in his Antwerp atelier. The painting depicts a table laden with precious objects — a rummer of wine, exotic shells, and a gilded nautilus cup — symbols of mercantile wealth in the Dutch Golden Age.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scroll-driven events -->
+  <div id="timeline-events">
+    <div class="timeline-event" data-year="c. 1689" data-title="Painted in Antwerp" data-body="A Flemish master completes this still life in his Antwerp atelier. The painting depicts a table laden with precious objects — a rummer of wine, exotic shells, and a gilded nautilus cup — symbols of mercantile wealth in the Dutch Golden Age." data-dark="false"></div>
+
+    <div class="timeline-event" data-year="1724" data-title="Acquired by a Dutch Merchant" data-body="The painting passes to the collection of Hendrik van der Berg, a prosperous Amsterdam spice merchant. It hangs in his canal house on the Herengracht, admired by guests at his Tuesday salons." data-dark="false"></div>
+
+    <div class="timeline-event" data-year="1864" data-title="Sold at Christie's, London" data-body="Following the death of the third-generation heir, the painting is consigned to Christie's Auction House. Bidding is lively. A Paris dealer acquires it for £220 — a considerable sum — on behalf of an anonymous buyer." data-dark="false"></div>
+
+    <div class="timeline-event" data-year="1889" data-title="Enters the Fouchet Collection" data-body="The painting joins the celebrated collection of Édouard Fouchet, a Parisian industrialist and art patron. It is displayed in his Hôtel particulier near Parc Monceau alongside works by Chardin and de Heem." data-dark="false"></div>
+
+    <div class="timeline-event" data-year="1942" data-title="Looted — Whereabouts Unknown" data-body="During the Nazi occupation of Paris, agents of the Einsatzstab Reichsleiter Rosenberg (ERR) enter the Fouchet residence. The painting is confiscated along with 47 other works. It disappears into the vast machinery of cultural plunder." data-dark="true"></div>
+
+    <div class="timeline-event" data-year="1998" data-title="Restituted to the Fouchet Heirs" data-body="After 56 years, a researcher at the Getty Provenance Index identifies the work in a wartime ERR inventory photograph. Following a decade of legal proceedings, the painting is restituted to the surviving grandchildren of Édouard Fouchet." data-dark="true"></div>
+
+    <div class="timeline-event" data-year="2007" data-title="Acquired by the J. Paul Getty Museum" data-body="With the blessing of the Fouchet family, the Getty Museum acquires the painting through private treaty sale. Fully restored, it is displayed in Gallery 204 — the first time it has been seen by the public in over sixty years." data-dark="false"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3: KINETIC TYPOGRAPHY
+═══════════════════════════════════════════ -->
+<section id="kinetic-section">
+  <div style="padding:60px 0 20px;text-align:center;position:relative;z-index:5;">
+    <p style="font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Chapter III</p>
+    <h2 class="serif" style="font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700;">Artists as Collectors</h2>
+  </div>
+
+  <!-- Row 1 -->
+  <div class="marquee-row" style="margin-bottom:0;padding:20px 0;">
+    <div class="marquee-track" id="marquee-1" data-speed="-1">
+      <span class="marquee-name">Johannes Vermeer</span>
+      <span class="marquee-name">Johannes Vermeer</span>
+      <span class="marquee-name">Johannes Vermeer</span>
+      <span class="marquee-name">Johannes Vermeer</span>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="marquee-row" style="padding:20px 0;position:relative;">
+    <div class="marquee-track" id="marquee-2" data-speed="1.4">
+      <span class="marquee-name" style="font-style:italic;">Caravaggio</span>
+      <span class="marquee-name" style="font-style:italic;">Caravaggio</span>
+      <span class="marquee-name" style="font-style:italic;">Caravaggio</span>
+      <span class="marquee-name" style="font-style:italic;">Caravaggio</span>
+    </div>
+    <!-- Floating artworks for Caravaggio -->
+    <div class="artist-artworks" id="caravaggio-art">
+      <div class="artist-artwork-item"><img src="https://picsum.photos/160/200?random=61" alt=""></div>
+      <div class="artist-artwork-item"><img src="https://picsum.photos/160/200?random=62" alt=""></div>
+    </div>
+  </div>
+
+  <!-- Row 3 -->
+  <div class="marquee-row" style="padding:20px 0;">
+    <div class="marquee-track" id="marquee-3" data-speed="-1.2">
+      <span class="marquee-name">Claude Monet</span>
+      <span class="marquee-name">Claude Monet</span>
+      <span class="marquee-name">Claude Monet</span>
+      <span class="marquee-name">Claude Monet</span>
+    </div>
+  </div>
+
+  <!-- Row 4 -->
+  <div class="marquee-row" style="padding:20px 0;position:relative;">
+    <div class="marquee-track" id="marquee-4" data-speed="0.9">
+      <span class="marquee-name" style="font-style:italic;">Rembrandt van Rijn</span>
+      <span class="marquee-name" style="font-style:italic;">Rembrandt van Rijn</span>
+      <span class="marquee-name" style="font-style:italic;">Rembrandt van Rijn</span>
+    </div>
+    <div class="artist-artworks" id="rembrandt-art" style="right:auto;left:80px;">
+      <div class="artist-artwork-item"><img src="https://picsum.photos/160/200?random=71" alt=""></div>
+      <div class="artist-artwork-item"><img src="https://picsum.photos/160/200?random=72" alt=""></div>
+    </div>
+  </div>
+
+  <!-- Row 5 -->
+  <div class="marquee-row" style="padding:20px 0 60px;">
+    <div class="marquee-track" id="marquee-5" data-speed="-1.6">
+      <span class="marquee-name">Georgia O'Keeffe</span>
+      <span class="marquee-name">Georgia O'Keeffe</span>
+      <span class="marquee-name">Georgia O'Keeffe</span>
+      <span class="marquee-name">Georgia O'Keeffe</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4: PARTICLE SWARM
+═══════════════════════════════════════════ -->
+<section id="particle-section">
+  <div class="particle-sticky">
+    <canvas id="particle-canvas"></canvas>
+    <div class="particle-ui">
+      <div class="particle-stat" id="stat-a" style="bottom:auto;top:60px;">
+        <span class="small-label">Provenance Records in the GPI</span>
+        <span class="big-num">1.7M</span>
+      </div>
+      <div class="particle-stat" id="stat-b">
+        <span class="big-num">12%</span>
+        <span class="small-label">Museum &amp; Public Collections</span>
+      </div>
+      <div class="particle-stat" id="stat-c" style="bottom:auto;top:60px;right:60px;transform:none;left:auto;">
+        <span class="big-num">88%</span>
+        <span class="small-label">Private or Unknown</span>
+      </div>
+    </div>
+    <!-- Ring labels -->
+    <div class="particle-label" id="label-louvre" style="top:22%;left:55%;">Musée du Louvre — 35,000+</div>
+    <div class="particle-label" id="label-met" style="top:55%;right:18%;">The Met — 26,000+</div>
+    <div class="particle-label" id="label-national" style="bottom:22%;left:52%;">National Gallery — 18,000+</div>
+    <div class="particle-label" id="label-private" style="top:40%;left:8%;">Private Collections</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="f-title">Getty Provenance Index</div>
+    <div class="f-sub">J. Paul Getty Trust — Los Angeles</div>
+  </div>
+  <div style="font-size:.7rem;letter-spacing:.15em;text-align:right;">
+    <div>An Interactive Exhibition</div>
+    <div style="margin-top:6px;opacity:.5;">© 2026 Getty Trust</div>
+  </div>
+</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ════════════════════════════════
+   CURSOR
+════════════════════════════════ */
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = 0, my = 0, cx = 0, cy = 0;
+
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+function animCursor() {
+  cx += (mx - cx) * 0.18;
+  cy += (my - cy) * 0.18;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+  cursorRing.style.left = cx + 'px';
+  cursorRing.style.top  = cy + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+/* ════════════════════════════════
+   HAMBURGER / DRAWER
+════════════════════════════════ */
+const menuBtn = document.getElementById('menu-btn');
+const drawer  = document.getElementById('drawer');
+let menuOpen  = false;
+
+menuBtn.addEventListener('click', () => {
+  menuOpen = !menuOpen;
+  menuBtn.classList.toggle('open', menuOpen);
+  drawer.classList.toggle('open', menuOpen);
+});
+drawer.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    menuOpen = false;
+    menuBtn.classList.remove('open');
+    drawer.classList.remove('open');
+  });
+});
+
+/* ════════════════════════════════
+   SECTION 1 — S-CURVE THUMBNAILS
+════════════════════════════════ */
+const scurveEl = document.getElementById('scurve');
+const N = 42;
+const thumbs = [];
+
+// Build S-curve points
+for (let i = 0; i < N; i++) {
+  const t = (i / (N - 1)) * Math.PI * 2 - Math.PI;
+  const px = 50 + 22 * Math.sin(t);      // % of viewport width
+  const py = 8 + (i / (N - 1)) * 84;    // % of viewport height
+
+  // Size varies: middle thumbs larger
+  const midness = 1 - Math.abs((i / (N-1)) - 0.5) * 1.2;
+  const size = Math.round(44 + midness * 32);
+
+  const div = document.createElement('div');
+  div.className = 'thumb';
+  div.style.left = px + '%';
+  div.style.top  = py + '%';
+  div.style.zIndex = Math.round(midness * 10);
+  div.innerHTML = `<img src="https://picsum.photos/${size}/${size}?random=${i + 1}" width="${size}" height="${size}" alt="">`;
+  scurveEl.appendChild(div);
+
+  // Store targets for scatter
+  const angle = Math.random() * Math.PI * 2;
+  const dist  = 60 + Math.random() * 40; // vw units
+  thumbs.push({
+    el: div,
+    img: div.querySelector('img'),
+    baseX: 0, baseY: 0,
+    scatterX: Math.cos(angle) * dist,
+    scatterY: Math.sin(angle) * dist * 0.6,
+    size
+  });
+}
+
+// Mouse magnetic distortion
+const heroEl = document.getElementById('hero');
+heroEl.addEventListener('mousemove', e => {
+  const rect = heroEl.getBoundingClientRect();
+  const hmx = e.clientX - rect.left;
+  const hmy = e.clientY - rect.top;
+
+  thumbs.forEach(t => {
+    const r = t.el.getBoundingClientRect();
+    const tcx = r.left + r.width * 0.5 - rect.left;
+    const tcy = r.top  + r.height * 0.5 - rect.top;
+    const dx  = hmx - tcx, dy = hmy - tcy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const maxDist = 180;
+    if (dist < maxDist) {
+      const force = (1 - dist / maxDist) * 28;
+      const angle = Math.atan2(tcy - hmy, tcx - hmx);
+      gsap.to(t.el, { x: Math.cos(angle) * force, y: Math.sin(angle) * force, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
+    } else {
+      gsap.to(t.el, { x: 0, y: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
+    }
+  });
+});
+heroEl.addEventListener('mouseleave', () => {
+  thumbs.forEach(t => gsap.to(t.el, { x: 0, y: 0, duration: 0.8, ease: 'power3.out' }));
+});
+
+// Scatter on scroll
+ScrollTrigger.create({
+  trigger: '#timeline-section',
+  start: 'top 80%',
+  onEnter: () => {
+    thumbs.forEach((t, i) => {
+      gsap.to(t.el, {
+        x: t.scatterX + 'vw',
+        y: t.scatterY + 'vh',
+        opacity: 0,
+        scale: 0.5,
+        duration: 1.2 + Math.random() * 0.6,
+        ease: 'power3.in',
+        delay: i * 0.012
+      });
+    });
+  },
+  onLeaveBack: () => {
+    thumbs.forEach((t, i) => {
+      gsap.to(t.el, { x: 0, y: 0, opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out', delay: i * 0.008 });
+    });
+  }
+});
+
+/* ════════════════════════════════
+   SECTION 2 — TIMELINE
+════════════════════════════════ */
+const events = Array.from(document.querySelectorAll('.timeline-event'));
+const evYear  = document.getElementById('ev-year');
+const evTitle = document.getElementById('ev-title');
+const evBody  = document.getElementById('ev-body');
+const timelineSticky = document.getElementById('timeline-sticky');
+const artworkEl = document.getElementById('center-artwork');
+const artworkImg = document.getElementById('main-artwork-img');
+const bgFloats = document.querySelectorAll('.bg-float');
+
+// Parallax on floating BGs
+bgFloats.forEach((el, i) => {
+  const speed = 0.3 + i * 0.15;
+  gsap.to(el, {
+    y: () => ScrollTrigger.maxScroll(window) * speed * -0.08,
+    ease: 'none',
+    scrollTrigger: { scrub: 1, start: 'top top', end: 'bottom bottom' }
+  });
+});
+
+// Artwork subtle float animation
+gsap.to(artworkEl, {
+  y: -12,
+  duration: 3.5,
+  repeat: -1,
+  yoyo: true,
+  ease: 'sine.inOut'
+});
+
+let currentDark = false;
+function applyEvent(data, instant) {
+  const dur = instant ? 0 : 0.5;
+
+  gsap.to('#event-display', {
+    opacity: 0, y: 12, duration: dur * 0.5, ease: 'power2.in',
+    onComplete: () => {
+      evYear.textContent  = data.year;
+      evTitle.textContent = data.title;
+      evBody.textContent  = data.body;
+      gsap.to('#event-display', { opacity: 1, y: 0, duration: dur, ease: 'power2.out' });
+    }
+  });
+
+  const wantDark = data.dark === 'true';
+  if (wantDark !== currentDark) {
+    currentDark = wantDark;
+    gsap.to('#timeline-section', {
+      backgroundColor: wantDark ? '#121212' : '#F9F6F0',
+      duration: 1.2, ease: 'power2.inOut'
+    });
+    gsap.to('#timeline-section .event-title', { color: wantDark ? '#fff' : '#121212', duration: .8 });
+    gsap.to('#timeline-section .event-body',  { color: wantDark ? 'rgba(255,255,255,.6)' : '#555', duration: .8 });
+    gsap.to(artworkImg, { scale: wantDark ? 1.07 : 1, duration: 1.4, ease: 'power2.out' });
+    gsap.to(artworkImg, { filter: wantDark ? 'brightness(.75) contrast(1.15)' : 'brightness(1)', duration: 1.2 });
+    if (wantDark) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }
+}
+
+// Map each timeline-event div to its data
+events.forEach((ev, i) => {
+  const data = ev.dataset;
+  ScrollTrigger.create({
+    trigger: ev,
+    start: 'top center',
+    end: 'bottom center',
+    onEnter: () => applyEvent(data, false),
+    onEnterBack: () => {
+      // check previous
+      const prev = i > 0 ? events[i-1].dataset : data;
+      applyEvent(data, false);
+    }
+  });
+});
+
+// Initial state
+applyEvent(events[0].dataset, true);
+
+/* ════════════════════════════════
+   SECTION 3 — KINETIC MARQUEES
+════════════════════════════════ */
+const marquees = [
+  { id: 'marquee-1', speed: -0.8 },
+  { id: 'marquee-2', speed:  1.1 },
+  { id: 'marquee-3', speed: -1.0 },
+  { id: 'marquee-4', speed:  0.75 },
+  { id: 'marquee-5', speed: -1.3 },
+];
+
+marquees.forEach(m => {
+  const track = document.getElementById(m.id);
+  let pos = m.speed > 0 ? 0 : -track.scrollWidth / 2;
+
+  function tick() {
+    pos += m.speed;
+    // loop
+    if (pos <= -track.scrollWidth / 2) pos = 0;
+    if (pos >= 0 && m.speed > 0) pos = -track.scrollWidth / 2;
+    track.style.transform = `translateX(${pos}px)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+});
+
+// Scroll-driven artist artwork reveals
+ScrollTrigger.create({
+  trigger: '#marquee-2',
+  start: 'top 60%',
+  end: 'bottom 40%',
+  onEnter: () => gsap.to('#caravaggio-art', { opacity: 1, y: 0, duration: .8, ease: 'power2.out' }),
+  onLeave: () => gsap.to('#caravaggio-art', { opacity: 0, duration: .5 }),
+  onEnterBack: () => gsap.to('#caravaggio-art', { opacity: 1, duration: .5 }),
+  onLeaveBack: () => gsap.to('#caravaggio-art', { opacity: 0, duration: .5 }),
+});
+gsap.set('#caravaggio-art', { opacity: 0, y: 20 });
+
+ScrollTrigger.create({
+  trigger: '#marquee-4',
+  start: 'top 60%',
+  end: 'bottom 40%',
+  onEnter: () => gsap.to('#rembrandt-art', { opacity: 1, x: 0, duration: .8, ease: 'power2.out' }),
+  onLeave: () => gsap.to('#rembrandt-art', { opacity: 0, duration: .5 }),
+  onEnterBack: () => gsap.to('#rembrandt-art', { opacity: 1, duration: .5 }),
+  onLeaveBack: () => gsap.to('#rembrandt-art', { opacity: 0, duration: .5 }),
+});
+gsap.set('#rembrandt-art', { opacity: 0, x: -20 });
+
+/* ════════════════════════════════
+   SECTION 4 — PARTICLE CANVAS
+════════════════════════════════ */
+const canvas = document.getElementById('particle-canvas');
+const pCtx   = canvas.getContext('2d');
+const TOTAL  = 1800;
+const particles = [];
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Particle states
+const cx2 = () => canvas.width * 0.5;
+const cy2 = () => canvas.height * 0.5;
+
+class Particle {
+  constructor(i) {
+    this.i = i;
+    this.reset();
+  }
+  reset() {
+    // Start off-screen scattered
+    const side = Math.floor(Math.random() * 4);
+    if (side === 0) { this.x = Math.random() * canvas.width; this.y = -60; }
+    else if (side === 1) { this.x = canvas.width + 60; this.y = Math.random() * canvas.height; }
+    else if (side === 2) { this.x = Math.random() * canvas.width; this.y = canvas.height + 60; }
+    else { this.x = -60; this.y = Math.random() * canvas.height; }
+    this.tx = this.x; this.ty = this.y;
+    this.size = 2.5 + Math.random() * 2;
+    this.color = this.randomColor();
+    this.alpha = 0.7 + Math.random() * 0.3;
+  }
+  randomColor() {
+    const colors = ['#C9A96E','#A8855A','#D4B896','#8A7060','#fff','#E8D5B5','#B8956E'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+}
+
+for (let i = 0; i < TOTAL; i++) particles.push(new Particle(i));
+
+// State targets: circle, ring, split
+function circleTargets() {
+  const r = Math.min(canvas.width, canvas.height) * 0.28;
+  particles.forEach((p, i) => {
+    const a = (i / TOTAL) * Math.PI * 2;
+    const spread = (Math.random() - 0.5) * r * 0.6;
+    const ar = Math.random() * Math.PI * 2;
+    p.tx = cx2() + (r * 0.5 + spread) * Math.cos(ar);
+    p.ty = cy2() + (r * 0.5 + spread) * Math.sin(ar);
+  });
+}
+
+function ringTargets() {
+  const rIn  = Math.min(canvas.width, canvas.height) * 0.22;
+  const rOut = Math.min(canvas.width, canvas.height) * 0.36;
+  particles.forEach((p, i) => {
+    const a = (i / TOTAL) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
+    const r = rIn + Math.random() * (rOut - rIn);
+    p.tx = cx2() + r * Math.cos(a);
+    p.ty = cy2() + r * Math.sin(a);
+  });
+}
+
+function splitTargets() {
+  const leftCount  = Math.round(TOTAL * 0.12);
+  const rightCount = TOTAL - leftCount;
+  const lr  = Math.min(canvas.width, canvas.height) * 0.14;
+  const rr  = Math.min(canvas.width, canvas.height) * 0.32;
+  const lCx = canvas.width * 0.28;
+  const rCx = canvas.width * 0.68;
+
+  for (let i = 0; i < leftCount; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.random() * lr;
+    particles[i].tx = lCx + r * Math.cos(a);
+    particles[i].ty = cy2() + r * Math.sin(a);
+    particles[i].color = '#C9A96E';
+  }
+  for (let i = leftCount; i < TOTAL; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.random() * rr;
+    particles[i].tx = rCx + r * Math.cos(a);
+    particles[i].ty = cy2() + r * Math.sin(a);
+    particles[i].color = 'rgba(255,255,255,0.3)';
+  }
+}
+
+function scatterTargets() {
+  particles.forEach(p => {
+    const side = Math.floor(Math.random() * 4);
+    if (side === 0) { p.tx = Math.random() * canvas.width; p.ty = -80; }
+    else if (side === 1) { p.tx = canvas.width + 80; p.ty = Math.random() * canvas.height; }
+    else if (side === 2) { p.tx = Math.random() * canvas.width; p.ty = canvas.height + 80; }
+    else { p.tx = -80; p.ty = Math.random() * canvas.height; }
+  });
+}
+
+// Lerp speed
+let lerpSpeed = 0.04;
+
+function drawParticles() {
+  pCtx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.x += (p.tx - p.x) * lerpSpeed;
+    p.y += (p.ty - p.y) * lerpSpeed;
+    pCtx.globalAlpha = p.alpha;
+    pCtx.fillStyle = p.color;
+    pCtx.fillRect(p.x - p.size * 0.5, p.y - p.size * 0.5, p.size, p.size);
+  });
+  pCtx.globalAlpha = 1;
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// States driven by scroll
+const particleSection = document.getElementById('particle-section');
+
+ScrollTrigger.create({
+  trigger: '#particle-section',
+  start: 'top 80%',
+  once: true,
+  onEnter: () => {
+    lerpSpeed = 0.035;
+    circleTargets();
+  }
+});
+
+const particleTL = gsap.timeline({
+  scrollTrigger: {
+    trigger: '#particle-section',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 1,
+    onUpdate: self => {
+      const p = self.progress;
+      if (p < 0.05) {
+        scatterTargets();
+        gsap.set(['#stat-a','#stat-b','#stat-c'], { opacity: 0 });
+        gsap.set(['#label-louvre','#label-met','#label-national','#label-private'], { opacity: 0 });
+      } else if (p < 0.35) {
+        circleTargets();
+        lerpSpeed = 0.04;
+        gsap.to('#stat-a', { opacity: 1, duration: .5 });
+        gsap.to(['#stat-b','#stat-c'], { opacity: 0, duration: .3 });
+        gsap.set(['#label-louvre','#label-met','#label-national','#label-private'], { opacity: 0 });
+      } else if (p < 0.65) {
+        ringTargets();
+        lerpSpeed = 0.025;
+        gsap.to('#stat-a', { opacity: 0, duration: .4 });
+        gsap.to(['#label-louvre','#label-met','#label-national','#label-private'], { opacity: 1, duration: .6 });
+        gsap.to(['#stat-b','#stat-c'], { opacity: 0, duration: .3 });
+      } else {
+        splitTargets();
+        lerpSpeed = 0.03;
+        gsap.to(['#label-louvre','#label-met','#label-national','#label-private'], { opacity: 0, duration: .4 });
+        gsap.to(['#stat-b','#stat-c'], { opacity: 1, duration: .6 });
+        gsap.to('#stat-a', { opacity: 0, duration: .3 });
+      }
+    }
+  }
+});
+
+// Initial scatter
+scatterTargets();
+
+/* ════════════════════════════════
+   HERO ENTRANCE
+════════════════════════════════ */
+gsap.from('.hero-title', { opacity: 0, y: 40, duration: 1.4, ease: 'power3.out', delay: .3 });
+gsap.from('.hero-sub',   { opacity: 0, y: 20, duration: 1, ease: 'power2.out', delay: .8 });
+gsap.from('.scroll-hint',{ opacity: 0, duration: 1, delay: 1.4 });
+
+// Stagger thumb entrance
+thumbs.forEach((t, i) => {
+  gsap.from(t.el, {
+    opacity: 0,
+    scale: 0.4,
+    duration: .8,
+    ease: 'back.out(1.4)',
+    delay: .5 + i * 0.022
+  });
+});
+</script>
+</body>
+</html>
