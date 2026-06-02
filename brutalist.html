@@ -226,7 +226,7 @@ main {
 /* ── TITLE ── */
 .hero-title {
   font-family: var(--sans);
-  font-size: clamp(5rem, 14vw, 13rem);
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
   font-weight: 900;
   line-height: 0.86;
   letter-spacing: -0.05em;
@@ -606,7 +606,7 @@ main {
 
 /* ── BELIEF SECTION ── */
 #belief {
-  background: var(--green);
+  background: var(--black);
   padding: 100px 48px;
   border-bottom: 1px solid var(--gray3);
   position: relative;
@@ -619,7 +619,7 @@ main {
   font-family: var(--sans);
   font-size: 18vw;
   font-weight: 900;
-  color: rgba(0,0,0,0.08);
+  color: rgba(0,255,0,0.04);
   letter-spacing: -0.05em;
   text-transform: uppercase;
   top: 50%;
@@ -639,7 +639,7 @@ main {
 .belief-label {
   font-size: 0.7rem;
   font-family: var(--mono);
-  color: rgba(0,0,0,0.5);
+  color: rgba(0,255,0,0.45);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   margin-bottom: 32px;
@@ -651,14 +651,14 @@ main {
 .belief-label::before {
   content: '';
   width: 32px; height: 1px;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,255,0,0.35);
 }
 
 .belief-statement {
   font-family: var(--sans);
   font-size: clamp(2.2rem, 6vw, 5.5rem);
   font-weight: 900;
-  color: var(--black);
+  color: var(--white);
   letter-spacing: -0.04em;
   text-transform: uppercase;
   line-height: 0.9;
@@ -666,7 +666,7 @@ main {
 
 .belief-statement em {
   font-style: normal;
-  -webkit-text-stroke: 2px var(--black);
+  -webkit-text-stroke: 2px var(--green);
   color: transparent;
 }
 
@@ -676,13 +676,13 @@ main {
   justify-content: space-between;
   margin-top: 60px;
   padding-top: 28px;
-  border-top: 2px solid rgba(0,0,0,0.2);
+  border-top: 1px solid var(--gray3);
 }
 
 .belief-data {
   font-family: var(--mono);
   font-size: 0.72rem;
-  color: rgba(0,0,0,0.6);
+  color: rgba(255,255,255,0.35);
   letter-spacing: 0.08em;
 }
 
@@ -690,10 +690,10 @@ main {
   font-family: var(--sans);
   font-size: 0.85rem;
   font-weight: 900;
-  color: var(--black);
+  color: var(--green);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  border: 2px solid var(--black);
+  border: 1px solid var(--green);
   padding: 14px 32px;
   cursor: none;
   transition: background 0.2s, color 0.2s;
@@ -701,8 +701,8 @@ main {
 }
 
 .belief-cta:hover {
-  background: var(--black);
-  color: var(--green);
+  background: var(--green);
+  color: var(--black);
 }
 
 /* ── SKILLS / SYSTEM ── */
@@ -1037,26 +1037,6 @@ footer {
         <span class="prompt">root@sys:~$</span>
         <span id="typewriter"></span>
         <span class="cursor-blink"></span>
-      </div>
-    </div>
-
-    <!-- bottom meta bar -->
-    <div class="hero-meta">
-      <div class="hero-meta-item">
-        <div class="meta-label">Status</div>
-        <div class="meta-value" style="color:var(--green);">AVAILABLE</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="meta-label">Specialty</div>
-        <div class="meta-value">UI / SYSTEMS</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="meta-label">Projects</div>
-        <div class="meta-value">48 DEPLOYED</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="meta-label">Location</div>
-        <div class="meta-value">SFO — UTC-8</div>
       </div>
     </div>
 
