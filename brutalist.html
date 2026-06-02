@@ -452,7 +452,8 @@ main {
 /* ── Scatter image strip ── */
 #scatter-strip {
   position: absolute;
-  bottom: 14%;
+  top: 50%;
+  transform: translateY(-50%);
   left: 0; right: 0;
   z-index: 3;
   overflow: hidden;
@@ -469,8 +470,8 @@ main {
 }
 .strip-img {
   flex-shrink: 0;
-  width: 148px;   /* A4 ratio: 148 × 209 */
-  height: 209px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
   filter: grayscale(1) brightness(0.72) contrast(1.1);
   border: 1px solid rgba(255,255,255,0.08);
@@ -1563,7 +1564,7 @@ footer { border-top-color: #e0e0e0; }
   for (var i = 0; i < 14; i++) imgs.push(i + 1);
   var doubled = imgs.concat(imgs);
   track.innerHTML = doubled.map(function (n) {
-    return '<img class="strip-img" src="https://picsum.photos/148/209?random=' + (n + 200) + '" alt="">';
+    return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (n + 200) + '" alt="">';
   }).join('');
 
   // Show strip when scatter progress > 0.45
