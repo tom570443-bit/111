@@ -1628,6 +1628,29 @@ window._sf = 0; // scatter factor 0→1
   var SLIDE_END   = vh * 4.5;
 
   var slideActive = false;
+  var hiddenSections = ['belief','system','contact'];
+
+  function hideSections() {
+    hiddenSections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.visibility = 'hidden';
+    });
+    var ft = document.querySelector('footer');
+    if (ft) ft.style.visibility = 'hidden';
+    var mq = document.querySelector('.marquee-strip');
+    if (mq) mq.style.visibility = 'hidden';
+  }
+
+  function showSections() {
+    hiddenSections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.visibility = '';
+    });
+    var ft = document.querySelector('footer');
+    if (ft) ft.style.visibility = '';
+    var mq = document.querySelector('.marquee-strip');
+    if (mq) mq.style.visibility = '';
+  }
 
   function measureVP() {
     vh = window.innerHeight;
@@ -1658,6 +1681,7 @@ window._sf = 0; // scatter factor 0→1
     worksEl.style.position  = '';
     worksEl.style.zIndex    = '';
     worksEl.style.background = '';
+    showSections();
     var cv = window._torusCanvas;
     if (cv) {
       cv.style.position    = 'absolute';
@@ -1707,6 +1731,7 @@ window._sf = 0; // scatter factor 0→1
 
     /* ── Phase 2: horizontal slide ── */
     slideActive = true;
+    hideSections();
     // Freeze title at fully dissolved state
     heroTitle.style.transform = 'scale(6.5)';
     heroTitle.style.opacity   = '0';
