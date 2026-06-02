@@ -449,6 +449,37 @@ main {
   100% { transform: rotateY(360deg) rotateX(10deg); }
 }
 
+/* ── Scatter image strip ── */
+#scatter-strip {
+  position: absolute;
+  bottom: 14%;
+  left: 0; right: 0;
+  z-index: 3;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+#scatter-strip.visible { opacity: 1; }
+.strip-track {
+  display: flex;
+  gap: 18px;
+  width: max-content;
+  animation: stripScroll 22s linear infinite;
+}
+.strip-img {
+  flex-shrink: 0;
+  width: 148px;   /* A4 ratio: 148 × 209 */
+  height: 209px;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.72) contrast(1.1);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+@keyframes stripScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 /* ── WORKS SECTION ── */
 #works {
   position: relative;
@@ -1173,6 +1204,13 @@ footer { border-top-color: #e0e0e0; }
       <span>Scroll</span>
       <div class="scroll-line"></div>
     </div>
+
+    <!-- scatter image strip — fades in as torus scatters -->
+    <div id="scatter-strip">
+      <div class="strip-track" id="strip-track">
+        <!-- filled by JS -->
+      </div>
+    </div>
   </section>
 
   <!-- Transition scroll space (250 vh gives room for the portal animation) -->
@@ -1513,6 +1551,27 @@ footer { border-top-color: #e0e0e0; }
       return '<div class="marquee-item">' + t + (i < doubled2.length - 1 ? '<span class="sep">///</span>' : '') + '</div>';
     }).join('');
   }
+})();
+
+// ── Scatter image strip ───────────────────────────────────────────────────────
+(function () {
+  var track = document.getElementById('strip-track');
+  var strip = document.getElementById('scatter-strip');
+  if (!track) return;
+  // 14 placeholder images, A4 ratio (148×209), doubled for seamless loop
+  var imgs = [];
+  for (var i = 0; i < 14; i++) imgs.push(i + 1);
+  var doubled = imgs.concat(imgs);
+  track.innerHTML = doubled.map(function (n) {
+    return '<img class="strip-img" src="https://picsum.photos/148/209?random=' + (n + 200) + '" alt="">';
+  }).join('');
+
+  // Show strip when scatter progress > 0.45
+  window.addEventListener('scroll', function () {
+    var sf = window._sf || 0;
+    if (sf > 0.45) strip.classList.add('visible');
+    else            strip.classList.remove('visible');
+  }, { passive: true });
 })();
 
 // ── Typewriter ────────────────────────────────────────────────────────────────
