@@ -1881,12 +1881,12 @@ window._sf = 0; // scatter factor 0→1
       var bx = (1 + 0.42 * cv2) * cu;
       var by = (1 + 0.42 * cv2) * su;
       var bz = 0.42 * sv;
-      /* store base + outward scatter direction (unit normal from torus centre) */
       var len = Math.sqrt(bx*bx + by*by + bz*bz) || 1;
       BASE_PTS.push({
         bx: bx, by: by, bz: bz,
-        nx: bx/len, ny: by/len, nz: bz/len,   // scatter direction
-        ch: CHARS[(Math.random() * CHARS.length) | 0]
+        nx: bx/len, ny: by/len, nz: bz/len,
+        ch: CHARS[(Math.random() * CHARS.length) | 0],
+        u: u   // store angle around ring for spinner wave
       });
     }
   }
@@ -1909,10 +1909,13 @@ window._sf = 0; // scatter factor 0→1
   glowCv.width = W; glowCv.height = H;
   window.addEventListener('resize', resize);
 
-  /* ── rotation & mouse ── */
-  var angX = 0.38, angY = 0;
+  /* ── fixed front-facing orientation, tiny mouse nudge ── */
+  /* angX = PI/2 makes the torus face the viewer as a perfect circle */
+  var angX = Math.PI / 2;
   var mDX = 0, mDY = 0;
   var cosX, sinX, cosY, sinY;
+  /* spinner wave phase */
+  var spinPhase = 0;
 
   window.addEventListener('mousemove', function (e) {
     var rect = hero.getBoundingClientRect();
@@ -1921,10 +1924,11 @@ window._sf = 0; // scatter factor 0→1
   });
 
   function updateTrig() {
-    cosX = Math.cos(angX + mDY * 0.32);
-    sinX = Math.sin(angX + mDY * 0.32);
-    cosY = Math.cos(angY + mDX * 0.20);
-    sinY = Math.sin(angY + mDX * 0.20);
+    /* tiny tilt from mouse (max ±8°) keeps it alive without breaking circle */
+    cosX = Math.cos(angX + mDY * 0.14);
+    sinX = Math.sin(angX + mDY * 0.14);
+    cosY = Math.cos(mDX * 0.10);
+    sinY = Math.sin(mDX * 0.10);
   }
 
   /* ── colour LUT — dimmed (max brightness ~62% of before) ── */
@@ -1970,20 +1974,18 @@ window._sf = 0; // scatter factor 0→1
     var scatterAmt = sf * scale3d * 1.1;
     var cx = W * 0.5, cy = H * 0.5;
 
-    angY += 0.0055;
+    /* advance spinner wave — ~1 full revolution per 2.2s */
+    spinPhase += 0.028;
     updateTrig();
 
     /* transform */
     for (var i = 0; i < N; i++) {
       var p = BASE_PTS[i];
-      /* apply scatter along outward normal */
       var bx = (p.bx + p.nx * scatterAmt / scale3d) * scale3d;
       var by = (p.by + p.ny * scatterAmt / scale3d) * scale3d;
       var bz = (p.bz + p.nz * scatterAmt / scale3d) * scale3d;
-      /* rotateX */
       var ry = cosX * by - sinX * bz;
       var rz = sinX * by + cosX * bz;
-      /* rotateY */
       wx[i] = cosY * bx + sinY * rz;
       wy[i] = ry;
       wz[i] = -sinY * bx + cosY * rz;
@@ -1992,7 +1994,6 @@ window._sf = 0; // scatter factor 0→1
     /* project */
     for (var i = 0; i < N; i++) {
       var sc = FOV / (FOV + wz[i] + scale3d * 1.4);
-      /* apply click impulse offset */
       offX[i] += velX[i]; velX[i] *= 0.84; offX[i] *= 0.88;
       offY[i] += velY[i]; velY[i] *= 0.84; offY[i] *= 0.88;
       sx[i] = cx + wx[i] * sc + offX[i];
@@ -2013,27 +2014,36 @@ window._sf = 0; // scatter factor 0→1
     ctx.fillRect(0, 0, W, H);
     glowCtx.clearRect(0, 0, W, H);
 
-    /* render */
+    /* render — spinner wave modulates brightness by u-angle distance from phase */
     var curFont = '', curColor = '';
     for (var ii = 0; ii < N; ii++) {
       var i   = idx_arr[ii];
       var dep = (sz_arr[i] - zMin) / zRng;
-      var d8  = (dep * 255) | 0;
-      var fSz = (6 + dep * 10) | 0;   // 6 – 16 px
+      var fSz = (6 + dep * 10) | 0;
       if (fSz < 5) continue;
-      var col  = colorCache[d8];
-      var font = getFont(fSz);
-      var px = sx[i], py = sy[i];
-      var ch = BASE_PTS[i].ch;
 
-      if (dep > 0.62) {
+      /* angular distance from the bright "head" of the spinner */
+      var uAng  = BASE_PTS[i].u;
+      var dAng  = uAng - spinPhase;
+      /* wrap to [-PI, PI] */
+      dAng = dAng - Math.PI * 2 * Math.floor((dAng + Math.PI) / (Math.PI * 2));
+      /* bright arc spans ~120°, tail fades over the rest */
+      var wave  = Math.max(0, 1 - Math.abs(dAng) / (Math.PI * 0.66));
+      /* boost: head is bright white, rest is dim */
+      var boost = 0.12 + wave * 0.78;
+      var bv    = (55 + dep * 76 * boost) | 0;
+      var al    = (0.05 + dep * 0.32 * boost + wave * 0.28).toFixed(2);
+      var col   = 'rgba(' + bv + ',' + bv + ',' + bv + ',' + al + ')';
+      var font  = getFont(fSz);
+
+      if (wave > 0.5) {
         if (font !== glowCtx._cf) { glowCtx.font = font; glowCtx._cf = font; }
         glowCtx.fillStyle = col;
-        glowCtx.fillText(ch, px, py);
+        glowCtx.fillText(BASE_PTS[i].ch, sx[i], sy[i]);
       }
-      if (font !== curFont)  { ctx.font      = font; curFont  = font; }
-      if (col  !== curColor) { ctx.fillStyle = col;  curColor = col;  }
-      ctx.fillText(ch, px, py);
+      if (font !== curFont)  { ctx.font = font; curFont = font; }
+      if (col  !== curColor) { ctx.fillStyle = col; curColor = col; }
+      ctx.fillText(BASE_PTS[i].ch, sx[i], sy[i]);
     }
 
     /* composite glow — reduced blur */
