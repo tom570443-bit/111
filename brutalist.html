@@ -2180,7 +2180,7 @@ window._sf = 0; // scatter factor 0→1
 
     /* depth sort */
     for (var i = 0; i < N; i++) idx_arr[i] = i;
-    idx_arr.sort(function (a, b) { return sz_arr[a] - sz_arr[b]; });
+    Array.prototype.sort.call(idx_arr, function (a, b) { return sz_arr[a] - sz_arr[b]; });
 
     var zMin = sz_arr[idx_arr[0]];
     var zMax = sz_arr[idx_arr[N-1]];
