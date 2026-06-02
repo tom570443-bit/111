@@ -1639,26 +1639,24 @@ footer { border-top-color: #e0e0e0; }
     { id:14, title:'Drift',            year:'2024', cat:'Landscape',    desc:'Water without destination. Entropy as aesthetics. The most honest systems have no goal state.' },
   ];
 
-  // Build doubled strip for seamless loop — ALL images get data-idx
   var doubled = DATA.concat(DATA);
   track.innerHTML = doubled.map(function (d) {
     return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (d.id + 200) + '" data-idx="' + (d.id - 1) + '" alt="' + d.title + '">';
   }).join('');
 
-  // Show strip only when scatter is nearly complete (> 0.72)
   window.addEventListener('scroll', function () {
     var sf = window._sf || 0;
     if (sf > 0.72) strip.classList.add('visible');
     else            strip.classList.remove('visible');
   }, { passive: true });
 
-  // Hover: pause scroll, colorize, scale — use inline styles
   track.addEventListener('mouseover', function (e) {
     if (!e.target.classList.contains('strip-img')) return;
     track.style.animationPlayState = 'paused';
     e.target.style.transform = 'scale(1.10)';
     e.target.style.filter = 'grayscale(0) brightness(1) contrast(1)';
   });
+
   track.addEventListener('mouseout', function (e) {
     if (!e.target.classList.contains('strip-img')) return;
     track.style.animationPlayState = 'running';
@@ -1666,7 +1664,6 @@ footer { border-top-color: #e0e0e0; }
     e.target.style.filter = '';
   });
 
-  // Click: open detail overlay
   track.addEventListener('click', function (e) {
     if (!e.target.classList.contains('strip-img')) return;
     var d = DATA[parseInt(e.target.dataset.idx)];
@@ -1681,7 +1678,6 @@ footer { border-top-color: #e0e0e0; }
     document.body.style.overflow = 'hidden';
   });
 
-  // Close overlay: click backdrop, click close btn, or Escape
   function closeDetail() {
     document.getElementById('img-detail').classList.remove('open');
     document.body.style.overflow = '';
