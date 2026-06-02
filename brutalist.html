@@ -482,12 +482,8 @@ main {
 }
 .strip-img {
   cursor: none;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), filter 0.4s ease;
-}
-.strip-img-hover {
-  transform: scale(1.08) !important;
-  filter: grayscale(0) brightness(1) contrast(1) !important;
-  cursor: none;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), filter 0.35s ease;
+  position: relative;
 }
 
 /* ── Image detail overlay ── */
@@ -1639,12 +1635,11 @@ footer { border-top-color: #e0e0e0; }
     { id:14, title:'Drift',            year:'2024', cat:'Landscape',    desc:'Water without destination. Entropy as aesthetics. The most honest systems have no goal state.' },
   ];
 
-  // Build doubled strip for seamless loop (only first 14 are interactive)
+  // Build doubled strip — ALL images get data-idx (modulo) for seamless loop
   var doubled = DATA.concat(DATA);
   track.innerHTML = doubled.map(function (d, idx) {
-    var isReal = idx < DATA.length;
     return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (d.id + 200) + '" ' +
-           (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
+           'data-idx="' + (d.id - 1) + '" alt="' + d.title + '">';
   }).join('');
 
   // Show strip only when scatter is nearly complete (> 0.72)
@@ -1654,30 +1649,31 @@ footer { border-top-color: #e0e0e0; }
     else            strip.classList.remove('visible');
   }, { passive: true });
 
-  // Hover: pause scroll, colorize, scale
-  var paused = false;
+  // Hover: pause animation, scale up, colorize
   track.addEventListener('mouseover', function (e) {
-    if (e.target.classList.contains('strip-img') && e.target.dataset.idx !== undefined) {
-      paused = true;
-      track.style.animationPlayState = 'paused';
-      e.target.classList.add('strip-img-hover');
-    }
+    var img = e.target;
+    if (!img.classList.contains('strip-img')) return;
+    track.style.animationPlayState = 'paused';
+    img.style.transform = 'scale(1.10)';
+    img.style.filter    = 'grayscale(0) brightness(1) contrast(1)';
+    img.style.zIndex    = '5';
   });
   track.addEventListener('mouseout', function (e) {
-    if (e.target.classList.contains('strip-img')) {
-      paused = false;
-      track.style.animationPlayState = 'running';
-      e.target.classList.remove('strip-img-hover');
-    }
+    var img = e.target;
+    if (!img.classList.contains('strip-img')) return;
+    track.style.animationPlayState = 'running';
+    img.style.transform = '';
+    img.style.filter    = '';
+    img.style.zIndex    = '';
   });
 
   // Click: open detail overlay
   track.addEventListener('click', function (e) {
-    var img = e.target.closest('.strip-img[data-idx]');
-    if (!img) return;
+    var img = e.target;
+    if (!img.classList.contains('strip-img') || img.dataset.idx === undefined) return;
     var d = DATA[parseInt(img.dataset.idx)];
     var overlay = document.getElementById('img-detail');
-    overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
+    overlay.querySelector('.detail-img').src          = 'https://picsum.photos/600/600?random=' + (d.id + 200);
     overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
     overlay.querySelector('.detail-year').textContent = d.year;
     overlay.querySelector('.detail-title').textContent = d.title;
@@ -1687,18 +1683,16 @@ footer { border-top-color: #e0e0e0; }
     document.body.style.overflow = 'hidden';
   });
 
-  // Close overlay
-  document.addEventListener('click', function (e) {
-    if (e.target.id === 'img-detail' || e.target.classList.contains('detail-close')) {
-      document.getElementById('img-detail').classList.remove('open');
-      document.body.style.overflow = '';
-    }
+  // Close overlay — click backdrop or close button or ESC
+  function closeOverlay() {
+    document.getElementById('img-detail').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('img-detail').addEventListener('click', function (e) {
+    if (e.target === this || e.target.classList.contains('detail-close')) closeOverlay();
   });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      document.getElementById('img-detail').classList.remove('open');
-      document.body.style.overflow = '';
-    }
+    if (e.key === 'Escape') closeOverlay();
   });
 })();
 
