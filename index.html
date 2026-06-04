@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SYSTEMS_ONLY — Digital Brutalism Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&family=Cormorant+Garamond:wght@300;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&family=Orbitron:wght@700;900&family=Cormorant+Garamond:wght@300;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <script>
 console.warn('Scripts "build/three.js" and "build/three.min.js" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation'),
 /**
@@ -242,9 +242,9 @@ main {
 
 /* ── TITLE ── */
 .hero-title {
-  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  font-size: clamp(4rem, 11vw, 10rem);
-  font-weight: 700;
+  font-family: 'Orbitron', 'JetBrains Mono', monospace;
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  font-weight: 900;
   line-height: 0.92;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2035,7 +2035,7 @@ window._sf = 0; // scatter factor 0→1
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   var cv = renderer.domElement;
-  cv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;';
+  cv.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1;';
   hero.insertBefore(cv, hero.firstChild);
   window._torusCanvas = cv;
 
