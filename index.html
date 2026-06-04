@@ -1850,10 +1850,10 @@ window._sf = 0; // scatter factor 0→1
 
   // Phase 1: title dissolves   scrollY 0.2vh → 0.8vh
   // Phase 2: horizontal slide  scrollY 0.8vh → 1.4vh
-  var TRANS_START = vh * 0.2;
-  var TRANS_END   = vh * 0.8;
-  var SLIDE_START = vh * 0.8;
-  var SLIDE_END   = vh * 1.4;
+  var TRANS_START = 0;
+  var TRANS_END   = vh * 0.5;
+  var SLIDE_START = vh * 0.5;
+  var SLIDE_END   = vh * 1.0;
 
   var slideActive = false;
   var hiddenSections = ['belief','system','contact'];
