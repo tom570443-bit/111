@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SYSTEMS_ONLY — Digital Brutalism Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&family=Cormorant+Garamond:wght@300;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <script>
 console.warn('Scripts "build/three.js" and "build/three.min.js" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation'),
 /**
@@ -205,7 +205,9 @@ main {
 }
 
 .hero-content {
-  position: relative;
+  position: absolute;
+  bottom: 12vh;
+  left: 0; right: 0;
   z-index: 4;
   display: flex;
   flex-direction: column;
@@ -239,11 +241,11 @@ main {
 
 /* ── TITLE ── */
 .hero-title {
-  font-family: var(--sans);
-  font-size: clamp(2.8rem, 7vw, 6.5rem);
-  font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.05em;
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: clamp(4rem, 11vw, 10rem);
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--white);
   position: relative;
@@ -252,19 +254,19 @@ main {
   will-change: transform, filter, opacity;
   z-index: 5;
   pointer-events: none;
+  /* halftone canvas will composite on top — title needs isolation */
+  isolation: isolate;
 }
 
-/* first word — clean solid white */
 .hero-title .word-solid {
   display: block;
   color: #ffffff;
+  text-shadow: 0 0 80px rgba(255,255,255,0.08);
 }
 
-/* second word — outline only */
+/* keep second span for JS compat but hide it */
 .hero-title .word-outline {
-  display: block;
-  -webkit-text-stroke: 2px var(--green);
-  color: transparent;
+  display: none;
 }
 
 /* ── sub-line / typewriter ── */
@@ -1259,10 +1261,12 @@ footer { border-top-color: #e0e0e0; }
 
     <div class="hero-content">
       <h1 class="hero-title">
-        <span class="word-solid">DIGITAL</span>
-        <span class="word-outline">REALITY</span>
+        <span class="word-solid">SYSTEMS</span>
+        <span class="word-outline"></span>
       </h1>
     </div>
+    <!-- halftone overlay canvas — sits above asteroid, below title -->
+    <canvas id="halftone-cv" style="position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.8s;"></canvas>
 
     <!-- scroll cue -->
     <div class="hero-scroll-hint">
@@ -2152,11 +2156,66 @@ window._sf = 0; // scatter factor 0→1
       stone.rotation.x = 0.15 + mDY * 0.08 + sf * 1.2;
       stone.scale.setScalar(1 + sf * 5.0);
     }
-    mat.opacity = Math.max(0, 1 - sf * 1.5);
+    /* keep asteroid visible through works section — only fade at full scatter */
+    mat.opacity = Math.max(0, 1 - Math.max(0, sf - 0.7) * 3.0);
     renderer.render(scene, camera);
   }
   animate();
 
+})();
+
+// ── Halftone dot overlay ──────────────────────────────────────────────────────
+(function () {
+  var cv = document.getElementById('halftone-cv');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W, H, phase = 0;
+
+  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var GRID = 22, MAX_R = 7;
+
+  /* wave-driven halftone — no pixel sampling needed */
+  function drawHalftone() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+
+    var cx = W / 2, cy = H / 2;
+    for (var gy = GRID / 2; gy < H; gy += GRID) {
+      for (var gx = GRID / 2; gx < W; gx += GRID) {
+        /* radial distance from centre — asteroid silhouette zone */
+        var dx = (gx - cx) / W, dy = (gy - cy) / H;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        /* multi-wave combination — creates organic ripple through dots */
+        var w1 = Math.sin(gx * 0.04 + phase * 1.1) * Math.cos(gy * 0.035 - phase * 0.7);
+        var w2 = Math.sin(dist * 18 - phase * 1.8) * 0.5;
+        var w3 = Math.cos(gx * 0.015 - gy * 0.02 + phase * 0.5) * 0.3;
+        var wave = (w1 * 0.5 + w2 + w3) * 0.5 + 0.5;
+        /* dots in centre are larger (where asteroid is) */
+        var centreBias = Math.max(0, 1 - dist * 2.5);
+        var r = MAX_R * (0.08 + wave * 0.55 + centreBias * 0.37);
+        if (r < 0.8) continue;
+        ctx.beginPath();
+        ctx.arc(gx, gy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  function tick() {
+    requestAnimationFrame(tick);
+    phase += 0.018;
+    var sf = window._sf || 0;
+    if (sf > 0.05) {
+      cv.style.opacity = Math.min(0.9, (sf - 0.05) / 0.25);
+      drawHalftone();
+    } else {
+      cv.style.opacity = 0;
+    }
+  }
+  tick();
 })();
 
 // ── Lenis smooth scroll + parallax ───────────────────────────────────────────
