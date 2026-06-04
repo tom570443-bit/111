@@ -1641,7 +1641,11 @@ footer { border-top-color: #e0e0e0; }
 
   // Use mousemove + elementFromPoint to detect hover — bypasses all pointer-events issues
   var mx = 0, my = 0, hoveredImg = null;
-  document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; });
+  document.addEventListener('mousemove', function (e) {
+    mx = e.clientX; my = e.clientY;
+    var dbg = document.elementFromPoint(mx, my);
+    console.log('MOUSE', mx, my, dbg ? dbg.tagName+'.'+dbg.className : 'null');
+  });
 
   (function poll() {
     requestAnimationFrame(poll);
