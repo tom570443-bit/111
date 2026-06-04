@@ -1848,12 +1848,12 @@ window._sf = 0; // scatter factor 0→1
   var heroScroll  = document.querySelector('.hero-scroll-hint');
   var worksEl     = document.getElementById('works');
 
-  // Phase 1: title dissolves   scrollY 0.5vh → 2vh
-  // Phase 2: horizontal slide  scrollY 2vh → 3vh
-  var TRANS_START = vh * 0.5;
-  var TRANS_END   = vh * 2;
-  var SLIDE_START = vh * 2;
-  var SLIDE_END   = vh * 3;
+  // Phase 1: title dissolves   scrollY 0.2vh → 0.8vh
+  // Phase 2: horizontal slide  scrollY 0.8vh → 1.4vh
+  var TRANS_START = vh * 0.2;
+  var TRANS_END   = vh * 0.8;
+  var SLIDE_START = vh * 0.8;
+  var SLIDE_END   = vh * 1.4;
 
   var slideActive = false;
   var hiddenSections = ['belief','system','contact'];
