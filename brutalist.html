@@ -2030,8 +2030,8 @@ window._sf = 0; // scatter factor 0→1
   /* ── size ── */
   var W, H;
   function resize() {
-    W = cv.width  = hero.offsetWidth;
-    H = cv.height = hero.offsetHeight;
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
     glowCv.width = W; glowCv.height = H;
   }
 
@@ -2072,10 +2072,13 @@ window._sf = 0; // scatter factor 0→1
   var glowCtx = glowCv.getContext('2d');
 
   /* ── sizing (call after glowCv created) ── */
-  W = cv.width  = hero.offsetWidth;
-  H = cv.height = hero.offsetHeight;
-  glowCv.width = W; glowCv.height = H;
-  window.addEventListener('resize', resize);
+  function doResize() {
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+    glowCv.width = W; glowCv.height = H;
+  }
+  doResize();
+  window.addEventListener('resize', doResize);
 
   /* ── fixed front-facing orientation, tiny mouse nudge ── */
   /* angX = PI/2 makes the torus face the viewer as a perfect circle */
