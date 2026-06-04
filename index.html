@@ -461,7 +461,7 @@ main {
   pointer-events: none;
   transition: opacity 0.6s ease;
 }
-#scatter-strip.visible { opacity: 1; pointer-events: auto; }
+#scatter-strip.visible { opacity: 1; }
 .strip-track {
   display: flex;
   gap: 18px;
@@ -1639,10 +1639,12 @@ footer { border-top-color: #e0e0e0; }
     { id:14, title:'Drift',            year:'2024', cat:'Landscape',    desc:'Water without destination. Entropy as aesthetics. The most honest systems have no goal state.' },
   ];
 
-  // All images (including looped duplicates) get data-idx
+  // Build doubled strip for seamless loop (only first 14 are interactive)
   var doubled = DATA.concat(DATA);
-  track.innerHTML = doubled.map(function (d) {
-    return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (d.id + 200) + '" data-idx="' + (d.id - 1) + '" alt="' + d.title + '">';
+  track.innerHTML = doubled.map(function (d, idx) {
+    var isReal = idx < DATA.length;
+    return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (d.id + 200) + '" ' +
+           (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
   }).join('');
 
   // Show strip only when scatter is nearly complete (> 0.72)
@@ -1652,44 +1654,52 @@ footer { border-top-color: #e0e0e0; }
     else            strip.classList.remove('visible');
   }, { passive: true });
 
-  // Hover: pause scroll, scale, colorize — inline styles (reliable)
+  // Hover: pause scroll, colorize, scale
+  var paused = false;
   track.addEventListener('mouseover', function (e) {
-    if (!e.target.classList.contains('strip-img')) return;
-    track.style.animationPlayState = 'paused';
-    e.target.style.transform = 'scale(1.10)';
-    e.target.style.filter = 'grayscale(0) brightness(1) contrast(1)';
+    if (e.target.classList.contains('strip-img') && e.target.dataset.idx !== undefined) {
+      paused = true;
+      track.style.animationPlayState = 'paused';
+      e.target.classList.add('strip-img-hover');
+    }
   });
   track.addEventListener('mouseout', function (e) {
-    if (!e.target.classList.contains('strip-img')) return;
-    track.style.animationPlayState = 'running';
-    e.target.style.transform = '';
-    e.target.style.filter = '';
+    if (e.target.classList.contains('strip-img')) {
+      paused = false;
+      track.style.animationPlayState = 'running';
+      e.target.classList.remove('strip-img-hover');
+    }
   });
 
   // Click: open detail overlay
   track.addEventListener('click', function (e) {
-    if (!e.target.classList.contains('strip-img')) return;
-    var d = DATA[parseInt(e.target.dataset.idx)];
+    var img = e.target.closest('.strip-img[data-idx]');
+    if (!img) return;
+    var d = DATA[parseInt(img.dataset.idx)];
     var overlay = document.getElementById('img-detail');
-    overlay.querySelector('.detail-img').src = 'https://picsum.photos/600/600?random=' + (d.id + 200);
-    overlay.querySelector('.detail-num').textContent = '// ' + String(d.id).padStart(3,'0');
-    overlay.querySelector('.detail-cat').textContent = d.cat.toUpperCase();
+    overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
+    overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
     overlay.querySelector('.detail-year').textContent = d.year;
     overlay.querySelector('.detail-title').textContent = d.title;
-    overlay.querySelector('.detail-desc').textContent = d.desc;
+    overlay.querySelector('.detail-desc').textContent  = d.desc;
+    overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   });
 
-  // Close: backdrop click, close button, or Escape
-  function closeDetail() {
-    document.getElementById('img-detail').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  var overlay = document.getElementById('img-detail');
-  overlay.addEventListener('click', function (e) { if (e.target === this) closeDetail(); });
-  overlay.querySelector('.detail-close').addEventListener('click', closeDetail);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDetail(); });
+  // Close overlay
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'img-detail' || e.target.classList.contains('detail-close')) {
+      document.getElementById('img-detail').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      document.getElementById('img-detail').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
 })();
 
 // ── Typewriter ────────────────────────────────────────────────────────────────
@@ -2039,8 +2049,8 @@ window._sf = 0; // scatter factor 0→1
   /* ── size ── */
   var W, H;
   function resize() {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
+    W = cv.width  = hero.offsetWidth;
+    H = cv.height = hero.offsetHeight;
     glowCv.width = W; glowCv.height = H;
   }
 
@@ -2081,8 +2091,8 @@ window._sf = 0; // scatter factor 0→1
   var glowCtx = glowCv.getContext('2d');
 
   /* ── sizing (call after glowCv created) ── */
-  W = cv.width  = window.innerWidth;
-  H = cv.height = window.innerHeight;
+  W = cv.width  = hero.offsetWidth;
+  H = cv.height = hero.offsetHeight;
   glowCv.width = W; glowCv.height = H;
   window.addEventListener('resize', resize);
 
