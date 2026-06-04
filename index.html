@@ -2041,8 +2041,8 @@ window._sf = 0; // scatter factor 0→1
   /* ── size ── */
   var W, H;
   function resize() {
-    W = cv.width  = hero.offsetWidth;
-    H = cv.height = hero.offsetHeight;
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
     glowCv.width = W; glowCv.height = H;
   }
 
@@ -2083,8 +2083,8 @@ window._sf = 0; // scatter factor 0→1
   var glowCtx = glowCv.getContext('2d');
 
   /* ── sizing (call after glowCv created) ── */
-  W = cv.width  = hero.offsetWidth;
-  H = cv.height = hero.offsetHeight;
+  W = cv.width  = window.innerWidth;
+  H = cv.height = window.innerHeight;
   glowCv.width = W; glowCv.height = H;
   window.addEventListener('resize', resize);
 
@@ -2182,7 +2182,7 @@ window._sf = 0; // scatter factor 0→1
 
     /* depth sort */
     for (var i = 0; i < N; i++) idx_arr[i] = i;
-    idx_arr.sort(function (a, b) { return sz_arr[a] - sz_arr[b]; });
+    Array.prototype.sort.call(idx_arr, function (a, b) { return sz_arr[a] - sz_arr[b]; });
 
     var zMin = sz_arr[idx_arr[0]];
     var zMax = sz_arr[idx_arr[N-1]];
