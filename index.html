@@ -1676,17 +1676,15 @@ footer { border-top-color: #e0e0e0; }
     document.body.style.overflow = 'hidden';
   });
 
-  // Close overlay
-  var overlay = document.getElementById('img-detail');
-  overlay.addEventListener('click', function (e) {
-    if (e.target === this) closeDetail();
-  });
-  overlay.querySelector('.detail-close').addEventListener('click', closeDetail);
-
+  // Close overlay (use delegation — #img-detail is after the script tag)
   function closeDetail() {
-    document.getElementById('img-detail').classList.remove('open');
+    var ov = document.getElementById('img-detail');
+    if (ov) ov.classList.remove('open');
     document.body.style.overflow = '';
   }
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'img-detail' || e.target.classList.contains('detail-close')) closeDetail();
+  });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeDetail();
   });
