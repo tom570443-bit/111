@@ -205,20 +205,7 @@ main {
 }
 
 .hero-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0;
-  width: 100%;
-  padding: 0 24px;
-  will-change: transform;
-  pointer-events: none;
+  display: none;
 }
 
 /* tiny eyebrow line */
@@ -1260,14 +1247,10 @@ footer { border-top-color: #e0e0e0; }
   <section id="hero">
     <!-- torus canvas injected by JS -->
 
-    <div class="hero-content">
-      <h1 class="hero-title">
-        <span class="word-solid">SYSTEMS</span>
-        <span class="word-outline"></span>
-      </h1>
-    </div>
     <!-- halftone overlay canvas — sits above asteroid, below title -->
     <canvas id="halftone-cv" style="position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.8s;"></canvas>
+    <!-- halftone text canvas — draws VISION PROPER with dot fill + stroke outline -->
+    <canvas id="halftone-text-cv" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:5;"></canvas>
 
     <!-- scroll cue -->
     <div class="hero-scroll-hint">
@@ -2215,6 +2198,79 @@ window._sf = 0; // scatter factor 0→1
     } else {
       cv.style.opacity = 0;
     }
+  }
+  tick();
+})();
+
+// ── Halftone text: VISION PROPER with dot fill + stroke outline ──────────────
+(function () {
+  var cv = document.getElementById('halftone-text-cv');
+  if (!cv) return;
+  cv.width  = window.innerWidth;
+  cv.height = window.innerHeight;
+  var ctx = cv.getContext('2d');
+  var off = document.createElement('canvas');
+  off.width = cv.width; off.height = cv.height;
+  var octx = off.getContext('2d');
+  var W = cv.width, H = cv.height, phase = 0;
+
+  window.addEventListener('resize', function () {
+    W = cv.width = off.width = window.innerWidth;
+    H = cv.height = off.height = window.innerHeight;
+  });
+
+  var GRID = 14, MAX_R = 5;
+
+  function tick() {
+    requestAnimationFrame(tick);
+    phase += 0.022;
+
+    var fontSize = Math.min(Math.max(W * 0.115, 44), 160);
+    var fontStr  = '900 ' + fontSize + 'px Orbitron, monospace';
+    var lineGap  = fontSize * 1.18;
+    var y1 = H / 2 - lineGap / 2;
+    var y2 = H / 2 + lineGap / 2;
+
+    // 1. Draw animated halftone dots on offscreen canvas
+    octx.clearRect(0, 0, W, H);
+    octx.fillStyle = '#ffffff';
+    for (var gy = GRID / 2; gy < H; gy += GRID) {
+      for (var gx = GRID / 2; gx < W; gx += GRID) {
+        var dx = (gx - W/2) / W * 2, dy = (gy - H/2) / H * 2;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var w1 = Math.sin(gx * 0.048 + phase * 1.1) * Math.cos(gy * 0.038 - phase * 0.75);
+        var w2 = Math.sin(dist * 14 - phase * 1.9) * 0.45;
+        var wave = (w1 * 0.55 + w2) * 0.5 + 0.5;
+        var r = MAX_R * (0.15 + wave * 0.85);
+        if (r < 0.4) continue;
+        octx.beginPath();
+        octx.arc(gx, gy, r, 0, Math.PI * 2);
+        octx.fill();
+      }
+    }
+
+    // 2. Clip halftone to text shape using destination-in
+    octx.globalCompositeOperation = 'destination-in';
+    octx.font = fontStr;
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    octx.fillStyle = '#ffffff';
+    octx.fillText('VISION', W / 2, y1);
+    octx.fillText('PROPER', W / 2, y2);
+    octx.globalCompositeOperation = 'source-over';
+
+    // 3. Composite halftone-filled text onto main canvas
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(off, 0, 0);
+
+    // 4. White stroke outline on top — keeps letterforms readable
+    ctx.font = fontStr;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+    ctx.lineWidth = 2;
+    ctx.strokeText('VISION', W / 2, y1);
+    ctx.strokeText('PROPER', W / 2, y2);
   }
   tick();
 })();
