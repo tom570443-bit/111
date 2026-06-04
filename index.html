@@ -1639,32 +1639,41 @@ footer { border-top-color: #e0e0e0; }
            (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
   }).join('');
 
-  // Bind events directly to each image (more reliable than delegation on animated track)
-  var imgs = track.querySelectorAll('.strip-img');
-  imgs.forEach(function (img) {
-    img.addEventListener('mouseenter', function () {
+  // Use mousemove + elementFromPoint to detect hover — bypasses all pointer-events issues
+  var mx = 0, my = 0, hoveredImg = null;
+  document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; });
+
+  (function poll() {
+    requestAnimationFrame(poll);
+    var el = document.elementFromPoint(mx, my);
+    var isImg = el && el.classList && el.classList.contains('strip-img');
+    if (isImg && el !== hoveredImg) {
+      if (hoveredImg) { hoveredImg.style.transform = ''; hoveredImg.style.filter = ''; }
+      hoveredImg = el;
       track.style.animationPlayState = 'paused';
-      img.style.transform = 'scale(1.10)';
-      img.style.filter = 'grayscale(0) brightness(1) contrast(1)';
-    });
-    img.addEventListener('mouseleave', function () {
+      el.style.transform = 'scale(1.10)';
+      el.style.filter = 'grayscale(0) brightness(1) contrast(1)';
+    } else if (!isImg && hoveredImg) {
+      hoveredImg.style.transform = '';
+      hoveredImg.style.filter = '';
+      hoveredImg = null;
       track.style.animationPlayState = 'running';
-      img.style.transform = '';
-      img.style.filter = '';
-    });
-    img.addEventListener('click', function () {
-      if (img.dataset.idx === undefined) return;
-      var d = DATA[parseInt(img.dataset.idx)];
-      var overlay = document.getElementById('img-detail');
-      overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
-      overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
-      overlay.querySelector('.detail-year').textContent = d.year;
-      overlay.querySelector('.detail-title').textContent = d.title;
-      overlay.querySelector('.detail-desc').textContent  = d.desc;
-      overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
-      overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    });
+    }
+  })();
+
+  document.addEventListener('click', function (e) {
+    var el = document.elementFromPoint(mx, my);
+    if (!el || !el.classList.contains('strip-img') || el.dataset.idx === undefined) return;
+    var d = DATA[parseInt(el.dataset.idx)];
+    var overlay = document.getElementById('img-detail');
+    overlay.querySelector('.detail-img').src = el.src.replace('200/200', '600/600');
+    overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
+    overlay.querySelector('.detail-year').textContent = d.year;
+    overlay.querySelector('.detail-title').textContent = d.title;
+    overlay.querySelector('.detail-desc').textContent  = d.desc;
+    overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   });
 
   // Show strip only when scatter is nearly complete (> 0.72)
