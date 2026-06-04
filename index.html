@@ -2017,7 +2017,7 @@ window._sf = 0; // scatter factor 0→1
   if (typeof THREE === 'undefined') return;
   var hero = document.getElementById('hero');
   var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.4;
@@ -2137,17 +2137,21 @@ window._sf = 0; // scatter factor 0→1
   });
 
   var rotY = 0;
+  var animFrame = 0;
   function animate() {
     requestAnimationFrame(animate);
+    animFrame++;
     var sf = window._sf || 0;
+    var opacity = Math.max(0, 1 - Math.max(0, sf - 0.25) * 4.0);
+    mat.opacity = opacity;
+    // skip render entirely when invisible
+    if (opacity <= 0) return;
     rotY += 0.003;
     if (stone) {
       stone.rotation.y = rotY + mDX * 0.18;
       stone.rotation.x = 0.15 + mDY * 0.08 + sf * 1.2;
       stone.scale.setScalar(1 + sf * 5.0);
     }
-    /* keep asteroid visible through works section — only fade at full scatter */
-    mat.opacity = Math.max(0, 1 - Math.max(0, sf - 0.25) * 4.0);
     renderer.render(scene, camera);
   }
   animate();
@@ -2194,16 +2198,16 @@ window._sf = 0; // scatter factor 0→1
     }
   }
 
+  var htFrame = 0;
   function tick() {
     requestAnimationFrame(tick);
-    phase += 0.018;
+    htFrame++;
     var sf = window._sf || 0;
-    if (sf > 0.35) {
-      cv.style.opacity = Math.min(0.45, (sf - 0.35) / 0.4);
-      drawHalftone();
-    } else {
-      cv.style.opacity = 0;
-    }
+    if (sf <= 0.35) { cv.style.opacity = 0; return; }
+    cv.style.opacity = Math.min(0.45, (sf - 0.35) / 0.4);
+    if (htFrame % 2 !== 0) return; // 30fps
+    phase += 0.036;
+    drawHalftone();
   }
   tick();
 })();
@@ -2228,12 +2232,19 @@ window._sf = 0; // scatter factor 0→1
   window.addEventListener('resize', resize);
 
   var GRID = 13, MAX_R = 5;
+  var txtFrame = 0;
 
   function tick() {
     requestAnimationFrame(tick);
-    phase += 0.022;
-
+    txtFrame++;
     var sf = window._sf || 0;
+    // hide when scrolled past hero
+    var op = sf > 0.15 ? Math.max(0, 1 - (sf - 0.15) / 0.15) : 1;
+    cv.style.opacity = op;
+    if (op <= 0) return;
+    if (txtFrame % 2 !== 0) return; // 30fps
+    phase += 0.044;
+
     var scale = 1 + sf * 2.5;
     var fontSize = Math.min(Math.max(W * 0.095, 36), 115) * scale;
     var fontStr  = '900 ' + fontSize + 'px Orbitron, monospace';
@@ -2265,10 +2276,8 @@ window._sf = 0; // scatter factor 0→1
     ctx.fillText('VISION PROPER', W / 2, yc);
 
     // ── C: punch holes where asteroid canvas pixels are opaque ──
-    //   destination-out: erases dest pixels proportional to src alpha
-    //   asteroid bg = alpha 0 (no erase), asteroid surface = alpha 1 (fully erases white)
     var wc = window._torusCanvas;
-    if (wc) {
+    if (wc && sf < 0.28) {
       try {
         ctx.globalCompositeOperation = 'destination-out';
         ctx.drawImage(wc, 0, 0, W, H);
@@ -2288,8 +2297,6 @@ window._sf = 0; // scatter factor 0→1
     ctx.lineWidth = 2;
     ctx.strokeText('VISION PROPER', W / 2, yc);
 
-    // fade out as user scrolls away from hero
-    cv.style.opacity = sf > 0.15 ? Math.max(0, 1 - (sf - 0.15) / 0.15) : '1';
   }
   tick();
 })();
