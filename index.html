@@ -2010,7 +2010,11 @@ window._sf = 0; // scatter factor 0→1
       resetSlide();
       resetTitle();
       var hz = document.getElementById('hero-zone');
-      if (hz) window.scrollTo({ top: hz.offsetHeight + 2, behavior: 'instant' });
+      if (hz) {
+        var target = hz.offsetHeight + 2;
+        if (window._lenis) window._lenis.scrollTo(target, { immediate: true });
+        else window.scrollTo({ top: target });
+      }
     }
   }, { passive: true });
 })();
@@ -2347,23 +2351,22 @@ window._sf = 0; // scatter factor 0→1
   if (grid) gridObs.observe(grid);
 })();
 
-// ── Page snap: smoothly snap to nearest section if within 35% of page height ──
+// ── Page snap: use Lenis to smoothly snap to nearest section ─────────────────
 (function () {
   var snapTimer;
   var snapping = false;
 
   function getSnapPoints() {
-    var pts = [];
-    // hero top
-    pts.push(0);
-    // start of works (just after hero-zone)
+    var pts = [0];
     var hz = document.getElementById('hero-zone');
     if (hz) pts.push(hz.offsetTop + hz.offsetHeight);
-    // remaining sections
-    ['belief', 'system', 'contact'].forEach(function (id) {
+    ['works', 'belief', 'system', 'contact'].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) pts.push(el.getBoundingClientRect().top + window.scrollY);
+      if (el) pts.push(el.offsetTop);
     });
+    // deduplicate and sort
+    pts = pts.filter(function (v, i, a) { return a.indexOf(v) === i; });
+    pts.sort(function (a, b) { return a - b; });
     return pts;
   }
 
@@ -2371,21 +2374,26 @@ window._sf = 0; // scatter factor 0→1
     if (snapping) return;
     clearTimeout(snapTimer);
     snapTimer = setTimeout(function () {
-      var sy    = window.scrollY;
-      var vh    = window.innerHeight;
-      var pts   = getSnapPoints();
-      var threshold = vh * 0.35;
+      var sy  = window.scrollY;
+      var vh  = window.innerHeight;
+      var pts = getSnapPoints();
+      var threshold = vh * 0.38;
       var nearest = null, minDist = Infinity;
       pts.forEach(function (p) {
         var d = Math.abs(p - sy);
         if (d < minDist) { minDist = d; nearest = p; }
       });
-      if (nearest !== null && minDist < threshold && minDist > 4) {
+      if (nearest !== null && minDist > 6 && minDist < threshold) {
         snapping = true;
-        window.scrollTo({ top: nearest, behavior: 'smooth' });
-        setTimeout(function () { snapping = false; }, 800);
+        var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
+        if (window._lenis) {
+          window._lenis.scrollTo(nearest, { duration: 0.7, easing: ease });
+        } else {
+          window.scrollTo({ top: nearest, behavior: 'smooth' });
+        }
+        setTimeout(function () { snapping = false; }, 900);
       }
-    }, 180);
+    }, 200);
   }, { passive: true });
 })();
 </script>
