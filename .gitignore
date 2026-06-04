@@ -1,0 +1,5 @@
+node_modules/
+package*.json
+*.zip
+asteroid1_hq.obj
+DefaultMaterial_Normal_OpenGL.png
