@@ -1998,7 +1998,7 @@ window._sf = 0; // scatter factor 0→1
 (function () {
   var hero = document.getElementById('hero');
   var cv   = document.createElement('canvas');
-  cv.style.cssText = 'position:absolute;inset:0;pointer-events:all;z-index:1;';
+  cv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;';
   hero.insertBefore(cv, hero.firstChild);
   window._torusCanvas = cv; // expose for slide transition
   var ctx = cv.getContext('2d');
