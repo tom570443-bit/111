@@ -1907,6 +1907,7 @@ window._sf = 0; // scatter factor 0→1
     worksEl.style.position  = '';
     worksEl.style.zIndex    = '';
     worksEl.style.background = '';
+    worksEl.style.overflowY  = '';
     showSections();
     var cv = window._torusCanvas;
     if (cv) {
@@ -2344,6 +2345,48 @@ window._sf = 0; // scatter factor 0→1
   }, { threshold: 0.15 });
 
   if (grid) gridObs.observe(grid);
+})();
+
+// ── Page snap: smoothly snap to nearest section if within 35% of page height ──
+(function () {
+  var snapTimer;
+  var snapping = false;
+
+  function getSnapPoints() {
+    var pts = [];
+    // hero top
+    pts.push(0);
+    // start of works (just after hero-zone)
+    var hz = document.getElementById('hero-zone');
+    if (hz) pts.push(hz.offsetTop + hz.offsetHeight);
+    // remaining sections
+    ['belief', 'system', 'contact'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) pts.push(el.getBoundingClientRect().top + window.scrollY);
+    });
+    return pts;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (snapping) return;
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(function () {
+      var sy    = window.scrollY;
+      var vh    = window.innerHeight;
+      var pts   = getSnapPoints();
+      var threshold = vh * 0.35;
+      var nearest = null, minDist = Infinity;
+      pts.forEach(function (p) {
+        var d = Math.abs(p - sy);
+        if (d < minDist) { minDist = d; nearest = p; }
+      });
+      if (nearest !== null && minDist < threshold && minDist > 4) {
+        snapping = true;
+        window.scrollTo({ top: nearest, behavior: 'smooth' });
+        setTimeout(function () { snapping = false; }, 800);
+      }
+    }, 180);
+  }, { passive: true });
 })();
 </script>
 <!-- Image detail overlay -->
