@@ -1587,7 +1587,7 @@ footer { border-top-color: #e0e0e0; }
   var items = ['ASCII ART','RAW CODE','KINETIC TYPE','DIGITAL BRUTALISM','DARK DATA','SYSTEMS ONLY','TERMINAL UX','GLITCH ART','OVERFLOW','01001011'];
   var doubled = items.concat(items);
   var track = document.getElementById('marquee-track');
-  track.innerHTML = doubled.map(function(t, i) {
+  if (track) track.innerHTML = doubled.map(function(t, i) {
     return '<div class="marquee-item">' + t + (i < doubled.length - 1 ? '<span class="sep">///</span>' : '') + '</div>';
   }).join('');
 
