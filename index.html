@@ -1848,14 +1848,10 @@ window._sf = 0; // scatter factor 0→1
   var heroScroll  = document.querySelector('.hero-scroll-hint');
   var worksEl     = document.getElementById('works');
 
-  // Phase 1: title dissolves   scrollY 0.2vh → 0.8vh
-  // Phase 2: horizontal slide  scrollY 0.8vh → 1.4vh
-  var TRANS_START = 0;
-  var TRANS_END   = vh * 0.5;
-  var SLIDE_START = vh * 0.5;
-  var SLIDE_END   = vh * 1.0;
-
+  var TRANS_START = 0, TRANS_END = 0, SLIDE_START = 0, SLIDE_END = 0;
   var slideActive = false;
+  var heroJumped  = false; // true after forward jump to works; prevents re-running phase2 every frame
+  var lastSy      = 0;
   var hiddenSections = ['belief','system','contact'];
 
   function hideSections() {
@@ -1921,8 +1917,31 @@ window._sf = 0; // scatter factor 0→1
     slideActive = false;
   }
 
+  function getHzEnd() {
+    var hz = document.getElementById('hero-zone');
+    return hz ? (hz.offsetTop + hz.offsetHeight) : -1;
+  }
+
   window.addEventListener('scroll', function () {
     var sy = window.scrollY;
+    var hzEnd = getHzEnd();
+
+    // ── Reverse path: user scrolled back into hero-zone from works ──
+    // Teleport to top so they don't have to scroll 447vh of dead space
+    if (hzEnd > 0 && sy < hzEnd && lastSy >= hzEnd) {
+      heroJumped = false;
+      resetSlide();
+      resetTitle();
+      window._sf = 0;
+      lastSy = 0;
+      if (window._lenis) window._lenis.scrollTo(0, { immediate: true });
+      else window.scrollTo({ top: 0 });
+      return;
+    }
+    lastSy = sy;
+
+    // ── Skip hero transition logic when already past hero-zone ──
+    if (heroJumped) return;
 
     /* ── before title phase ── */
     if (sy < TRANS_START) {
@@ -1956,24 +1975,19 @@ window._sf = 0; // scatter factor 0→1
     /* ── Phase 2: horizontal slide ── */
     slideActive = true;
     hideSections();
-    // Freeze title at fully dissolved state
     if (heroTitle) { heroTitle.style.transform = 'scale(6.5)'; heroTitle.style.opacity = '0'; heroTitle.style.filter = 'blur(32px)'; }
 
     var cv = window._torusCanvas;
     var sp  = Math.min((sy - SLIDE_START) / (SLIDE_END - SLIDE_START), 1);
     var sep = easeOut4(sp);
 
-    window._sf = 1; // torus stays fully scattered
+    window._sf = 1;
 
-    // Hero slides out to the LEFT
-    // z-index 15: above belief/system/contact (z-index:10) so those sections don't bleed through
     heroEl.style.position  = 'fixed';
     heroEl.style.inset     = '0';
     heroEl.style.zIndex    = '15';
     heroEl.style.transform = 'translateX(' + (-sep * 100).toFixed(2) + 'vw)';
 
-    // Works slides in from the RIGHT — z-index 20, above hero (15) and all sections (10)
-    // Background interpolates black→white as slide progresses
     var bgVal = Math.round(sep * 255);
     var bgHex = bgVal.toString(16).padStart(2, '0');
     worksEl.style.position   = 'fixed';
@@ -1983,27 +1997,24 @@ window._sf = 0; // scatter factor 0→1
     worksEl.style.overflowY  = 'hidden';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
-    // Torus ghost: detach from hero, haunt works left half
-    // — no sudden opacity drop; clip gradually as hero exits; z-index above works so visible
     if (cv) {
       cv.style.position      = 'fixed';
       cv.style.inset         = '0';
-      cv.style.zIndex        = '22'; // above works (20) so ghost shows through
+      cv.style.zIndex        = '22';
       cv.style.pointerEvents = 'none';
-      // Clip right side progressively so at sp=1 only left 50% shows (torus "stays" on left)
       var rightInset = (sep * 50).toFixed(1);
       cv.style.clipPath = 'inset(0 ' + rightInset + '% 0 0)';
-      // Smooth opacity: starts at natural brightness, fades to gentle ghost
       cv.style.opacity = Math.max(0.08, 0.5 - sep * 0.38).toFixed(3);
     }
 
-    /* ── slide complete: release to normal flow + jump past hero-zone ── */
+    /* ── slide complete: jump past hero-zone (runs only once via heroJumped) ── */
     if (sp >= 1) {
+      heroJumped = true;
       resetSlide();
       resetTitle();
-      var hz = document.getElementById('hero-zone');
-      if (hz) {
-        var target = hz.offsetHeight + 2;
+      if (hzEnd > 0) {
+        var target = hzEnd + 2;
+        lastSy = target;
         if (window._lenis) window._lenis.scrollTo(target, { immediate: true });
         else window.scrollTo({ top: target });
       }
@@ -2350,13 +2361,11 @@ window._sf = 0; // scatter factor 0→1
 
   function getSnapPoints() {
     var pts = [0];
-    var hz = document.getElementById('hero-zone');
-    if (hz) pts.push(hz.offsetTop + hz.offsetHeight);
+    // works.offsetTop is same as hz.offsetHeight — only add once via works
     ['works', 'belief', 'system', 'contact'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) pts.push(el.offsetTop);
     });
-    // deduplicate and sort
     pts = pts.filter(function (v, i, a) { return a.indexOf(v) === i; });
     pts.sort(function (a, b) { return a - b; });
     return pts;
@@ -2368,6 +2377,8 @@ window._sf = 0; // scatter factor 0→1
     snapTimer = setTimeout(function () {
       var sy  = window.scrollY;
       var vh  = window.innerHeight;
+      // Don't snap while inside the hero animation zone (let transition handle it)
+      if (sy > 0 && sy < vh * 3.5) return;
       var pts = getSnapPoints();
       var threshold = vh * 0.38;
       var nearest = null, minDist = Infinity;
