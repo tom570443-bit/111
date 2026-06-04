@@ -461,7 +461,7 @@ main {
   pointer-events: none;
   transition: opacity 0.6s ease;
 }
-#scatter-strip.visible { opacity: 1; }
+#scatter-strip.visible { opacity: 1; pointer-events: auto; }
 .strip-track {
   display: flex;
   gap: 18px;
@@ -1647,20 +1647,17 @@ footer { border-top-color: #e0e0e0; }
   }, { passive: true });
 
   // Hover: pause scroll, colorize, scale
-  var paused = false;
   track.addEventListener('mouseover', function (e) {
-    if (e.target.classList.contains('strip-img') && e.target.dataset.idx !== undefined) {
-      paused = true;
-      track.style.animationPlayState = 'paused';
-      e.target.classList.add('strip-img-hover');
-    }
+    if (!e.target.classList.contains('strip-img')) return;
+    track.style.animationPlayState = 'paused';
+    e.target.style.transform = 'scale(1.10)';
+    e.target.style.filter = 'grayscale(0) brightness(1) contrast(1)';
   });
   track.addEventListener('mouseout', function (e) {
-    if (e.target.classList.contains('strip-img')) {
-      paused = false;
-      track.style.animationPlayState = 'running';
-      e.target.classList.remove('strip-img-hover');
-    }
+    if (!e.target.classList.contains('strip-img')) return;
+    track.style.animationPlayState = 'running';
+    e.target.style.transform = '';
+    e.target.style.filter = '';
   });
 
   // Click: open detail overlay
@@ -1680,17 +1677,18 @@ footer { border-top-color: #e0e0e0; }
   });
 
   // Close overlay
-  document.addEventListener('click', function (e) {
-    if (e.target.id === 'img-detail' || e.target.classList.contains('detail-close')) {
-      document.getElementById('img-detail').classList.remove('open');
-      document.body.style.overflow = '';
-    }
+  var overlay = document.getElementById('img-detail');
+  overlay.addEventListener('click', function (e) {
+    if (e.target === this) closeDetail();
   });
+  overlay.querySelector('.detail-close').addEventListener('click', closeDetail);
+
+  function closeDetail() {
+    document.getElementById('img-detail').classList.remove('open');
+    document.body.style.overflow = '';
+  }
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      document.getElementById('img-detail').classList.remove('open');
-      document.body.style.overflow = '';
-    }
+    if (e.key === 'Escape') closeDetail();
   });
 })();
 
