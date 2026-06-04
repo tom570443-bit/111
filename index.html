@@ -469,7 +469,6 @@ main {
   display: flex;
   gap: 18px;
   width: max-content;
-  animation: stripScroll 22s linear infinite;
 }
 .strip-img {
   flex-shrink: 0;
@@ -485,12 +484,7 @@ main {
 }
 .strip-img {
   cursor: none;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), filter 0.4s ease;
-}
-.strip-img-hover {
-  transform: scale(1.08) !important;
-  filter: grayscale(0) brightness(1) contrast(1) !important;
-  cursor: none;
+  transition: transform 0.55s cubic-bezier(0.34, 2.2, 0.64, 1), filter 0.4s ease;
 }
 
 /* ── Image detail overlay ── */
@@ -1642,16 +1636,32 @@ footer { border-top-color: #e0e0e0; }
            (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
   }).join('');
 
+  // JS-driven scroll with velocity easing for smooth stop/resume
+  var scrollX = 0, vel = 0, isHovering = false, rafLast = null;
+  (function animateScroll(ts) {
+    requestAnimationFrame(animateScroll);
+    if (!rafLast) { rafLast = ts; return; }
+    var dt = Math.min((ts - rafLast) / 1000, 0.05);
+    rafLast = ts;
+    var halfW = track.scrollWidth / 2;
+    if (!halfW) return;
+    var target = isHovering ? 0 : -(halfW / 22);
+    vel += (target - vel) * (isHovering ? 0.18 : 0.05);
+    scrollX += vel * dt;
+    if (scrollX <= -halfW) scrollX += halfW;
+    track.style.transform = 'translateX(' + scrollX + 'px)';
+  })();
+
   // Bind mouseenter/mouseleave directly to each image
   var imgs = track.querySelectorAll('.strip-img');
   imgs.forEach(function (img) {
     img.addEventListener('mouseenter', function () {
-      track.style.animationPlayState = 'paused';
+      isHovering = true;
       img.style.transform = 'scale(1.10)';
       img.style.filter = 'grayscale(0) brightness(1) contrast(1)';
     });
     img.addEventListener('mouseleave', function () {
-      track.style.animationPlayState = 'running';
+      isHovering = false;
       img.style.transform = '';
       img.style.filter = '';
     });
