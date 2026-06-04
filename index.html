@@ -2038,57 +2038,24 @@ window._sf = 0; // scatter factor 0→1
   var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.z = 3.2;
 
-  /* procedural textures for surface micro-detail */
-  function makeNoiseCanvas(size, fn) {
-    var c = document.createElement('canvas'); c.width = c.height = size;
-    var ctx = c.getContext('2d'), img = ctx.createImageData(size, size);
-    for (var i = 0; i < img.data.length; i += 4) {
-      var x = (i/4) % size, y = Math.floor((i/4) / size);
-      var v = Math.floor(Math.min(255, Math.max(0, fn(x, y) * 255)));
-      img.data[i] = img.data[i+1] = img.data[i+2] = v; img.data[i+3] = 255;
-    }
-    ctx.putImageData(img, 0, 0); return c;
-  }
-  function sn(x, y, fx, fy) { return Math.sin(x*fx)*Math.cos(y*fy)*0.5+0.5; }
-
-  /* bump: multi-octave sin noise — coarse rocky bumps + fine grain */
-  var bumpTex = new THREE.CanvasTexture(makeNoiseCanvas(1024, function(x,y){
-    return sn(x,y,0.08,0.06)*0.4 + sn(x,y,0.22,0.19)*0.25 +
-           sn(x,y,0.6,0.55)*0.2  + sn(x,y,1.4,1.3)*0.1  + sn(x,y,3.2,2.8)*0.05;
-  }));
-  bumpTex.wrapS = bumpTex.wrapT = THREE.RepeatWrapping;
-  bumpTex.repeat.set(3, 3);
-
-  /* roughness: low-freq variation — crevices are darker (smoother) */
-  var roughTex = new THREE.CanvasTexture(makeNoiseCanvas(512, function(x,y){
-    return 0.55 + sn(x,y,0.03,0.025)*0.25 + sn(x,y,0.09,0.08)*0.15 + sn(x,y,0.2,0.18)*0.05;
-  }));
+  /* load PBR textures */
+  var texLoader = new THREE.TextureLoader();
+  var normalTex   = texLoader.load('tex_normal.jpg');
+  var roughTex    = texLoader.load('tex_roughness.jpg');
+  var aoTex       = texLoader.load('tex_ao.jpg');
 
   var mat = new THREE.MeshStandardMaterial({
-    color: 0x888888,
-    roughness: 0.94,
+    color: 0x999999,
+    roughness: 1.0,
     metalness: 0.0,
-    bumpMap: bumpTex,
-    bumpScale: 0.08,
+    normalMap: normalTex,
+    normalScale: new THREE.Vector2(1.5, 1.5),
     roughnessMap: roughTex,
+    aoMap: aoTex,
+    aoMapIntensity: 1.2,
     transparent: true,
     opacity: 1
   });
-
-  /* vertex shader displacement — adds procedural micro-bumps to every vertex */
-  mat.onBeforeCompile = function (shader) {
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <begin_vertex>',
-      [
-        'vec3 p = position;',
-        'float n  = sin(p.x*4.1+p.y*3.7)*cos(p.y*4.3+p.z*3.1)*sin(p.z*3.9+p.x*4.7);',
-        'float n2 = sin(p.x*11.0+p.y*9.3)*cos(p.y*10.7+p.z*8.9)*0.4;',
-        'float n3 = sin(p.x*27.0+p.y*23.1)*cos(p.z*25.3+p.x*21.7)*0.15;',
-        'float disp = (n*0.45 + n2 + n3) * 0.018;',
-        'vec3 transformed = p + normal * disp;'
-      ].join('\n')
-    );
-  };
 
   /* strong top-right key — creates deep shadow in craters */
   var key = new THREE.DirectionalLight(0xffffff, 5.0);
@@ -2113,21 +2080,36 @@ window._sf = 0; // scatter factor 0→1
   /* load OBJ via fetch — requires local server (python -m http.server) */
   function parseAndAddOBJ(text) {
     var lines = text.split('\n');
-    var verts = [], faces = [];
+    var verts = [], uvs = [], faces_v = [], faces_vt = [];
     for (var i = 0; i < lines.length; i++) {
-      var l = lines[i].trim();
-      if (l.charAt(0) === 'v' && l.charAt(1) === ' ') {
-        var p = l.split(/\s+/);
-        verts.push(parseFloat(p[1]), parseFloat(p[2]), parseFloat(p[3]));
-      } else if (l.charAt(0) === 'f' && l.charAt(1) === ' ') {
-        var p = l.split(/\s+/);
-        faces.push(parseInt(p[1])-1, parseInt(p[2])-1, parseInt(p[3])-1);
+      var l = lines[i].trim(), p = l.split(/\s+/);
+      if (p[0] === 'v')  { verts.push(parseFloat(p[1]), parseFloat(p[2]), parseFloat(p[3])); }
+      else if (p[0] === 'vt') { uvs.push(parseFloat(p[1]), parseFloat(p[2])); }
+      else if (p[0] === 'f') {
+        var fv = [], fvt = [];
+        for (var k = 1; k <= 3; k++) {
+          var tok = p[k].split('/');
+          fv.push(parseInt(tok[0])-1);
+          fvt.push(tok[1] ? parseInt(tok[1])-1 : 0);
+        }
+        faces_v.push(fv[0], fv[1], fv[2]);
+        faces_vt.push(fvt[0], fvt[1], fvt[2]);
       }
     }
+    /* expand to non-indexed geometry so each face corner has its own UV */
+    var posArr = [], uvArr = [];
+    for (var i = 0; i < faces_v.length; i++) {
+      var vi = faces_v[i] * 3, ti = faces_vt[i] * 2;
+      posArr.push(verts[vi], verts[vi+1], verts[vi+2]);
+      uvArr.push(uvs[ti], uvs[ti+1]);
+    }
     var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-    geo.setIndex(faces);
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(posArr, 3));
+    geo.setAttribute('uv',       new THREE.Float32BufferAttribute(uvArr,  2));
+    geo.setAttribute('uv2',      new THREE.Float32BufferAttribute(uvArr,  2)); // for aoMap
     geo.computeVertexNormals();
+
+    /* center + normalize scale */
     geo.computeBoundingBox();
     var box = geo.boundingBox;
     var cx = (box.min.x+box.max.x)/2, cy = (box.min.y+box.max.y)/2, cz = (box.min.z+box.max.z)/2;
