@@ -1631,7 +1631,7 @@ footer { border-top-color: #e0e0e0; }
     { id:14, title:'Drift',            year:'2024', cat:'Landscape',    desc:'Water without destination. Entropy as aesthetics. The most honest systems have no goal state.' },
   ];
 
-  // Build doubled strip for seamless loop (only first 14 are interactive)
+  // Build doubled strip and bind events directly to each image
   var doubled = DATA.concat(DATA);
   track.innerHTML = doubled.map(function (d, idx) {
     var isReal = idx < DATA.length;
@@ -1639,42 +1639,40 @@ footer { border-top-color: #e0e0e0; }
            (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
   }).join('');
 
+  // Bind events directly to each image (more reliable than delegation on animated track)
+  var imgs = track.querySelectorAll('.strip-img');
+  imgs.forEach(function (img) {
+    img.addEventListener('mouseenter', function () {
+      track.style.animationPlayState = 'paused';
+      img.style.transform = 'scale(1.10)';
+      img.style.filter = 'grayscale(0) brightness(1) contrast(1)';
+    });
+    img.addEventListener('mouseleave', function () {
+      track.style.animationPlayState = 'running';
+      img.style.transform = '';
+      img.style.filter = '';
+    });
+    img.addEventListener('click', function () {
+      if (img.dataset.idx === undefined) return;
+      var d = DATA[parseInt(img.dataset.idx)];
+      var overlay = document.getElementById('img-detail');
+      overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
+      overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
+      overlay.querySelector('.detail-year').textContent = d.year;
+      overlay.querySelector('.detail-title').textContent = d.title;
+      overlay.querySelector('.detail-desc').textContent  = d.desc;
+      overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
   // Show strip only when scatter is nearly complete (> 0.72)
   window.addEventListener('scroll', function () {
     var sf = window._sf || 0;
     if (sf > 0.72) strip.classList.add('visible');
     else            strip.classList.remove('visible');
   }, { passive: true });
-
-  // Hover: pause scroll, colorize, scale
-  track.addEventListener('mouseover', function (e) {
-    if (!e.target.classList.contains('strip-img')) return;
-    track.style.animationPlayState = 'paused';
-    e.target.style.transform = 'scale(1.10)';
-    e.target.style.filter = 'grayscale(0) brightness(1) contrast(1)';
-  });
-  track.addEventListener('mouseout', function (e) {
-    if (!e.target.classList.contains('strip-img')) return;
-    track.style.animationPlayState = 'running';
-    e.target.style.transform = '';
-    e.target.style.filter = '';
-  });
-
-  // Click: open detail overlay
-  track.addEventListener('click', function (e) {
-    var img = e.target.closest('.strip-img[data-idx]');
-    if (!img) return;
-    var d = DATA[parseInt(img.dataset.idx)];
-    var overlay = document.getElementById('img-detail');
-    overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
-    overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
-    overlay.querySelector('.detail-year').textContent = d.year;
-    overlay.querySelector('.detail-title').textContent = d.title;
-    overlay.querySelector('.detail-desc').textContent  = d.desc;
-    overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  });
 
   // Close overlay (use delegation — #img-detail is after the script tag)
   function closeDetail() {
