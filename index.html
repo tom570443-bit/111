@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
 <!-- Lenis smooth scroll -->
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <style>
 /* ── Reset & Base ── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2005,208 +2006,88 @@ window._sf = 0; // scatter factor 0→1
   }, { passive: true });
 })();
 
-// ── ASCII Particle Torus — click + scroll interactions ───────────────────────
+// ── Three.js Realistic Stone ─────────────────────────────────────────────────
 (function () {
+  if (typeof THREE === 'undefined') return;
   var hero = document.getElementById('hero');
-  var cv   = document.createElement('canvas');
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+  var cv = renderer.domElement;
   cv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;';
   hero.insertBefore(cv, hero.firstChild);
-  window._torusCanvas = cv; // expose for slide transition
-  var ctx = cv.getContext('2d');
+  window._torusCanvas = cv;
 
-  /* ── size ── */
-  var W, H;
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 2.8;
+
+  function hash(n) { return ((Math.sin(n) * 43758.5453) % 1 + 1) % 1; }
+  function noise3(x, y, z) {
+    var ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+    var fx = x - ix, fy = y - iy, fz = z - iz;
+    var ux = fx*fx*(3-2*fx), uy = fy*fy*(3-2*fy), uz = fz*fz*(3-2*fz);
+    var a=hash(ix+hash(iy+hash(iz))), b=hash(ix+1+hash(iy+hash(iz)));
+    var c=hash(ix+hash(iy+1+hash(iz))), d=hash(ix+1+hash(iy+1+hash(iz)));
+    var e=hash(ix+hash(iy+hash(iz+1))), f=hash(ix+1+hash(iy+hash(iz+1)));
+    var g=hash(ix+hash(iy+1+hash(iz+1))), h=hash(ix+1+hash(iy+1+hash(iz+1)));
+    return a*(1-ux)*(1-uy)*(1-uz)+b*ux*(1-uy)*(1-uz)+c*(1-ux)*uy*(1-uz)+d*ux*uy*(1-uz)
+          +e*(1-ux)*(1-uy)*uz    +f*ux*(1-uy)*uz    +g*(1-ux)*uy*uz    +h*ux*uy*uz;
+  }
+  function fbm(x, y, z) {
+    var v=0, a=0.5, q=1;
+    for (var i=0; i<6; i++) { v+=a*noise3(x*q,y*q,z*q); a*=0.5; q*=2.1; }
+    return v;
+  }
+
+  var geo = new THREE.IcosahedronGeometry(1, 7);
+  var pos = geo.attributes.position;
+  for (var i = 0; i < pos.count; i++) {
+    var px=pos.getX(i), py=pos.getY(i), pz=pos.getZ(i);
+    var len = Math.sqrt(px*px+py*py+pz*pz) || 1;
+    var n = fbm(px*2.8, py*2.8, pz*2.8)*2 - 1;
+    var d = 0.22 * n;
+    pos.setXYZ(i, px+(px/len)*d, py+(py/len)*d, pz+(pz/len)*d);
+  }
+  geo.computeVertexNormals();
+
+  var mat = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.93, metalness: 0.01, transparent: true, opacity: 1 });
+  var stone = new THREE.Mesh(geo, mat);
+  scene.add(stone);
+
+  var key  = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(2, 4, 3); scene.add(key);
+  var fill = new THREE.DirectionalLight(0xffffff, 0.4); fill.position.set(-3, -1, 2); scene.add(fill);
+  var rim  = new THREE.DirectionalLight(0xffffff, 1.2); rim.position.set(0, -3, -3); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0x222222, 1));
+
   function resize() {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-    glowCv.width = W; glowCv.height = H;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
   }
-
-  /* ── geometry ── */
-  var CHARS = '01{}[]<>/\\|;:!@#$%^&*';
-  var NU = 56, NV = 28;
-  var BASE_PTS = [];
-  for (var ui = 0; ui < NU; ui++) {
-    var u = (ui / NU) * Math.PI * 2;
-    for (var vi = 0; vi < NV; vi++) {
-      var v  = (vi / NV) * Math.PI * 2;
-      var cu = Math.cos(u), su = Math.sin(u);
-      var cv2 = Math.cos(v), sv = Math.sin(v);
-      /* unit torus: R=1, r=0.42 */
-      var bx = (1 + 0.42 * cv2) * cu;
-      var by = (1 + 0.42 * cv2) * su;
-      var bz = 0.42 * sv;
-      var len = Math.sqrt(bx*bx + by*by + bz*bz) || 1;
-      BASE_PTS.push({
-        bx: bx, by: by, bz: bz,
-        nx: bx/len, ny: by/len, nz: bz/len,
-        ch: CHARS[(Math.random() * CHARS.length) | 0],
-        u: u   // store angle around ring for spinner wave
-      });
-    }
-  }
-  var N = BASE_PTS.length;
-
-  /* ── typed arrays ── */
-  var wx = new Float32Array(N), wy = new Float32Array(N), wz = new Float32Array(N);
-  var sx = new Float32Array(N), sy = new Float32Array(N), sz_arr = new Float32Array(N);
-  var offX = new Float32Array(N), offY = new Float32Array(N); // click impulse offsets
-  var velX = new Float32Array(N), velY = new Float32Array(N); // click velocities
-  var idx_arr = new Uint16Array(N);
-
-  /* ── glow off-screen canvas ── */
-  var glowCv = document.createElement('canvas');
-  var glowCtx = glowCv.getContext('2d');
-
-  /* ── sizing (call after glowCv created) ── */
-  W = cv.width  = window.innerWidth;
-  H = cv.height = window.innerHeight;
-  glowCv.width = W; glowCv.height = H;
   window.addEventListener('resize', resize);
 
-  /* ── fixed front-facing orientation, tiny mouse nudge ── */
-  /* angX = PI/2 makes the torus face the viewer as a perfect circle */
-  var angX = Math.PI / 2;
   var mDX = 0, mDY = 0;
-  var cosX, sinX, cosY, sinY;
-  /* spinner wave phase */
-  var spinPhase = 0;
-
   window.addEventListener('mousemove', function (e) {
-    var rect = hero.getBoundingClientRect();
-    mDX = (e.clientX - rect.left - W * 0.5) / W;
-    mDY = (e.clientY - rect.top  - H * 0.5) / H;
+    mDX = (e.clientX / window.innerWidth  - 0.5) * 2;
+    mDY = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  function updateTrig() {
-    /* tiny tilt from mouse (max ±8°) keeps it alive without breaking circle */
-    cosX = Math.cos(angX + mDY * 0.14);
-    sinX = Math.sin(angX + mDY * 0.14);
-    cosY = Math.cos(mDX * 0.10);
-    sinY = Math.sin(mDX * 0.10);
-  }
-
-  /* ── colour LUT — dimmed (max brightness ~62% of before) ── */
-  var colorCache = new Array(256);
-  for (var d = 0; d < 256; d++) {
-    var bv = 55 + Math.round(d * 0.30);
-    var al = (0.05 + (d / 255) * 0.32).toFixed(2);
-    colorCache[d] = 'rgba(' + bv + ',' + bv + ',' + bv + ',' + al + ')';
-  }
-
-  /* ── font cache ── */
-  var fontCache = {};
-  function getFont(s) { return fontCache[s] || (fontCache[s] = 'bold ' + s + 'px "JetBrains Mono",monospace'); }
-
-  /* ── scroll expansion state — driven by global window._sf ── */
-
-
-  /* ── FOV ── */
-  var FOV = 850;
-
-  /* ── main render loop ── */
-  function draw() {
-    requestAnimationFrame(draw);
-
-    var sf      = window._sf || 0;
-    var scale3d = Math.min(W, H) * (0.30 + sf * 0.85);
-    var scatterAmt = sf * scale3d * 1.1;
-    var cx = W * 0.5, cy = H * 0.5;
-
-    /* advance spinner wave — ~1 full revolution per 2.2s */
-    spinPhase += 0.028;
-    updateTrig();
-
-    /* transform */
-    for (var i = 0; i < N; i++) {
-      var p = BASE_PTS[i];
-      var bx = (p.bx + p.nx * scatterAmt / scale3d) * scale3d;
-      var by = (p.by + p.ny * scatterAmt / scale3d) * scale3d;
-      var bz = (p.bz + p.nz * scatterAmt / scale3d) * scale3d;
-      var ry = cosX * by - sinX * bz;
-      var rz = sinX * by + cosX * bz;
-      wx[i] = cosY * bx + sinY * rz;
-      wy[i] = ry;
-      wz[i] = -sinY * bx + cosY * rz;
-    }
-
-    /* project */
-    for (var i = 0; i < N; i++) {
-      var sc = FOV / (FOV + wz[i] + scale3d * 1.4);
-      offX[i] += velX[i]; velX[i] *= 0.84; offX[i] *= 0.88;
-      offY[i] += velY[i]; velY[i] *= 0.84; offY[i] *= 0.88;
-      sx[i] = cx + wx[i] * sc + offX[i];
-      sy[i] = cy + wy[i] * sc + offY[i];
-      sz_arr[i] = wz[i];
-    }
-
-    /* depth sort */
-    for (var i = 0; i < N; i++) idx_arr[i] = i;
-    Array.prototype.sort.call(idx_arr, function (a, b) { return sz_arr[a] - sz_arr[b]; });
-
-    var zMin = sz_arr[idx_arr[0]];
-    var zMax = sz_arr[idx_arr[N-1]];
-    var zRng = zMax - zMin || 1;
-
-    /* clear */
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.fillRect(0, 0, W, H);
-    glowCtx.clearRect(0, 0, W, H);
-
-    /* render — spinner wave modulates brightness by u-angle distance from phase */
-    var curFont = '', curColor = '';
-    for (var ii = 0; ii < N; ii++) {
-      var i   = idx_arr[ii];
-      var dep = (sz_arr[i] - zMin) / zRng;
-      var fSz = (6 + dep * 10) | 0;
-      if (fSz < 5) continue;
-
-      /* angular distance from the bright "head" of the spinner */
-      var uAng  = BASE_PTS[i].u;
-      var dAng  = uAng - spinPhase;
-      /* wrap to [-PI, PI] */
-      dAng = dAng - Math.PI * 2 * Math.floor((dAng + Math.PI) / (Math.PI * 2));
-      /* bright arc spans ~120°, tail fades over the rest */
-      var wave  = Math.max(0, 1 - Math.abs(dAng) / (Math.PI * 0.66));
-      /* boost: head is bright white, rest is dim */
-      var boost = 0.12 + wave * 0.78;
-      var bv    = (55 + dep * 76 * boost) | 0;
-      var al    = (0.05 + dep * 0.32 * boost + wave * 0.28).toFixed(2);
-      var col   = 'rgba(' + bv + ',' + bv + ',' + bv + ',' + al + ')';
-      var font  = getFont(fSz);
-
-      if (wave > 0.5) {
-        if (font !== glowCtx._cf) { glowCtx.font = font; glowCtx._cf = font; }
-        glowCtx.fillStyle = col;
-        glowCtx.fillText(BASE_PTS[i].ch, sx[i], sy[i]);
-      }
-      if (font !== curFont)  { ctx.font = font; curFont = font; }
-      if (col  !== curColor) { ctx.fillStyle = col; curColor = col; }
-      ctx.fillText(BASE_PTS[i].ch, sx[i], sy[i]);
-    }
-
-    /* composite glow — reduced blur */
-    ctx.save();
-    ctx.shadowColor = 'rgba(255,255,255,0.15)';
-    ctx.shadowBlur  = 6;
-    ctx.drawImage(glowCv, 0, 0);
-    ctx.restore();
-  }
-
-  draw();
-
-  /* char refresh */
-  setInterval(function () {
-    var n = (N * 0.08) | 0;
-    for (var i = 0; i < n; i++)
-      BASE_PTS[(Math.random() * N) | 0].ch = CHARS[(Math.random() * CHARS.length) | 0];
-  }, 160);
-
-  /* scroll-driven axial rotation — torus tilts as page transitions */
-  window.addEventListener('scroll', function () {
+  var rotY = 0;
+  function animate() {
+    requestAnimationFrame(animate);
     var sf = window._sf || 0;
-    angX = 0.38 + sf * 1.2; // tilt forward as particles scatter
-  }, { passive: true });
+    rotY += 0.004;
+    stone.rotation.y = rotY + mDX * 0.15;
+    stone.rotation.x = 0.25 + mDY * 0.1 + sf * 1.2;
+    stone.scale.setScalar(1 + sf * 5.0);
+    mat.opacity = Math.max(0, 1 - sf * 1.5);
+    renderer.render(scene, camera);
+  }
+  animate();
+
 })();
 
 // ── Lenis smooth scroll + parallax ───────────────────────────────────────────
