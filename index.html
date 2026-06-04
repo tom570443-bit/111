@@ -2167,7 +2167,7 @@ window._sf = 0; // scatter factor 0→1
   /* wave-driven halftone — no pixel sampling needed */
   function drawHalftone() {
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
 
     var cx = W / 2, cy = H / 2;
     for (var gy = GRID / 2; gy < H; gy += GRID) {
@@ -2195,8 +2195,8 @@ window._sf = 0; // scatter factor 0→1
     requestAnimationFrame(tick);
     phase += 0.018;
     var sf = window._sf || 0;
-    if (sf > 0.05) {
-      cv.style.opacity = Math.min(0.9, (sf - 0.05) / 0.25);
+    if (sf > 0.35) {
+      cv.style.opacity = Math.min(0.45, (sf - 0.35) / 0.4);
       drawHalftone();
     } else {
       cv.style.opacity = 0;
