@@ -1694,37 +1694,6 @@ footer { border-top-color: #e0e0e0; }
   });
 })();
 
-// ── Typewriter ────────────────────────────────────────────────────────────────
-(function() {
-  var phrases = [
-    'designing systems that breathe_',
-    'building at the edge of the stack_',
-    'raw data, beautiful interfaces_',
-    'code is the new typography_'
-  ];
-  var el = document.getElementById('typewriter');
-  var pi = 0, ci = 0, deleting = false;
-
-  function tick() {
-    var phrase = phrases[pi];
-    if (!deleting) {
-      el.textContent = phrase.slice(0, ++ci);
-      if (ci === phrase.length) {
-        deleting = true;
-        setTimeout(tick, 1100);   // pause at end
-        return;
-      }
-    } else {
-      el.textContent = phrase.slice(0, --ci);
-      if (ci === 0) {
-        deleting = false;
-        pi = (pi + 1) % phrases.length;
-      }
-    }
-    setTimeout(tick, deleting ? 22 : 44);   // faster type & delete
-  }
-  tick();
-})();
 
 // ── System clock ──────────────────────────────────────────────────────────────
 (function() {
