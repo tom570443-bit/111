@@ -206,8 +206,9 @@ main {
 
 .hero-content {
   position: absolute;
-  bottom: 12vh;
-  left: 0; right: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 4;
   display: flex;
   flex-direction: column;
@@ -243,7 +244,7 @@ main {
 .hero-title {
   font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
   font-size: clamp(4rem, 11vw, 10rem);
-  font-weight: 300;
+  font-weight: 700;
   line-height: 0.92;
   letter-spacing: 0.18em;
   text-transform: uppercase;
