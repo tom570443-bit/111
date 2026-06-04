@@ -2202,75 +2202,83 @@ window._sf = 0; // scatter factor 0→1
   tick();
 })();
 
-// ── Halftone text: VISION PROPER with dot fill + stroke outline ──────────────
+// ── Halftone text: VISION PROPER — solid white, asteroid overlap = dots + outline ──
 (function () {
   var cv = document.getElementById('halftone-text-cv');
   if (!cv) return;
-  cv.width  = window.innerWidth;
-  cv.height = window.innerHeight;
   var ctx = cv.getContext('2d');
-  var off = document.createElement('canvas');
-  off.width = cv.width; off.height = cv.height;
-  var octx = off.getContext('2d');
-  var W = cv.width, H = cv.height, phase = 0;
 
-  window.addEventListener('resize', function () {
-    W = cv.width = off.width = window.innerWidth;
-    H = cv.height = off.height = window.innerHeight;
-  });
+  // offscreen A: halftone dots clipped to text shape (always animated)
+  var offDots = document.createElement('canvas');
+  var dctx = offDots.getContext('2d');
 
-  var GRID = 14, MAX_R = 5;
+  var W, H, phase = 0;
+
+  function resize() {
+    W = cv.width = offDots.width = window.innerWidth;
+    H = cv.height = offDots.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var GRID = 13, MAX_R = 5;
 
   function tick() {
     requestAnimationFrame(tick);
     phase += 0.022;
 
-    var fontSize = Math.min(Math.max(W * 0.115, 44), 160);
+    var fontSize = Math.min(Math.max(W * 0.095, 36), 115);
     var fontStr  = '900 ' + fontSize + 'px Orbitron, monospace';
-    var lineGap  = fontSize * 1.18;
-    var y1 = H / 2 - lineGap / 2;
-    var y2 = H / 2 + lineGap / 2;
+    var yc = H / 2;
 
-    // 1. Draw animated halftone dots on offscreen canvas
-    octx.clearRect(0, 0, W, H);
-    octx.fillStyle = '#ffffff';
+    // ── A: animated halftone dots, clipped to letter shapes ──
+    dctx.clearRect(0, 0, W, H);
+    dctx.fillStyle = '#ffffff';
     for (var gy = GRID / 2; gy < H; gy += GRID) {
       for (var gx = GRID / 2; gx < W; gx += GRID) {
         var dx = (gx - W/2) / W * 2, dy = (gy - H/2) / H * 2;
-        var dist = Math.sqrt(dx*dx + dy*dy);
+        var d  = Math.sqrt(dx*dx + dy*dy);
         var w1 = Math.sin(gx * 0.048 + phase * 1.1) * Math.cos(gy * 0.038 - phase * 0.75);
-        var w2 = Math.sin(dist * 14 - phase * 1.9) * 0.45;
-        var wave = (w1 * 0.55 + w2) * 0.5 + 0.5;
-        var r = MAX_R * (0.15 + wave * 0.85);
-        if (r < 0.4) continue;
-        octx.beginPath();
-        octx.arc(gx, gy, r, 0, Math.PI * 2);
-        octx.fill();
+        var w2 = Math.sin(d * 14 - phase * 1.9) * 0.45;
+        var r  = MAX_R * (0.2 + ((w1 * 0.55 + w2) * 0.5 + 0.5) * 0.8);
+        if (r < 0.5) continue;
+        dctx.beginPath(); dctx.arc(gx, gy, r, 0, Math.PI * 2); dctx.fill();
+      }
+    }
+    dctx.globalCompositeOperation = 'destination-in';
+    dctx.font = fontStr; dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
+    dctx.fillText('VISION PROPER', W / 2, yc);
+    dctx.globalCompositeOperation = 'source-over';
+
+    // ── B: solid white text on main canvas ──
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = fontStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('VISION PROPER', W / 2, yc);
+
+    // ── C: punch holes where asteroid canvas pixels are opaque ──
+    //   destination-out: erases dest pixels proportional to src alpha
+    //   asteroid bg = alpha 0 (no erase), asteroid surface = alpha 1 (fully erases white)
+    var wc = window._torusCanvas;
+    if (wc) {
+      try {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.drawImage(wc, 0, 0, W, H);
+        ctx.globalCompositeOperation = 'source-over';
+        // refill erased (transparent) text pixels with halftone dots
+        ctx.drawImage(offDots, 0, 0);
+      } catch (e) {
+        // canvas tainted: fallback to always-halftone
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(offDots, 0, 0);
       }
     }
 
-    // 2. Clip halftone to text shape using destination-in
-    octx.globalCompositeOperation = 'destination-in';
-    octx.font = fontStr;
-    octx.textAlign = 'center';
-    octx.textBaseline = 'middle';
-    octx.fillStyle = '#ffffff';
-    octx.fillText('VISION', W / 2, y1);
-    octx.fillText('PROPER', W / 2, y2);
-    octx.globalCompositeOperation = 'source-over';
-
-    // 3. Composite halftone-filled text onto main canvas
-    ctx.clearRect(0, 0, W, H);
-    ctx.drawImage(off, 0, 0);
-
-    // 4. White stroke outline on top — keeps letterforms readable
-    ctx.font = fontStr;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    // ── D: white stroke outline — always on top ──
+    ctx.font = fontStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.strokeStyle = 'rgba(255,255,255,0.95)';
     ctx.lineWidth = 2;
-    ctx.strokeText('VISION', W / 2, y1);
-    ctx.strokeText('PROPER', W / 2, y2);
+    ctx.strokeText('VISION PROPER', W / 2, yc);
   }
   tick();
 })();
