@@ -1274,13 +1274,6 @@ footer { border-top-color: #e0e0e0; }
 
   </div><!-- /hero-zone -->
 
-  <!-- Marquee -->
-  <div class="marquee-strip">
-    <div class="marquee-track" id="marquee-track">
-      <!-- filled by JS -->
-    </div>
-  </div>
-
   <!-- SELECTED WORKS -->
   <section id="works">
     <div class="section-header s-reveal">
@@ -2360,14 +2353,10 @@ window._sf = 0; // scatter factor 0→1
   var snapping = false;
 
   function getSnapPoints() {
+    // Only snap at hero top and works entry — rest of site is free scroll
     var pts = [0];
-    // works.offsetTop is same as hz.offsetHeight — only add once via works
-    ['works', 'belief', 'system', 'contact'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) pts.push(el.offsetTop);
-    });
-    pts = pts.filter(function (v, i, a) { return a.indexOf(v) === i; });
-    pts.sort(function (a, b) { return a - b; });
+    var works = document.getElementById('works');
+    if (works) pts.push(works.offsetTop);
     return pts;
   }
 
@@ -2377,10 +2366,10 @@ window._sf = 0; // scatter factor 0→1
     snapTimer = setTimeout(function () {
       var sy  = window.scrollY;
       var vh  = window.innerHeight;
-      // Don't snap while inside the hero animation zone (let transition handle it)
+      // Don't snap while inside the hero animation zone
       if (sy > 0 && sy < vh * 3.5) return;
       var pts = getSnapPoints();
-      var threshold = vh * 0.38;
+      var threshold = vh * 0.25; // tighter threshold so normal scrolling isn't trapped
       var nearest = null, minDist = Infinity;
       pts.forEach(function (p) {
         var d = Math.abs(p - sy);
