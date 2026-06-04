@@ -1848,12 +1848,12 @@ window._sf = 0; // scatter factor 0→1
   var heroScroll  = document.querySelector('.hero-scroll-hint');
   var worksEl     = document.getElementById('works');
 
-  // Phase 1: title dissolves   scrollY 1vh → 3.5vh
-  // Phase 2: horizontal slide  scrollY 3.5vh → 4.5vh  (hero-zone = 450vh)
-  var TRANS_START = vh;
-  var TRANS_END   = vh * 3.5;
-  var SLIDE_START = vh * 3.5;
-  var SLIDE_END   = vh * 4.5;
+  // Phase 1: title dissolves   scrollY 0.5vh → 2vh
+  // Phase 2: horizontal slide  scrollY 2vh → 3vh
+  var TRANS_START = vh * 0.5;
+  var TRANS_END   = vh * 2;
+  var SLIDE_START = vh * 2;
+  var SLIDE_END   = vh * 3;
 
   var slideActive = false;
   var hiddenSections = ['belief','system','contact'];
@@ -2004,10 +2004,12 @@ window._sf = 0; // scatter factor 0→1
       cv.style.opacity = Math.max(0.08, 0.5 - sep * 0.38).toFixed(3);
     }
 
-    /* ── slide complete: release to normal flow ── */
+    /* ── slide complete: release to normal flow + jump past hero-zone ── */
     if (sp >= 1) {
       resetSlide();
       resetTitle();
+      var hz = document.getElementById('hero-zone');
+      if (hz) window.scrollTo({ top: hz.offsetHeight + 2, behavior: 'instant' });
     }
   }, { passive: true });
 })();
