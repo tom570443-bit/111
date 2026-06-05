@@ -2139,7 +2139,7 @@ window._sf = 0; // scatter factor 0→1
     mDY = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  var rotY = 0;
+  var rotY = 0, rotX = 0;
   var animFrame = 0;
   function animate() {
     requestAnimationFrame(animate);
@@ -2150,9 +2150,10 @@ window._sf = 0; // scatter factor 0→1
     // skip render entirely when invisible
     if (opacity <= 0) return;
     rotY += 0.003;
+    rotX += 0.0008;
     if (stone) {
       stone.rotation.y = rotY + mDX * 0.18;
-      stone.rotation.x = 0.15 + mDY * 0.08 + sf * 1.2;
+      stone.rotation.x = rotX + 0.15 + mDY * 0.08 + sf * 1.2;
       stone.scale.setScalar(1 + sf * 5.0);
     }
     renderer.render(scene, camera);
