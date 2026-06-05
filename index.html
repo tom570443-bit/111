@@ -2073,6 +2073,8 @@ window._sf = 0; // scatter factor 0→1
   scene.add(new THREE.AmbientLight(0x080808, 1));
 
   var stone = null;
+  var wireMesh = null;
+  var wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
 
   /* load OBJ via fetch — requires local server (python -m http.server) */
   function parseAndAddOBJ(text) {
@@ -2119,6 +2121,9 @@ window._sf = 0; // scatter factor 0→1
     geo.computeVertexNormals();
     stone = new THREE.Mesh(geo, mat);
     scene.add(stone);
+    var wireGeo = new THREE.WireframeGeometry(geo);
+    wireMesh = new THREE.LineSegments(wireGeo, wireMat);
+    scene.add(wireMesh);
   }
 
   fetch('asteroid1.obj')
@@ -2145,16 +2150,25 @@ window._sf = 0; // scatter factor 0→1
     requestAnimationFrame(animate);
     animFrame++;
     var sf = window._sf || 0;
-    var opacity = Math.max(0, 1 - Math.max(0, sf - 0.25) * 4.0);
-    mat.opacity = opacity;
-    // skip render entirely when invisible
-    if (opacity <= 0) return;
+    // Solid fades out as wireframe fades in (both over sf 0→0.25)
+    // then wireframe fades out (sf 0.25→0.5) — same total disappear time as before
+    var solidOp = Math.max(0, 1 - sf * 4);            // 1→0 over sf 0..0.25
+    var wireIn  = Math.min(1, sf * 4);                 // 0→1 over sf 0..0.25
+    var wireOut = Math.max(0, 1 - Math.max(0, sf - 0.25) * 4); // 1→0 over sf 0.25..0.5
+    var wireOp  = wireIn * wireOut;
+    mat.opacity     = solidOp;
+    wireMat.opacity = wireOp;
+    if (solidOp <= 0 && wireOp <= 0) return;
     rotY += 0.003;
     rotX += 0.0008;
     if (stone) {
       stone.rotation.y = rotY + mDX * 0.18;
       stone.rotation.x = rotX + 0.15 + mDY * 0.08 + sf * 1.2;
       stone.scale.setScalar(1 + sf * 5.0);
+    }
+    if (wireMesh && stone) {
+      wireMesh.rotation.copy(stone.rotation);
+      wireMesh.scale.copy(stone.scale);
     }
     renderer.render(scene, camera);
   }
