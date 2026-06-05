@@ -610,6 +610,17 @@ main {
   transform: translateY(100vh);
   opacity: 0;
 }
+.card-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.card-top, .card-bottom {
+  position: relative;
+  z-index: 1;
+}
 
 .project-card.card-visible {
   /* controlled by JS transition inline */
@@ -1268,13 +1279,7 @@ footer { border-top-color: #e0e0e0; }
     <div class="works-grid">
       <!-- Card 1 -->
       <div class="project-card" data-hoverable>
-        <div class="lines-wrap">
-          <div class="lines-scene">
-            <div class="lines-obj">
-              <div class="ln" style="width:80px;height:1.5px;top:59px;left:20px;"></div>
-            </div>
-          </div>
-        </div>
+        <canvas class="card-canvas" id="card-canvas-0"></canvas>
         <div class="card-top">
           <div class="card-index">// 001</div>
           <div class="card-title">CYBER_CUBE</div>
@@ -1297,11 +1302,7 @@ footer { border-top-color: #e0e0e0; }
 
       <!-- Card 2 -->
       <div class="project-card" data-hoverable>
-        <div class="square-wrap">
-          <div class="square-scene">
-            <div class="square-obj"></div>
-          </div>
-        </div>
+        <canvas class="card-canvas" id="card-canvas-1"></canvas>
         <div class="card-top">
           <div class="card-index">// 002</div>
           <div class="card-title">FACE_02</div>
@@ -1324,18 +1325,7 @@ footer { border-top-color: #e0e0e0; }
 
       <!-- Card 3 -->
       <div class="project-card" data-hoverable>
-        <div class="cube-wrap">
-          <div class="cube-scene">
-            <div class="cube" style="animation-duration:5s;">
-              <div class="cube-face front"></div>
-              <div class="cube-face back"></div>
-              <div class="cube-face left"></div>
-              <div class="cube-face right"></div>
-              <div class="cube-face top"></div>
-              <div class="cube-face bottom"></div>
-            </div>
-          </div>
-        </div>
+        <canvas class="card-canvas" id="card-canvas-2"></canvas>
         <div class="card-top">
           <div class="card-index">// 003</div>
           <div class="card-title">DATA_LAKE</div>
@@ -2367,6 +2357,80 @@ window._sf = 0; // scatter factor 0→1
   window._worksSlideIn    = slideIn;
   window._worksSlideOut   = slideOut;
   window._worksResetCards = resetCards;
+})();
+
+// ── Card asteroid renderers ───────────────────────────────────────────────────
+(function () {
+  var FILES   = ['asteroid7.geom.json', 'asteroid2.geom.json', 'asteroid9.geom.json'];
+  var SPEEDS  = [[0.0040, 0.0010], [0.0028, 0.0013], [0.0050, 0.0008]];
+  var renderers = [], scenes = [], cameras = [], meshes = [], rotY = [0,0,0], rotX = [0,0,0];
+  var loaded = 0;
+
+  FILES.forEach(function (file, idx) {
+    var cvs = document.getElementById('card-canvas-' + idx);
+    if (!cvs) return;
+
+    // Size canvas to card
+    function resize() {
+      var w = cvs.clientWidth, h = cvs.clientHeight;
+      if (!w || !h) return;
+      cvs.width  = w * window.devicePixelRatio;
+      cvs.height = h * window.devicePixelRatio;
+      if (renderers[idx]) {
+        renderers[idx].setSize(w, h);
+        renderers[idx].setPixelRatio(window.devicePixelRatio);
+      }
+      if (cameras[idx]) { cameras[idx].aspect = w / h; cameras[idx].updateProjectionMatrix(); }
+    }
+    window.addEventListener('resize', resize);
+
+    var renderer = new THREE.WebGLRenderer({ canvas: cvs, alpha: true, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 0);
+    renderers[idx] = renderer;
+
+    var scene  = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    camera.position.set(0, 0, 2.6);
+    scenes[idx]  = scene;
+    cameras[idx] = camera;
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    var d1 = new THREE.DirectionalLight(0xffffff, 1.4); d1.position.set(2, 3, 4);   scene.add(d1);
+    var d2 = new THREE.DirectionalLight(0x6688cc, 0.4); d2.position.set(-3,-1,-2); scene.add(d2);
+
+    fetch(file).then(function (r) { return r.json(); }).then(function (data) {
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(data.p, 3));
+      if (data.i && data.i.length) geo.setIndex(data.i);
+      geo.computeVertexNormals();
+
+      var mat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.82, metalness: 0.18 });
+      var mesh = new THREE.Mesh(geo, mat);
+      scene.add(mesh);
+      meshes[idx] = mesh;
+
+      resize();
+      loaded++;
+      if (loaded === FILES.length) startLoop();
+    });
+  });
+
+  function startLoop() {
+    function tick() {
+      requestAnimationFrame(tick);
+      for (var i = 0; i < 3; i++) {
+        if (!renderers[i] || !meshes[i]) continue;
+        rotY[i] += SPEEDS[i][0];
+        rotX[i] += SPEEDS[i][1];
+        meshes[i].rotation.y = rotY[i];
+        meshes[i].rotation.x = rotX[i];
+        renderers[i].render(scenes[i], cameras[i]);
+      }
+    }
+    tick();
+  }
 })();
 
 // ── Page snap: use Lenis to smoothly snap to nearest section ─────────────────
