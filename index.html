@@ -1132,8 +1132,8 @@ footer {
 .s-reveal.visible { opacity: 1; transform: none; }
 
 /* ── Works section ── */
-#works { padding: 0; border-bottom: none; background: #e8e8e8; overflow: visible; }
-.works-grid { background: #e8e8e8; }
+#works { padding: 0; border-bottom: none; background: #000; overflow: visible; }
+.works-grid { background: #222; }
 .project-card { background: #fff; }
 .project-card:hover { background: #f8f8f8; }
 .card-index { color: #bbb; }
@@ -1240,7 +1240,7 @@ footer { border-top-color: #e0e0e0; }
     <!-- torus canvas injected by JS -->
 
     <!-- halftone overlay canvas — sits above asteroid, below title -->
-    <canvas id="halftone-cv" style="position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.8s;"></canvas>
+    <canvas id="halftone-cv" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.8s;"></canvas>
     <!-- halftone text canvas — draws VISION PROPER with dot fill + stroke outline -->
     <canvas id="halftone-text-cv" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:5;"></canvas>
 
@@ -1901,18 +1901,16 @@ window._sf = 0; // scatter factor 0→1
     var hzEnd = getHzEnd();
 
     // ── Reverse path: user scrolled back into hero-zone from works ──
-    // Teleport to top so they don't have to scroll 447vh of dead space
+    // Jump to just before slide end so the reverse slide animation can play
     if (hzEnd > 0 && sy < hzEnd && lastSy >= hzEnd) {
       heroJumped = false;
       window._heroJumped = false;
       window._cardsTriggered = false;
       if (window._worksSlideOut) window._worksSlideOut();
-      resetSlide();
-      resetTitle();
-      window._sf = 0;
-      lastSy = 0;
-      if (window._lenis) window._lenis.scrollTo(0, { immediate: true });
-      else window.scrollTo({ top: 0 });
+      var jumpBack = SLIDE_END - 2;
+      lastSy = jumpBack;
+      if (window._lenis) window._lenis.scrollTo(jumpBack, { immediate: true });
+      else window.scrollTo({ top: jumpBack });
       return;
     }
     lastSy = sy;
@@ -1970,7 +1968,7 @@ window._sf = 0; // scatter factor 0→1
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
     worksEl.style.zIndex     = '20';
-    worksEl.style.background = '#e8e8e8';
+    worksEl.style.background = '#000';
     worksEl.style.overflow   = 'visible';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
@@ -2213,8 +2211,9 @@ window._sf = 0; // scatter factor 0→1
     requestAnimationFrame(tick);
     htFrame++;
     var sf = window._sf || 0;
-    if (sf <= 0.35) { cv.style.opacity = 0; return; }
-    cv.style.opacity = Math.min(0.45, (sf - 0.35) / 0.4);
+    var onWorks = window._heroJumped === true;
+    if (!onWorks && sf <= 0.35) { cv.style.opacity = 0; return; }
+    cv.style.opacity = onWorks ? '0.45' : Math.min(0.45, (sf - 0.35) / 0.4);
     if (htFrame % 2 !== 0) return; // 30fps
     phase += 0.036;
     drawHalftone();
@@ -2329,12 +2328,12 @@ window._sf = 0; // scatter factor 0→1
 // ── Works cards: slide-up entrance / slide-down exit ─────────────────────────
 (function () {
   var cards = Array.prototype.slice.call(document.querySelectorAll('.project-card'));
-  var EASE_IN  = 'cubic-bezier(0.16, 1, 0.3, 1)';
-  var EASE_OUT = 'cubic-bezier(0.4, 0, 0.8, 0)';
+  var EASE_SPRING = 'cubic-bezier(0.34, 1.4, 0.64, 1)'; // overshoot bounce
+  var EASE_OUT    = 'cubic-bezier(0.4, 0, 0.8, 0)';
 
   function slideIn() {
     cards.forEach(function (card, i) {
-      card.style.transition = 'transform 0.85s ' + EASE_IN + ' ' + (i * 110) + 'ms, opacity 0.85s ' + EASE_IN + ' ' + (i * 110) + 'ms';
+      card.style.transition = 'transform 1.2s ' + EASE_SPRING + ' ' + (i * 150) + 'ms, opacity 1.0s ease ' + (i * 150) + 'ms';
       card.style.transform  = 'translateY(0)';
       card.style.opacity    = '1';
     });
@@ -2342,7 +2341,7 @@ window._sf = 0; // scatter factor 0→1
 
   function slideOut() {
     cards.forEach(function (card, i) {
-      card.style.transition = 'transform 0.6s ' + EASE_OUT + ' ' + (i * 60) + 'ms, opacity 0.6s ' + EASE_OUT + ' ' + (i * 60) + 'ms';
+      card.style.transition = 'transform 0.55s ' + EASE_OUT + ' ' + (i * 70) + 'ms, opacity 0.55s ' + EASE_OUT + ' ' + (i * 70) + 'ms';
       card.style.transform  = 'translateY(100vh)';
       card.style.opacity    = '0';
     });
