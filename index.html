@@ -2158,7 +2158,7 @@ window._sf = 0; // scatter factor 0→1
     var wireOp  = wireIn * wireOut;
     mat.opacity     = solidOp;
     wireMat.opacity = wireOp;
-    if (solidOp <= 0 && wireOp <= 0) return;
+    if (solidOp <= 0 && wireOp <= 0) { renderer.clear(); return; }
     rotY += 0.003;
     rotX += 0.0008;
     if (stone) {
