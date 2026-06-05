@@ -592,12 +592,13 @@ main {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
-  background: #111;
+  background: #e8e8e8;
   height: 100vh;
+  overflow: hidden;
 }
 
 .project-card {
-  background: #0a0a0a;
+  background: #ffffff;
   padding: 40px 36px;
   position: relative;
   overflow: hidden;
@@ -1131,25 +1132,22 @@ footer {
 .s-reveal.visible { opacity: 1; transform: none; }
 
 /* ── Works section ── */
-#works { padding: 0; border-bottom: none; background: #000; }
-.project-card:hover { background: #111; }
-.card-title { color: #fff; }
-.card-type  { color: #555; }
-.card-index { color: #333; }
-.tag        { border-color: #333; color: #555; }
-.project-card::before { border-color: #000; }
-.project-card:hover::before { box-shadow: inset 0 0 24px rgba(0,0,0,0.04), 0 0 0 1px #000; }
-.cube-face { border-color: #000; }
-.cube-face::before, .cube-face::after { background: #000; }
+#works { padding: 0; border-bottom: none; background: #e8e8e8; overflow: visible; }
+.works-grid { background: #e8e8e8; }
+.project-card { background: #fff; }
+.project-card:hover { background: #f8f8f8; }
 .card-index { color: #bbb; }
-.project-card:hover .card-index { color: #000; }
 .card-title { color: #000; }
-.project-card:hover .card-title { color: #000; }
-.card-type { color: #999; }
-.tag { border-color: #ddd; color: #999; }
-.project-card:hover .tag { border-color: #000; color: #000; }
+.card-type  { color: #999; }
+.tag        { border-color: #ddd; color: #999; }
 .card-arrow { color: #bbb; }
+.project-card:hover .card-index { color: #000; }
+.project-card:hover .card-title { color: #000; }
+.project-card:hover .tag  { border-color: #000; color: #000; }
 .project-card:hover .card-arrow { color: #000; }
+.project-card::before { border-color: transparent; }
+.cube-face { border-color: #ccc; }
+.cube-face::before, .cube-face::after { background: #ccc; }
 #belief { border-bottom-color: #e0e0e0; }
 .belief-bg-text { color: rgba(0,0,0,0.04); }
 .belief-label { color: rgba(0,0,0,0.4); }
@@ -1972,8 +1970,8 @@ window._sf = 0; // scatter factor 0→1
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
     worksEl.style.zIndex     = '20';
-    worksEl.style.background = '#000';
-    worksEl.style.overflow   = 'hidden';
+    worksEl.style.background = '#e8e8e8';
+    worksEl.style.overflow   = 'visible';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
     if (cv) {
@@ -1986,8 +1984,8 @@ window._sf = 0; // scatter factor 0→1
       cv.style.opacity = Math.max(0.08, 0.5 - sep * 0.38).toFixed(3);
     }
 
-    // Start card slide-in when horizontal slide is 80% done — arrives as slide completes
-    if (sp >= 0.8 && !heroJumped && !window._cardsTriggered) {
+    // Trigger card slide-up as soon as horizontal slide begins
+    if (sp >= 0 && !window._cardsTriggered) {
       window._cardsTriggered = true;
       if (window._worksSlideIn) window._worksSlideIn();
     }
