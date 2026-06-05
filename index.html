@@ -464,10 +464,10 @@ main {
   z-index: 3;
   overflow: hidden;
   opacity: 0;
-  pointer-events: auto;
+  pointer-events: none;
   transition: opacity 0.6s ease;
 }
-#scatter-strip.visible { opacity: 1; }
+#scatter-strip.visible { opacity: 1; pointer-events: auto; }
 .strip-track {
   display: flex;
   gap: 18px;
