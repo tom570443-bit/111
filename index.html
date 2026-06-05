@@ -1906,7 +1906,6 @@ window._sf = 0; // scatter factor 0→1
       heroJumped = false;
       window._heroJumped = false;
       window._cardsTriggered = false;
-      if (window._worksSlideOut) window._worksSlideOut();
       var jumpBack = SLIDE_END - 2;
       lastSy = jumpBack;
       if (window._lenis) window._lenis.scrollTo(jumpBack, { immediate: true });
@@ -1923,6 +1922,9 @@ window._sf = 0; // scatter factor 0→1
       window._sf = 0;
       resetTitle();
       if (slideActive) resetSlide();
+      // Silently reset cards back to bottom so next forward visit animates them in
+      window._cardsTriggered = false;
+      if (window._worksResetCards) window._worksResetCards();
       return;
     }
 
@@ -1982,8 +1984,8 @@ window._sf = 0; // scatter factor 0→1
       cv.style.opacity = Math.max(0.08, 0.5 - sep * 0.38).toFixed(3);
     }
 
-    // Trigger card slide-up as soon as horizontal slide begins
-    if (sp >= 0 && !window._cardsTriggered) {
+    // Only trigger when entering Phase 2 from start (sp < 0.3 = forward direction)
+    if (sp < 0.3 && !window._cardsTriggered) {
       window._cardsTriggered = true;
       if (window._worksSlideIn) window._worksSlideIn();
     }
@@ -2348,8 +2350,17 @@ window._sf = 0; // scatter factor 0→1
   }
 
   // Expose so scroll-transition IIFE can call them
-  window._worksSlideIn  = slideIn;
-  window._worksSlideOut = slideOut;
+  function resetCards() {
+    cards.forEach(function (card) {
+      card.style.transition = 'none';
+      card.style.transform  = 'translateY(100vh)';
+      card.style.opacity    = '0';
+    });
+  }
+
+  window._worksSlideIn    = slideIn;
+  window._worksSlideOut   = slideOut;
+  window._worksResetCards = resetCards;
 })();
 
 // ── Page snap: use Lenis to smoothly snap to nearest section ─────────────────
