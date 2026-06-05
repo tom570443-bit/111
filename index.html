@@ -1134,13 +1134,19 @@ footer {
 
 .s-reveal.visible { opacity: 1; transform: none; }
 
-/* ── Works section: dark bg ── */
-#works { background: #000; border-bottom-color: #222; }
-#works .section-header { border-bottom-color: #222; }
-#works .section-label { color: #555; }
-#works .section-title { color: #fff; }
-#works .section-count { color: #444; }
-.works-grid { background: #111; border-color: #111; }
+/* ── White-bg section overrides ── */
+.marquee-strip { border-top-color: #ddd; border-bottom-color: #ddd; }
+.marquee-item { color: #888; }
+.marquee-item .sep { color: #333; }
+#works { border-bottom-color: #e0e0e0; }
+#works .section-header { border-bottom-color: #e0e0e0; }
+#works .section-label { color: #333; }
+#works .section-title { color: #000; }
+#works .section-count { color: #999; }
+.works-grid { background: #e0e0e0; border-color: #e0e0e0; }
+.project-card { background: #fff; }
+.project-card.card-visible { transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1), background 0.3s; }
+.project-card:hover { background: #f5f5f5; }
 .project-card::before { border-color: #000; }
 .project-card:hover::before { box-shadow: inset 0 0 24px rgba(0,0,0,0.04), 0 0 0 1px #000; }
 .cube-face { border-color: #000; }
@@ -1244,6 +1250,8 @@ footer { border-top-color: #e0e0e0; }
   <section id="hero">
     <!-- torus canvas injected by JS -->
 
+    <!-- halftone overlay canvas — sits above asteroid, below title -->
+    <canvas id="halftone-cv" style="position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.8s;"></canvas>
     <!-- halftone text canvas — draws VISION PROPER with dot fill + stroke outline -->
     <canvas id="halftone-text-cv" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:5;"></canvas>
 
@@ -1915,7 +1923,6 @@ window._sf = 0; // scatter factor 0→1
     // Teleport to top so they don't have to scroll 447vh of dead space
     if (hzEnd > 0 && sy < hzEnd && lastSy >= hzEnd) {
       heroJumped = false;
-      window._heroJumped = false;
       resetSlide();
       resetTitle();
       window._sf = 0;
@@ -1974,10 +1981,12 @@ window._sf = 0; // scatter factor 0→1
     heroEl.style.zIndex    = '15';
     heroEl.style.transform = 'translateX(' + (-sep * 100).toFixed(2) + 'vw)';
 
+    var bgVal = Math.round(sep * 255);
+    var bgHex = bgVal.toString(16).padStart(2, '0');
     worksEl.style.position   = 'fixed';
     worksEl.style.inset      = '0';
     worksEl.style.zIndex     = '20';
-    worksEl.style.background = '#000';
+    worksEl.style.background = '#' + bgHex + bgHex + bgHex;
     worksEl.style.overflowY  = 'hidden';
     worksEl.style.transform  = 'translateX(' + ((1 - sep) * 100).toFixed(2) + 'vw)';
 
@@ -1994,7 +2003,6 @@ window._sf = 0; // scatter factor 0→1
     /* ── slide complete: jump past hero-zone (runs only once via heroJumped) ── */
     if (sp >= 1) {
       heroJumped = true;
-      window._heroJumped = true;
       resetSlide();
       resetTitle();
       if (hzEnd > 0) {
@@ -2168,77 +2176,58 @@ window._sf = 0; // scatter factor 0→1
 
 })();
 
-// ── Works section: wireframe asteroid background ──────────────────────────────
+// ── Halftone dot overlay ──────────────────────────────────────────────────────
 (function () {
-  if (typeof THREE === 'undefined') return;
-  var cv = document.createElement('canvas');
-  cv.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9;opacity:0;transition:opacity 1s;';
-  document.body.appendChild(cv);
-  window._worksBgCv = cv;
+  var cv = document.getElementById('halftone-cv');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W, H, phase = 0;
 
-  var renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-  camera.position.z = 1.6; // close — shows just a portion of the surface
-
-  var wireMesh = null;
-  var wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 });
-
-  function resize() {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-  }
+  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
-  function parseOBJ(text) {
-    var lines = text.split('\n'), verts = [], uvs = [], fv = [], fvt = [];
-    for (var i = 0; i < lines.length; i++) {
-      var l = lines[i].trim(), p = l.split(/\s+/);
-      if (p[0]==='v')  { verts.push(parseFloat(p[1]), parseFloat(p[2]), parseFloat(p[3])); }
-      else if (p[0]==='f') {
-        var a=[],b=[];
-        for (var k=1;k<=3;k++) { var t=p[k].split('/'); a.push(parseInt(t[0])-1); b.push(t[1]?parseInt(t[1])-1:0); }
-        fv.push(a[0],a[1],a[2]); fvt.push(b[0],b[1],b[2]);
+  var GRID = 22, MAX_R = 7;
+
+  /* wave-driven halftone — no pixel sampling needed */
+  function drawHalftone() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+
+    var cx = W / 2, cy = H / 2;
+    for (var gy = GRID / 2; gy < H; gy += GRID) {
+      for (var gx = GRID / 2; gx < W; gx += GRID) {
+        /* radial distance from centre — asteroid silhouette zone */
+        var dx = (gx - cx) / W, dy = (gy - cy) / H;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        /* multi-wave combination — creates organic ripple through dots */
+        var w1 = Math.sin(gx * 0.04 + phase * 1.1) * Math.cos(gy * 0.035 - phase * 0.7);
+        var w2 = Math.sin(dist * 18 - phase * 1.8) * 0.5;
+        var w3 = Math.cos(gx * 0.015 - gy * 0.02 + phase * 0.5) * 0.3;
+        var wave = (w1 * 0.5 + w2 + w3) * 0.5 + 0.5;
+        /* dots in centre are larger (where asteroid is) */
+        var centreBias = Math.max(0, 1 - dist * 2.5);
+        var r = MAX_R * (0.08 + wave * 0.55 + centreBias * 0.37);
+        if (r < 0.8) continue;
+        ctx.beginPath();
+        ctx.arc(gx, gy, r, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
-    var pos=[];
-    for (var i=0;i<fv.length;i++) { var vi=fv[i]*3; pos.push(verts[vi],verts[vi+1],verts[vi+2]); }
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.computeVertexNormals();
-    geo.computeBoundingBox();
-    var box=geo.boundingBox, cx=(box.min.x+box.max.x)/2, cy=(box.min.y+box.max.y)/2, cz=(box.min.z+box.max.z)/2;
-    var md=Math.max(box.max.x-box.min.x, box.max.y-box.min.y, box.max.z-box.min.z);
-    var pa=geo.attributes.position;
-    for (var i=0;i<pa.count;i++) pa.setXYZ(i,(pa.getX(i)-cx)/md*2,(pa.getY(i)-cy)/md*2,(pa.getZ(i)-cz)/md*2);
-    pa.needsUpdate=true;
-    geo.computeVertexNormals();
-    var wireGeo = new THREE.WireframeGeometry(geo);
-    wireMesh = new THREE.LineSegments(wireGeo, wireMat);
-    wireMesh.scale.setScalar(2.8); // large — fills most of the screen
-    scene.add(wireMesh);
   }
 
-  fetch('asteroid1.obj').then(function(r){return r.text();}).then(parseOBJ).catch(function(){});
-
-  var rotY = 0, rotX = 0;
-  function animate() {
-    requestAnimationFrame(animate);
-    // Only show when at works section (past hero)
-    var visible = window._heroJumped === true;
-    cv.style.opacity = visible ? '1' : '0';
-    if (!visible || !wireMesh) return;
-    rotY += 0.00045;
-    rotX += 0.00018;
-    wireMesh.rotation.y = rotY;
-    wireMesh.rotation.x = rotX;
-    renderer.render(scene, camera);
+  var htFrame = 0;
+  function tick() {
+    requestAnimationFrame(tick);
+    htFrame++;
+    var sf = window._sf || 0;
+    if (sf <= 0.35) { cv.style.opacity = 0; return; }
+    cv.style.opacity = Math.min(0.45, (sf - 0.35) / 0.4);
+    if (htFrame % 2 !== 0) return; // 30fps
+    phase += 0.036;
+    drawHalftone();
   }
-  animate();
+  tick();
 })();
 
 // ── Halftone text: VISION PROPER — solid white, asteroid overlap = dots + outline ──
