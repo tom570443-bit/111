@@ -1918,19 +1918,25 @@ window._sf = 0; // scatter factor 0→1
     if (heroJumped) return;
 
     /* ── before title phase ── */
-    if (sy < TRANS_START) {
+    if (sy <= TRANS_START) {
       window._sf = 0;
       resetTitle();
-      if (slideActive) resetSlide();
-      // Silently reset cards back to bottom so next forward visit animates them in
-      window._cardsTriggered = false;
-      if (window._worksResetCards) window._worksResetCards();
+      if (slideActive) {
+        resetSlide();
+        window._cardsTriggered = false;
+        if (window._worksResetCards) window._worksResetCards();
+      }
       return;
     }
 
     /* ── Phase 1: title scale + dissolve ── */
     if (sy < SLIDE_START) {
-      if (slideActive) resetSlide();
+      if (slideActive) {
+        resetSlide();
+        // Reset cards instantly (no transition) so next forward visit animates them in
+        window._cardsTriggered = false;
+        if (window._worksResetCards) window._worksResetCards();
+      }
       var p  = Math.min((sy - TRANS_START) / (TRANS_END - TRANS_START), 1);
       var ep = easeOut4(p);
       window._sf = ep;
