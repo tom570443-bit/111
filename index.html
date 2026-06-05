@@ -590,32 +590,27 @@ main {
 .works-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--gray3);
-  border: 1px solid var(--gray3);
+  gap: 2px;
+  background: #111;
+  height: 100vh;
 }
 
 .project-card {
-  background: var(--black);
-  padding: 32px;
+  background: #0a0a0a;
+  padding: 40px 36px;
   position: relative;
   overflow: hidden;
   cursor: none;
-  transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 340px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  height: 100%;
+  transform: translateY(100vh);
   opacity: 0;
-  transform: translateY(40px);
 }
 
 .project-card.card-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  /* controlled by JS transition inline */
 }
 
 .project-card::before {
@@ -1134,19 +1129,13 @@ footer {
 
 .s-reveal.visible { opacity: 1; transform: none; }
 
-/* ── White-bg section overrides ── */
-.marquee-strip { border-top-color: #ddd; border-bottom-color: #ddd; }
-.marquee-item { color: #888; }
-.marquee-item .sep { color: #333; }
-#works { border-bottom-color: #e0e0e0; }
-#works .section-header { border-bottom-color: #e0e0e0; }
-#works .section-label { color: #333; }
-#works .section-title { color: #000; }
-#works .section-count { color: #999; }
-.works-grid { background: #e0e0e0; border-color: #e0e0e0; }
-.project-card { background: #fff; }
-.project-card.card-visible { transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1), background 0.3s; }
-.project-card:hover { background: #f5f5f5; }
+/* ── Works section ── */
+#works { padding: 0; border-bottom: none; background: #000; }
+.project-card:hover { background: #111; }
+.card-title { color: #fff; }
+.card-type  { color: #555; }
+.card-index { color: #333; }
+.tag        { border-color: #333; color: #555; }
 .project-card::before { border-color: #000; }
 .project-card:hover::before { box-shadow: inset 0 0 24px rgba(0,0,0,0.04), 0 0 0 1px #000; }
 .cube-face { border-color: #000; }
@@ -1201,7 +1190,8 @@ footer { border-top-color: #e0e0e0; }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .works-grid { grid-template-columns: 1fr; }
+  .works-grid { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+  .project-card { height: 100vh; }
   #system, #contact { grid-template-columns: 1fr; gap: 40px; }
   #works, #belief, #system, #contact { padding-left: 24px; padding-right: 24px; }
   footer { padding: 20px 24px; flex-direction: column; gap: 12px; align-items: flex-start; }
@@ -1276,14 +1266,6 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- SELECTED WORKS -->
   <section id="works">
-    <div class="section-header s-reveal">
-      <div>
-        <div class="section-label">// selected_works</div>
-        <h2 class="section-title">Projects</h2>
-      </div>
-      <div class="section-count">[ 01 — 03 ]</div>
-    </div>
-
     <div class="works-grid">
       <!-- Card 1 -->
       <div class="project-card" data-hoverable>
@@ -1923,6 +1905,8 @@ window._sf = 0; // scatter factor 0→1
     // Teleport to top so they don't have to scroll 447vh of dead space
     if (hzEnd > 0 && sy < hzEnd && lastSy >= hzEnd) {
       heroJumped = false;
+      window._heroJumped = false;
+      if (window._worksSlideOut) window._worksSlideOut();
       resetSlide();
       resetTitle();
       window._sf = 0;
@@ -2003,8 +1987,10 @@ window._sf = 0; // scatter factor 0→1
     /* ── slide complete: jump past hero-zone (runs only once via heroJumped) ── */
     if (sp >= 1) {
       heroJumped = true;
+      window._heroJumped = true;
       resetSlide();
       resetTitle();
+      setTimeout(function () { if (window._worksSlideIn) window._worksSlideIn(); }, 80);
       if (hzEnd > 0) {
         var target = hzEnd + 2;
         lastSy = target;
@@ -2334,32 +2320,31 @@ window._sf = 0; // scatter factor 0→1
   window._lenis = lenis;
 })();
 
-// ── Card stagger on scroll into view ─────────────────────────────────────────
+// ── Works cards: slide-up entrance / slide-down exit ─────────────────────────
 (function () {
-  var cards = document.querySelectorAll('.project-card');
-  if (!cards.length || !window.IntersectionObserver) {
-    cards.forEach(function (c) { c.classList.add('card-visible'); });
-    return;
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.project-card'));
+  var EASE_IN  = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  var EASE_OUT = 'cubic-bezier(0.4, 0, 0.8, 0)';
+
+  function slideIn() {
+    cards.forEach(function (card, i) {
+      card.style.transition = 'transform 0.85s ' + EASE_IN + ' ' + (i * 110) + 'ms, opacity 0.85s ' + EASE_IN + ' ' + (i * 110) + 'ms';
+      card.style.transform  = 'translateY(0)';
+      card.style.opacity    = '1';
+    });
   }
 
-  // Watch the works grid container — when it fully enters, fire all cards in sequence
-  var grid = document.querySelector('.works-grid');
-  var fired = false;
-
-  var gridObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting || fired) return;
-      fired = true;
-      cards.forEach(function (card, i) {
-        setTimeout(function () {
-          card.classList.add('card-visible');
-        }, 80 + i * 160); // 160ms stagger, slight initial delay
-      });
-      gridObs.disconnect();
+  function slideOut() {
+    cards.forEach(function (card, i) {
+      card.style.transition = 'transform 0.6s ' + EASE_OUT + ' ' + (i * 60) + 'ms, opacity 0.6s ' + EASE_OUT + ' ' + (i * 60) + 'ms';
+      card.style.transform  = 'translateY(100vh)';
+      card.style.opacity    = '0';
     });
-  }, { threshold: 0.15 });
+  }
 
-  if (grid) gridObs.observe(grid);
+  // Expose so scroll-transition IIFE can call them
+  window._worksSlideIn  = slideIn;
+  window._worksSlideOut = slideOut;
 })();
 
 // ── Page snap: use Lenis to smoothly snap to nearest section ─────────────────
