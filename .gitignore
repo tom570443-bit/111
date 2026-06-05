@@ -6,9 +6,12 @@ DefaultMaterial_Normal_OpenGL.png
 
 # FBX source files and conversion intermediates
 *.fbx
-*.json
-!package.json
-!package-lock.json
+asteroid2.json
+asteroid7.json
+asteroid9.json
+asteroid2_pts.json
+asteroid7_pts.json
+asteroid9_pts.json
 convert.cjs
 decimate.cjs
 decimate2.cjs
