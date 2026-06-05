@@ -3,3 +3,13 @@ package*.json
 *.zip
 asteroid1_hq.obj
 DefaultMaterial_Normal_OpenGL.png
+
+# FBX source files and conversion intermediates
+*.fbx
+*.json
+!package.json
+!package-lock.json
+convert.cjs
+decimate.cjs
+decimate2.cjs
+decimate3.cjs
