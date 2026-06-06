@@ -2432,6 +2432,7 @@ window._sf = 0; // scatter factor 0→1
 <script>
 (function () {
   var FILES  = ['asteroid7.bin', 'asteroid2.bin', 'asteroid9.bin'];
+  var TEX_IDS = ['7', '2', '9'];
   var SPEEDS = [[0.004, 0.001], [0.0028, 0.0013], [0.005, 0.0008]];
   var cards  = document.querySelectorAll('.project-card');
 
@@ -2506,8 +2507,17 @@ window._sf = 0; // scatter factor 0→1
 
     // ── Load geometry ─────────────────────────────────────────────────────────
     var mesh = null, wireMesh = null;
+    var tid = TEX_IDS[idx];
+    var loader = new THREE.TextureLoader();
+    var texNormal    = loader.load('tex' + tid + '_normal.jpg');
+    var texRoughness = loader.load('tex' + tid + '_roughness.jpg');
+    var texAO        = loader.load('tex' + tid + '_ao.jpg');
+
     var solidMat = new THREE.MeshStandardMaterial({
-      color: 0xc0c0c0, roughness: 0.88, metalness: 0.04,
+      color: 0xd0d0d0, roughness: 1.0, metalness: 0.02,
+      normalMap: texNormal, normalScale: new THREE.Vector2(1.0, 1.0),
+      roughnessMap: texRoughness,
+      aoMap: texAO, aoMapIntensity: 0.8,
       transparent: true, opacity: 0
     });
     var wireMat = new THREE.LineBasicMaterial({
