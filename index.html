@@ -591,8 +591,8 @@ main {
 .works-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  background: #e8e8e8;
+  gap: 1px;
+  background: #d0d0d0;
   height: 100vh;
   overflow: hidden;
 }
@@ -724,6 +724,14 @@ main {
 
 .project-card:hover .card-index { color: var(--green); }
 
+.card-hotspot {
+  position: absolute;
+  top: 20%; left: 10%;
+  width: 80%; height: 60%;
+  z-index: 3;
+  cursor: none;
+}
+
 .card-label {
   position: absolute;
   top: 32px;
@@ -735,9 +743,19 @@ main {
   letter-spacing: 0.12em;
   line-height: 1;
   color: #111;
-  transition: color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.project-card:hover .card-label { color: #000; }
+
+.card-label-en {
+  font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 100;
+  letter-spacing: 0.38em;
+  color: #999;
+  text-transform: uppercase;
+}
 
 .project-card:hover .card-title { color: var(--green); }
 
@@ -1288,24 +1306,27 @@ footer { border-top-color: #e0e0e0; }
   <section id="works">
     <div class="works-grid">
       <!-- Card 1 -->
-      <div class="project-card" data-hoverable>
+      <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-0"></canvas>
         <canvas class="card-grain" id="card-grain-0"></canvas>
-        <div class="card-label">个人简介</div>
+        <div class="card-hotspot" data-card="0"></div>
+        <div class="card-label">个人简介<span class="card-label-en">About Me</span></div>
       </div>
 
       <!-- Card 2 -->
-      <div class="project-card" data-hoverable>
+      <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-1"></canvas>
         <canvas class="card-grain" id="card-grain-1"></canvas>
-        <div class="card-label">设计理念</div>
+        <div class="card-hotspot" data-card="1"></div>
+        <div class="card-label">设计理念<span class="card-label-en">Design Philosophy</span></div>
       </div>
 
       <!-- Card 3 -->
-      <div class="project-card" data-hoverable>
+      <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-2"></canvas>
         <canvas class="card-grain" id="card-grain-2"></canvas>
-        <div class="card-label">设计工具</div>
+        <div class="card-hotspot" data-card="2"></div>
+        <div class="card-label">设计工具<span class="card-label-en">Design Tools</span></div>
       </div>
     </div>
   </section>
@@ -2578,8 +2599,10 @@ window._sf = 0; // scatter factor 0→1
 
       function wake() { if (!rafId) { lastTime = null; rafId = requestAnimationFrame(tick); } }
 
-      card.addEventListener('mouseenter', function () { hovered = true;  wake(); });
-      card.addEventListener('mouseleave', function () { hovered = false; wake(); });
+      var hotspot = card.querySelector('.card-hotspot');
+      var trigger = hotspot || card;
+      trigger.addEventListener('mouseenter', function () { hovered = true;  wake(); });
+      trigger.addEventListener('mouseleave', function () { hovered = false; wake(); });
     }
   });
 })();</script>
