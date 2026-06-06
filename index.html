@@ -750,7 +750,7 @@ main {
 
 .card-label-en {
   font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.72rem;
   font-weight: 100;
   letter-spacing: 0.38em;
   color: #999;
@@ -2599,7 +2599,7 @@ window._sf = 0; // scatter factor 0→1
 
       function wake() { if (!rafId) { lastTime = null; rafId = requestAnimationFrame(tick); } }
 
-      var hotspot = card.querySelector('.card-hotspot');
+      var hotspot = card;
       var trigger = hotspot || card;
       trigger.addEventListener('mouseenter', function () { hovered = true;  wake(); });
       trigger.addEventListener('mouseleave', function () { hovered = false; wake(); });
