@@ -2525,8 +2525,9 @@ window._sf = 0; // scatter factor 0→1
         var view = new DataView(buf);
         var vc    = view.getUint32(0, true);
         var ic    = view.getUint32(4, true);
-        var hasUV = view.getUint32(8, true);
-        var posOff = 12;
+        var thirdWord = buf.byteLength > 8 ? view.getUint32(8, true) : 2;
+        var hasUV  = (thirdWord === 0 || thirdWord === 1) ? thirdWord : 0;
+        var posOff = (thirdWord === 0 || thirdWord === 1) ? 12 : 8;
         var uvOff  = posOff + vc * 3 * 4;
         var idxOff = uvOff  + (hasUV ? vc * 2 * 4 : 0);
 
