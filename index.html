@@ -591,7 +591,6 @@ main {
 .works-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 100vh;
   gap: 1px;
   background: #d0d0d0;
   height: 100vh;
@@ -604,7 +603,6 @@ main {
   position: relative;
   overflow: hidden;
   cursor: none;
-  grid-row: 1;
   transform: translateY(100vh);
   opacity: 0;
 }
@@ -728,17 +726,14 @@ main {
 
 /* ── Card expand overlays ─────────────────────────────────────────────────── */
 .card-overlay {
-  grid-row: 1;
+  position: absolute;
+  top: 0; bottom: 0;
   background: #fff;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.45s ease;
   z-index: 20;
-  min-height: 0;
 }
-#card-overlay-0 { grid-column: 1; grid-row: 1; }
-#card-overlay-1 { grid-column: 2; grid-row: 1; }
-#card-overlay-2 { grid-column: 3; grid-row: 1; }
 .card-overlay.visible { opacity: 1; pointer-events: auto; }
 
 .card-hotspot {
@@ -1322,29 +1317,31 @@ footer { border-top-color: #e0e0e0; }
   <!-- SELECTED WORKS -->
   <section id="works">
     <div class="works-grid" id="works-grid">
-      <!-- Cards first (row 1, cols 1-3) -->
+      <!-- overlays before cards; position:absolute removes them from grid flow -->
+      <div class="card-overlay" id="card-overlay-0"></div>
+      <div class="card-overlay" id="card-overlay-1"></div>
+      <div class="card-overlay" id="card-overlay-2"></div>
+      <!-- Card 1 -->
       <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-0"></canvas>
         <canvas class="card-grain" id="card-grain-0"></canvas>
         <div class="card-hotspot" data-card="0"></div>
         <div class="card-label">个人简介<span class="card-label-en">About Me</span></div>
       </div>
+      <!-- Card 2 -->
       <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-1"></canvas>
         <canvas class="card-grain" id="card-grain-1"></canvas>
         <div class="card-hotspot" data-card="1"></div>
         <div class="card-label">设计理念<span class="card-label-en">Design Philosophy</span></div>
       </div>
+      <!-- Card 3 -->
       <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-2"></canvas>
         <canvas class="card-grain" id="card-grain-2"></canvas>
         <div class="card-hotspot" data-card="2"></div>
         <div class="card-label">设计工具<span class="card-label-en">Design Tools</span></div>
       </div>
-      <!-- Overlays after cards so they render on top (same grid row) -->
-      <div class="card-overlay" id="card-overlay-0"></div>
-      <div class="card-overlay" id="card-overlay-1"></div>
-      <div class="card-overlay" id="card-overlay-2"></div>
     </div>
   </section>
 
@@ -2636,10 +2633,20 @@ window._sf = 0; // scatter factor 0→1
     [0, 1],  // card 2 → cover col 0,1
   ];
 
+  function positionOverlay(overlayEl, cardEl) {
+    var gridRect = document.getElementById('works-grid').getBoundingClientRect();
+    var cardRect = cardEl.getBoundingClientRect();
+    overlayEl.style.left  = (cardRect.left - gridRect.left) + 'px';
+    overlayEl.style.width = cardRect.width + 'px';
+  }
+
   function openCard(idx) {
     active = idx;
-    overlays.forEach(function (ov) { ov.classList.remove('visible'); });
-    config[idx].forEach(function (col) { overlays[col].classList.add('visible'); });
+    overlays.forEach(function (ov) { ov.classList.remove('visible'); ov.style.left = ''; ov.style.width = ''; });
+    config[idx].forEach(function (col) {
+      positionOverlay(overlays[col], cards[col]);
+      overlays[col].classList.add('visible');
+    });
   }
 
   function closeAll() {
