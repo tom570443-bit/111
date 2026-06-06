@@ -2430,18 +2430,6 @@ window._sf = 0; // scatter factor 0→1
   </div>
 </div>
 <script>
-// Spherical UV projection for asteroid textures
-function buildSphericalUV(pos, vc) {
-  var uv = new Float32Array(vc * 2);
-  for (var i = 0; i < vc; i++) {
-    var x = pos[i*3], y = pos[i*3+1], z = pos[i*3+2];
-    var len = Math.sqrt(x*x+y*y+z*z) || 1;
-    uv[i*2]   = 0.5 + Math.atan2(z/len, x/len) / (2*Math.PI);
-    uv[i*2+1] = 0.5 - Math.asin(Math.max(-1, Math.min(1, y/len))) / Math.PI;
-  }
-  return uv;
-}
-
 (function () {
   var FILES  = ['asteroid7.bin', 'asteroid2.bin', 'asteroid9.bin'];
   var SPEEDS = [[0.004, 0.001], [0.0028, 0.0013], [0.005, 0.0008]];
@@ -2535,28 +2523,36 @@ function buildSphericalUV(pos, vc) {
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
       .then(function (buf) {
         var view = new DataView(buf);
-        var vc = view.getUint32(0, true), ic = view.getUint32(4, true);
-        var pos = new Float32Array(buf, 8, vc * 3);
-        var idx = new Uint32Array(buf, 8 + vc * 12, ic);
+        var vc    = view.getUint32(0, true);
+        var ic    = view.getUint32(4, true);
+        var hasUV = view.getUint32(8, true);
+        var posOff = 12;
+        var uvOff  = posOff + vc * 3 * 4;
+        var idxOff = uvOff  + (hasUV ? vc * 2 * 4 : 0);
+
+        var pos = new Float32Array(buf, posOff, vc * 3);
+        var idx = new Uint32Array(buf,  idxOff, ic);
 
         var geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.Float32BufferAttribute(pos.slice(), 3));
         geo.setIndex(new THREE.Uint32BufferAttribute(idx.slice(), 1));
+
+        if (hasUV) {
+          var uvs = new Float32Array(buf, uvOff, vc * 2);
+          geo.setAttribute('uv',  new THREE.Float32BufferAttribute(uvs.slice(), 2));
+          geo.setAttribute('uv2', new THREE.Float32BufferAttribute(uvs.slice(), 2));
+        }
+
         geo.computeVertexNormals();
 
         // Apply PBR textures
-        solidMat.normalMap       = texNormal;
-        solidMat.normalScale     = new THREE.Vector2(1.5, 1.5);
-        solidMat.roughnessMap    = texRoughness;
-        solidMat.roughness       = 1.0;
-        solidMat.aoMap           = texAO;
-        solidMat.aoMapIntensity  = 1.2;
-        solidMat.needsUpdate     = true;
-
-        // UV2 needed for AO map
-        geo.setAttribute('uv', new THREE.Float32BufferAttribute(
-          buildSphericalUV(pos.slice(), vc), 2));
-        geo.setAttribute('uv2', geo.attributes.uv);
+        solidMat.normalMap      = texNormal;
+        solidMat.normalScale    = new THREE.Vector2(1.2, 1.2);
+        solidMat.roughnessMap   = texRoughness;
+        solidMat.roughness      = 1.0;
+        solidMat.aoMap          = texAO;
+        solidMat.aoMapIntensity = 1.0;
+        solidMat.needsUpdate    = true;
 
         mesh = new THREE.Mesh(geo, solidMat);
         mesh.scale.setScalar(0.65);
