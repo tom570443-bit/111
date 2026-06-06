@@ -2479,6 +2479,8 @@ window._sf = 0; // scatter factor 0→1
     fill.position.set(5, -2, 4); scene.add(fill);
     var back = new THREE.DirectionalLight(0x334455, 0.12);
     back.position.set(2, -4, -3); scene.add(back);
+    var shadow = new THREE.DirectionalLight(0xaabbcc, 0.35);
+    shadow.position.set(3, 2, -5); scene.add(shadow);
 
     window.addEventListener('resize', function () {
       var nw = cvs.offsetWidth, nh = cvs.offsetHeight;
@@ -2528,10 +2530,10 @@ window._sf = 0; // scatter factor 0→1
     var texAO        = loader.load('tex' + tid + '_ao.jpg');
 
     var solidMat = new THREE.MeshStandardMaterial({
-      color: 0xd0d0d0, roughness: 1.0, metalness: 0.02,
-      normalMap: texNormal, normalScale: new THREE.Vector2(1.0, 1.0),
+      color: 0xd0d0d0, roughness: 0.70, metalness: 0.06,
+      normalMap: texNormal, normalScale: new THREE.Vector2(1.2, 1.2),
       roughnessMap: texRoughness,
-      aoMap: texAO, aoMapIntensity: 0.8,
+      aoMap: texAO, aoMapIntensity: 0.6,
       transparent: true, opacity: 0
     });
     var wireMat = new THREE.LineBasicMaterial({
