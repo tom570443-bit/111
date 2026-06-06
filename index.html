@@ -599,13 +599,9 @@ main {
 
 .project-card {
   background: #ffffff;
-  padding: 40px 36px;
   position: relative;
   overflow: hidden;
   cursor: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   height: 100%;
   transform: translateY(100vh);
   opacity: 0;
@@ -728,15 +724,20 @@ main {
 
 .project-card:hover .card-index { color: var(--green); }
 
-.card-title {
-  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-  font-size: 2.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+.card-label {
+  position: absolute;
+  bottom: 32px;
+  left: 36px;
+  z-index: 2;
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   line-height: 1;
-  margin-bottom: 8px;
+  color: #111;
   transition: color 0.2s;
 }
+.project-card:hover .card-label { color: #000; }
 
 .project-card:hover .card-title { color: var(--green); }
 
@@ -1290,51 +1291,21 @@ footer { border-top-color: #e0e0e0; }
       <div class="project-card" data-hoverable>
         <canvas class="card-canvas" id="card-canvas-0"></canvas>
         <canvas class="card-grain" id="card-grain-0"></canvas>
-        <div class="card-top">
-          <div class="card-title">个人简介</div>
-        </div>
-        <div class="card-bottom">
-          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
-            &gt; Real-time 3D data visualization<br>
-            &gt; Procedural geometry engine<br>
-            &gt; 60fps render pipeline
-          </div>
-          <div class="card-arrow">&#8599;</div>
-        </div>
+        <div class="card-label">个人简介</div>
       </div>
 
       <!-- Card 2 -->
       <div class="project-card" data-hoverable>
         <canvas class="card-canvas" id="card-canvas-1"></canvas>
         <canvas class="card-grain" id="card-grain-1"></canvas>
-        <div class="card-top">
-          <div class="card-title">设计理念</div>
-        </div>
-        <div class="card-bottom">
-          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
-            &gt; Generative facial mapping<br>
-            &gt; Neural style transfer<br>
-            &gt; Real-time inference &lt;8ms
-          </div>
-          <div class="card-arrow">&#8599;</div>
-        </div>
+        <div class="card-label">设计理念</div>
       </div>
 
       <!-- Card 3 -->
       <div class="project-card" data-hoverable>
         <canvas class="card-canvas" id="card-canvas-2"></canvas>
         <canvas class="card-grain" id="card-grain-2"></canvas>
-        <div class="card-top">
-          <div class="card-title">设计工具</div>
-        </div>
-        <div class="card-bottom">
-          <div style="font-size:0.62rem;color:var(--gray3);letter-spacing:0.08em;margin-bottom:12px;font-family:var(--mono);">
-            &gt; 1B+ row streaming queries<br>
-            &gt; Live anomaly detection<br>
-            &gt; Custom DSL query engine
-          </div>
-          <div class="card-arrow">&#8599;</div>
-        </div>
+        <div class="card-label">设计工具</div>
       </div>
     </div>
   </section>
