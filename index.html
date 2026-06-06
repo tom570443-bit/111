@@ -2507,17 +2507,12 @@ window._sf = 0; // scatter factor 0→1
     // ── Load geometry ─────────────────────────────────────────────────────────
     var mesh = null, wireMesh = null;
     var solidMat = new THREE.MeshStandardMaterial({
-      color: 0xb8b8b8, roughness: 0.92, metalness: 0.02,
+      color: 0xc0c0c0, roughness: 0.88, metalness: 0.04,
       transparent: true, opacity: 0
     });
     var wireMat = new THREE.LineBasicMaterial({
       color: 0x444444, transparent: true, opacity: 0
     });
-
-    var loader = new THREE.TextureLoader();
-    var texNormal    = loader.load('tex_normal.jpg');
-    var texRoughness = loader.load('tex_roughness.jpg');
-    var texAO        = loader.load('tex_ao.jpg');
 
     fetch(file)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
@@ -2545,15 +2540,6 @@ window._sf = 0; // scatter factor 0→1
         }
 
         geo.computeVertexNormals();
-
-        // Apply PBR textures
-        solidMat.normalMap      = texNormal;
-        solidMat.normalScale    = new THREE.Vector2(1.2, 1.2);
-        solidMat.roughnessMap   = texRoughness;
-        solidMat.roughness      = 1.0;
-        solidMat.aoMap          = texAO;
-        solidMat.aoMapIntensity = 1.0;
-        solidMat.needsUpdate    = true;
 
         mesh = new THREE.Mesh(geo, solidMat);
         mesh.scale.setScalar(0.65);
