@@ -2643,10 +2643,14 @@ window._sf = 0; // scatter factor 0→1
   function openCard(idx) {
     active = idx;
     overlays.forEach(function (ov) { ov.classList.remove('visible'); ov.style.left = ''; ov.style.width = ''; });
-    config[idx].forEach(function (col) {
-      positionOverlay(overlays[col], cards[col]);
-      overlays[col].classList.add('visible');
-    });
+    var cols = config[idx];
+    cols.forEach(function (col) { positionOverlay(overlays[col], cards[col]); });
+    // Adjacent white panels: extend left one by 1px to cover the gap between them
+    if (cols.length === 2 && cols[1] === cols[0] + 1) {
+      var leftOv = overlays[cols[0]];
+      leftOv.style.width = (parseFloat(leftOv.style.width) + 1) + 'px';
+    }
+    cols.forEach(function (col) { overlays[col].classList.add('visible'); });
   }
 
   function closeAll() {
