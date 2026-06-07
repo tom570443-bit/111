@@ -737,6 +737,7 @@ main {
   transition: opacity 0.45s ease;
   z-index: 20;
 }
+#card-overlay-0 { z-index: 22; }
 .card-overlay.visible { opacity: 1; pointer-events: auto; }
 
 .overlay-content { display: none; }
@@ -768,7 +769,7 @@ main {
   height: 58px;
   border-radius: 50%;
   border: 1px solid #000;
-  background: #fff center/cover no-repeat;
+  background: #fff center/100% no-repeat;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1419,26 +1420,26 @@ footer { border-top-color: #e0e0e0; }
         <div class="overlay-tools">
           <div class="tools-grid">
             <!-- Row 1: Ps Ai Ae Pr Id Procreate -->
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:25% 0%"></div><span class="tool-name">Photoshop</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:0% 0%"></div><span class="tool-name">Illustrator</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:75% 0%"></div><span class="tool-name">After Effects</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:50% 0%"></div><span class="tool-name">Premiere</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:100% 0%"></div><span class="tool-name">InDesign</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/procreate.png');background-size:cover;background-position:center"></div><span class="tool-name">Procreate</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/ps.png')"></div><span class="tool-name">Photoshop</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/ai.png')"></div><span class="tool-name">Illustrator</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/ae.png')"></div><span class="tool-name">After Effects</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/pr.png')"></div><span class="tool-name">Premiere</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/id.png')"></div><span class="tool-name">InDesign</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/procreate.png')"></div><span class="tool-name">Procreate</span></div>
             <!-- Row 2: Blender DeepSeek ChatGPT GitHub Claude Codex -->
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:50% 50%"></div><span class="tool-name">Blender</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:100% 50%"></div><span class="tool-name">DeepSeek</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:75% 100%"></div><span class="tool-name">ChatGPT</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/github.png');background-size:cover;background-position:center"></div><span class="tool-name">GitHub</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:50% 100%"></div><span class="tool-name">Claude</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:25% 100%"></div><span class="tool-name">Codex</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/blender.png')"></div><span class="tool-name">Blender</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/deepseek.png')"></div><span class="tool-name">DeepSeek</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/chatgpt.png')"></div><span class="tool-name">ChatGPT</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/github.png')"></div><span class="tool-name">GitHub</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/claude_ai.png')"></div><span class="tool-name">Claude</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/codex.png')"></div><span class="tool-name">Codex</span></div>
             <!-- Row 3: Figma Spline 剪映 Tripo Gemini ··· -->
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:0% 50%"></div><span class="tool-name">Figma</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:25% 50%"></div><span class="tool-name">Spline</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:75% 50%"></div><span class="tool-name">剪映</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/tripo.png');background-size:cover;background-position:center"></div><span class="tool-name">Tripo</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:0% 100%"></div><span class="tool-name">Gemini</span></div>
-            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/其他图标.jpg');background-size:500% 300%;background-position:100% 100%"></div><span class="tool-name">···</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/figma.png')"></div><span class="tool-name">Figma</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/spline.png')"></div><span class="tool-name">Spline</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/jianying.png')"></div><span class="tool-name">剪映</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/tripo.png')"></div><span class="tool-name">Tripo</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/gemini.png')"></div><span class="tool-name">Gemini</span></div>
+            <div class="tool-item"><div class="tool-icon" style="background-image:url('图标/more.png')"></div><span class="tool-name">&nbsp;</span></div>
           </div>
         </div>
       </div>
