@@ -736,6 +736,27 @@ main {
 }
 .card-overlay.visible { opacity: 1; pointer-events: auto; }
 
+.overlay-content {
+  position: absolute;
+  bottom: 60px;
+  left: 40px; right: 40px;
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+}
+.overlay-headline {
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: #111;
+}
+.overlay-body {
+  font-size: 0.82rem;
+  font-weight: 100;
+  line-height: 2.0;
+  letter-spacing: 0.04em;
+  color: #333;
+}
+
 .card-hotspot {
   position: absolute;
   top: 20%; left: 10%;
@@ -1318,9 +1339,17 @@ footer { border-top-color: #e0e0e0; }
   <section id="works">
     <div class="works-grid" id="works-grid">
       <!-- overlays before cards; position:absolute removes them from grid flow -->
-      <div class="card-overlay" id="card-overlay-0"></div>
+      <div class="card-overlay" id="card-overlay-0">
+        <div class="overlay-content overlay-content--left">
+          <p class="overlay-headline">设计于我，既是追问，也是回望。</p>
+        </div>
+      </div>
       <div class="card-overlay" id="card-overlay-1"></div>
-      <div class="card-overlay" id="card-overlay-2"></div>
+      <div class="card-overlay" id="card-overlay-2">
+        <div class="overlay-content overlay-content--right">
+          <p class="overlay-body">我关注那些值得被严肃讨论的命题——环境、公平、人与技术的边界；也着迷于那些值得被重新激活的传统背后的智慧。我相信，好的设计在提出尖锐问题的同时，也能给予温柔而有力的解答。</p>
+        </div>
+      </div>
       <!-- Card 1 -->
       <div class="project-card">
         <canvas class="card-canvas" id="card-canvas-0"></canvas>
