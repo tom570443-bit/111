@@ -741,6 +741,58 @@ main {
 
 .overlay-content { display: none; }
 #works-grid[data-active-card="1"] .overlay-content { display: block; }
+.overlay-tools { display: none; }
+#works-grid[data-active-card="2"] .overlay-tools { display: block; }
+
+.overlay-tools {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 40px;
+  width: calc(200% + 1px);
+  padding-right: 40px;
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 28px 12px;
+}
+.tool-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tool-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid #000;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.tool-icon svg { width: 36px; height: 36px; }
+.ti-adobe { border-color: transparent; }
+.ti-adobe span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+}
+.ti-more span { font-size: 1rem; color: #555; }
+.tool-name {
+  font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  font-size: 0.48rem;
+  font-weight: 200;
+  letter-spacing: 0.08em;
+  color: #888;
+  text-align: center;
+  white-space: nowrap;
+}
 
 .overlay-content {
   position: absolute;
@@ -1351,6 +1403,28 @@ footer { border-top-color: #e0e0e0; }
           <p class="overlay-headline">设计于我</p>
           <p class="overlay-headline">既是追问</p>
           <p class="overlay-headline">也是回望</p>
+        </div>
+        <div class="overlay-tools">
+          <div class="tools-grid">
+            <div class="tool-item"><div class="tool-icon ti-adobe" style="background:#31A8FF"><span>Ps</span></div><span class="tool-name">Photoshop</span></div>
+            <div class="tool-item"><div class="tool-icon ti-adobe" style="background:#FF9A00"><span>Ai</span></div><span class="tool-name">Illustrator</span></div>
+            <div class="tool-item"><div class="tool-icon ti-adobe" style="background:#9999FF"><span>Ae</span></div><span class="tool-name">After Effects</span></div>
+            <div class="tool-item"><div class="tool-icon ti-adobe" style="background:#E77CF3"><span>Pr</span></div><span class="tool-name">Premiere</span></div>
+            <div class="tool-item"><div class="tool-icon ti-adobe" style="background:#FF3366"><span>Id</span></div><span class="tool-name">InDesign</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#4E4DE0"/><text x="18" y="23" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="600">P</text></svg></div><span class="tool-name">Procreate</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#EA7600"/><path d="M18 8 L26 22 L10 22 Z" fill="white" opacity="0.9"/><circle cx="18" cy="21" r="4" fill="#265787"/></svg></div><span class="tool-name">Blender</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#1A1A2E"/><text x="18" y="23" text-anchor="middle" fill="#4D9EFF" font-size="12" font-family="sans-serif" font-weight="700">DS</text></svg></div><span class="tool-name">DeepSeek</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#19C37D"/><path d="M18 10 C22 10 25 13 25 17 C25 21 22 24 18 24 C16 24 14 23 13 21 L11 23 L11 17 L17 17 L15 19 C16 20 17 20 18 20 C20 20 21 19 21 17 C21 15 20 14 18 14 C16.5 14 15.5 15 15 16 L12 15 C13 12 15 10 18 10 Z" fill="white"/></svg></div><span class="tool-name">ChatGPT</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#24292E"/><path d="M18 9C13 9 9 13 9 18C9 22 11.7 25.3 15.4 26.4C15.9 26.5 16 26.2 16 26V24.2C13.4 24.8 12.8 23 12.8 23C12.3 21.8 11.6 21.5 11.6 21.5C10.6 20.8 11.7 20.8 11.7 20.8C12.8 20.9 13.3 22 13.3 22C14.3 23.6 16 23.1 16.7 22.8C16.8 22.1 17.1 21.6 17.3 21.3C14.6 21 11.8 19.9 11.8 15.5C11.8 14.3 12.2 13.3 13 12.5C12.9 12.2 12.5 11.1 13.1 9.6C13.1 9.6 14.1 9.3 16 10.7C16.8 10.5 17.6 10.4 18.5 10.4C19.3 10.4 20.1 10.5 20.9 10.7C22.8 9.3 23.8 9.6 23.8 9.6C24.4 11.1 24 12.2 23.9 12.5C24.7 13.3 25.1 14.3 25.1 15.5C25.1 19.9 22.3 21 19.6 21.3C19.9 21.6 20.2 22.3 20.2 23.3V26C20.2 26.2 20.3 26.5 20.9 26.4C24.6 25.3 27 22 27 18C27 13 23 9 18 9Z" fill="white"/></svg></div><span class="tool-name">GitHub</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#D4A574"/><path d="M18 9 L21 15 L27 16 L22.5 20.5 L23.5 27 L18 24 L12.5 27 L13.5 20.5 L9 16 L15 15 Z" fill="white" stroke="white" stroke-width="0.5"/></svg></div><span class="tool-name">Claude</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#000"/><text x="18" y="23" text-anchor="middle" fill="white" font-size="11" font-family="monospace" font-weight="400">&lt;/&gt;</text></svg></div><span class="tool-name">Codex</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="white"/><rect x="13" y="10" width="5" height="16" rx="2" fill="#0ACF83"/><rect x="13" y="10" width="5" height="8" rx="2" fill="#A259FF"/><rect x="18" y="10" width="5" height="8" rx="2" fill="#F24E1E"/><rect x="18" y="18" width="5" height="4" rx="2" fill="#FF7262"/></svg></div><span class="tool-name">Figma</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#000"/><path d="M12 18 C12 14 15 11 18 11 C21 11 24 14 24 18 C24 22 21 25 18 25" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="18" cy="25" r="2" fill="white"/></svg></div><span class="tool-name">Spline</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#FE2C55"/><rect x="13" y="13" width="6" height="10" rx="1" fill="white"/><polygon points="20,13 20,23 27,18" fill="white"/></svg></div><span class="tool-name">剪映</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#6C63FF"/><text x="18" y="23" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="600">Tr</text></svg></div><span class="tool-name">Tripo</span></div>
+            <div class="tool-item"><div class="tool-icon"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="#4285F4"/><path d="M18 11 C14 11 11 14.5 11 18 C11 21.5 14 25 18 25 C22 25 25 21.5 25 18" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M18 11 C22 11 25 14.5 25 18" stroke="#EA4335" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></div><span class="tool-name">Gemini</span></div>
+            <div class="tool-item"><div class="tool-icon ti-more"><span>···</span></div><span class="tool-name">&nbsp;</span></div>
+          </div>
         </div>
       </div>
       <div class="card-overlay" id="card-overlay-1"></div>
