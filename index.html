@@ -736,6 +736,9 @@ main {
 }
 .card-overlay.visible { opacity: 1; pointer-events: auto; }
 
+.overlay-content { display: none; }
+#works-grid[data-active-card="1"] .overlay-content { display: block; }
+
 .overlay-content {
   position: absolute;
   top: 50%;
@@ -2670,12 +2673,14 @@ window._sf = 0; // scatter factor 0→1
     overlayEl.style.width = cardRect.width + 'px';
   }
 
+  var grid = document.getElementById('works-grid');
+
   function openCard(idx) {
     active = idx;
     overlays.forEach(function (ov) { ov.classList.remove('visible'); ov.style.left = ''; ov.style.width = ''; });
+    grid.dataset.activeCard = idx;
     var cols = config[idx];
     cols.forEach(function (col) { positionOverlay(overlays[col], cards[col]); });
-    // Adjacent white panels: extend left one by 1px to cover the gap between them
     if (cols.length === 2 && cols[1] === cols[0] + 1) {
       var leftOv = overlays[cols[0]];
       leftOv.style.width = (parseFloat(leftOv.style.width) + 1) + 'px';
@@ -2685,6 +2690,7 @@ window._sf = 0; // scatter factor 0→1
 
   function closeAll() {
     active = -1;
+    delete grid.dataset.activeCard;
     overlays.forEach(function (ov) { ov.classList.remove('visible'); });
   }
 
