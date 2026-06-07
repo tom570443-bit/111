@@ -82,15 +82,18 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
+  background-image: repeating-linear-gradient(
     0deg,
     rgba(0,0,0,0.03) 0px,
     rgba(0,0,0,0.03) 1px,
     transparent 1px,
     transparent 3px
   );
+  background-size: 100% 4px;
+  background-attachment: local;
   pointer-events: none;
   z-index: 1000;
+  will-change: transform;
 }
 
 /* ── Nav — hidden until mouse reaches top ── */
@@ -2346,9 +2349,17 @@ window._sf = 0; // scatter factor 0→1
     easing: function (t) { return 1 - Math.pow(1 - t, 4); }, // quartic out
     smoothWheel: true,
     wheelMultiplier: 0.9,
+    lerp: 0.06,
   });
 
-  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+  var _lenisLast = 0;
+  var _lenisFPS = 1000 / 60; // target 60fps max
+  function raf(time) {
+    requestAnimationFrame(raf);
+    if (time - _lenisLast < _lenisFPS - 1) return;
+    _lenisLast = time;
+    lenis.raf(time);
+  }
   requestAnimationFrame(raf);
   window._lenis = lenis;
 })();
@@ -2468,6 +2479,24 @@ window._sf = 0; // scatter factor 0→1
   var SPEEDS = [[0.004, 0.001], [0.0028, 0.0013], [0.005, 0.0008]];
   var cards  = document.querySelectorAll('.project-card');
 
+  // ── Visibility gate: pause RAF loops when #works is off-screen ───────────────
+  var worksVisible = true;
+  var _wakeRegistry = [];
+
+  var worksSection = document.getElementById('works');
+  if (worksSection && 'IntersectionObserver' in window) {
+    var worksObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        worksVisible = entry.isIntersecting;
+        if (worksVisible) {
+          // Resume any renderer that was hovered when section comes back
+          _wakeRegistry.forEach(function (fn) { fn(); });
+        }
+      });
+    }, { threshold: 0 });
+    worksObserver.observe(worksSection);
+  }
+
   FILES.forEach(function (file, idx) {
     var cvs   = document.getElementById('card-canvas-' + idx);
     var grain = document.getElementById('card-grain-' + idx);
@@ -2479,7 +2508,7 @@ window._sf = 0; // scatter factor 0→1
     var h = cvs.offsetHeight || cvs.parentElement.offsetHeight || 700;
 
     var renderer = new THREE.WebGLRenderer({ canvas: cvs, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(w, h, false);
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2604,6 +2633,10 @@ window._sf = 0; // scatter factor 0→1
 
       function tick(ts) {
         rafId = null;
+
+        // Pause when works section is not visible
+        if (!worksVisible) return;
+
         var dt = lastTime ? ts - lastTime : 16;
         lastTime = ts;
         dt = Math.min(dt, 50);
@@ -2624,7 +2657,7 @@ window._sf = 0; // scatter factor 0→1
         cvs.style.opacity = progress > 0.01 ? '1' : '0';
         if (grain) {
           grain.style.opacity = (wireOp * 0.12 + solidOp * 0.06).toFixed(3);
-          if (progress > 0.01 && (grainFrame++ % 3 === 0)) drawGrain();
+          if (progress > 0.01 && (grainFrame++ % 6 === 0)) drawGrain();
         }
 
         if (progress > 0.01) {
@@ -2644,7 +2677,12 @@ window._sf = 0; // scatter factor 0→1
         if (progress > 0 || hovered) rafId = requestAnimationFrame(tick);
       }
 
-      function wake() { if (!rafId) { lastTime = null; rafId = requestAnimationFrame(tick); } }
+      function wake() {
+        if (!rafId && worksVisible) { lastTime = null; rafId = requestAnimationFrame(tick); }
+      }
+
+      // Register wake so IntersectionObserver can resume on re-entry
+      _wakeRegistry.push(function () { if (hovered || progress > 0) wake(); });
 
       var hotspot = card;
       var trigger = hotspot || card;
