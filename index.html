@@ -774,15 +774,16 @@ main {
   flex-shrink: 0;
   position: relative;
 }
-.icon-img {
+.icon-outline, .icon-img {
   position: absolute;
   inset: 0;
   width: 100%; height: 100%;
   display: block;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.45s ease;
 }
+.icon-outline.revealed { opacity: 1; }
 .icon-img.revealed { opacity: 1; }
 .tool-icon-text {
   width: 58px;
@@ -1431,26 +1432,26 @@ footer { border-top-color: #e0e0e0; }
         <div class="overlay-tools">
           <div class="tools-grid">
             <!-- Row 1: Ps Ai Ae Pr Id Procreate -->
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/ps.png"></div><span class="tool-name">Photoshop</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/ai.png"></div><span class="tool-name">Illustrator</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/ae.png"></div><span class="tool-name">After Effects</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/pr.png"></div><span class="tool-name">Premiere</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/id.png"></div><span class="tool-name">InDesign</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/procreate.png"></div><span class="tool-name">Procreate</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/ps_outline.png"><img class="icon-img" src="图标/ps.png"></div><span class="tool-name">Photoshop</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/ai_outline.png"><img class="icon-img" src="图标/ai.png"></div><span class="tool-name">Illustrator</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/ae_outline.png"><img class="icon-img" src="图标/ae.png"></div><span class="tool-name">After Effects</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/pr_outline.png"><img class="icon-img" src="图标/pr.png"></div><span class="tool-name">Premiere</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/id_outline.png"><img class="icon-img" src="图标/id.png"></div><span class="tool-name">InDesign</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/procreate_outline.png"><img class="icon-img" src="图标/procreate.png"></div><span class="tool-name">Procreate</span></div>
             <!-- Row 2: Blender DeepSeek ChatGPT GitHub Claude Codex -->
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/blender.png"></div><span class="tool-name">Blender</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/deepseek.png"></div><span class="tool-name">DeepSeek</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/chatgpt.png"></div><span class="tool-name">ChatGPT</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/github.png"></div><span class="tool-name">GitHub</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/claude_ai.png"></div><span class="tool-name">Claude</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/codex.png"></div><span class="tool-name">Codex</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/blender_outline.png"><img class="icon-img" src="图标/blender.png"></div><span class="tool-name">Blender</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/deepseek_outline.png"><img class="icon-img" src="图标/deepseek.png"></div><span class="tool-name">DeepSeek</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/chatgpt_outline.png"><img class="icon-img" src="图标/chatgpt.png"></div><span class="tool-name">ChatGPT</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/github_outline.png"><img class="icon-img" src="图标/github.png"></div><span class="tool-name">GitHub</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/claude_ai_outline.png"><img class="icon-img" src="图标/claude_ai.png"></div><span class="tool-name">Claude</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/codex_outline.png"><img class="icon-img" src="图标/codex.png"></div><span class="tool-name">Codex</span></div>
             <!-- Row 3: Figma Spline 剪映 Tripo Gemini ··· -->
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/figma.png"></div><span class="tool-name">Figma</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/spline.png"></div><span class="tool-name">Spline</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/jianying.png"></div><span class="tool-name">剪映</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/tripo.png"></div><span class="tool-name">Tripo</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/gemini.png"></div><span class="tool-name">Gemini</span></div>
-            <div class="tool-item"><div class="tool-icon"><img class="icon-img" src="图标/more.png"></div><span class="tool-name">&nbsp;</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/figma_outline.png"><img class="icon-img" src="图标/figma.png"></div><span class="tool-name">Figma</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/spline_outline.png"><img class="icon-img" src="图标/spline.png"></div><span class="tool-name">Spline</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/jianying_outline.png"><img class="icon-img" src="图标/jianying.png"></div><span class="tool-name">剪映</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/tripo_outline.png"><img class="icon-img" src="图标/tripo.png"></div><span class="tool-name">Tripo</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/gemini_outline.png"><img class="icon-img" src="图标/gemini.png"></div><span class="tool-name">Gemini</span></div>
+            <div class="tool-item"><div class="tool-icon"><img class="icon-outline" src="图标/more_outline.png"><img class="icon-img" src="图标/more.png"></div><span class="tool-name">&nbsp;</span></div>
           </div>
         </div>
       </div>
@@ -2816,19 +2817,39 @@ window._sf = 0; // scatter factor 0→1
 
   var grid = document.getElementById('works-grid');
 
-  var iconRevealTimer = null;
+  var iconTimers = [];
+
+  function clearIconTimers() {
+    iconTimers.forEach(function(t) { clearTimeout(t); });
+    iconTimers = [];
+  }
 
   function revealIcons() {
-    var imgs = document.querySelectorAll('.icon-img');
-    imgs.forEach(function(img, i) {
-      setTimeout(function() { img.classList.add('revealed'); }, i * 55);
+    var outlines = document.querySelectorAll('.icon-outline');
+    var imgs     = document.querySelectorAll('.icon-img');
+    var stagger  = 60;          // ms between each icon
+    var colorDelay = 700;       // ms after last outline before color starts
+
+    // Phase 1: outlines appear one by one
+    outlines.forEach(function(el, i) {
+      iconTimers.push(setTimeout(function() { el.classList.add('revealed'); }, i * stagger));
+    });
+
+    // Phase 2: after all outlines visible, crossfade to color
+    var colorStart = outlines.length * stagger + colorDelay;
+    imgs.forEach(function(el, i) {
+      iconTimers.push(setTimeout(function() {
+        el.classList.add('revealed');
+        // fade out the matching outline
+        outlines[i] && outlines[i].classList.remove('revealed');
+      }, colorStart + i * stagger));
     });
   }
 
   function hideIcons() {
-    if (iconRevealTimer) { clearTimeout(iconRevealTimer); iconRevealTimer = null; }
-    document.querySelectorAll('.icon-img').forEach(function(img) {
-      img.classList.remove('revealed');
+    clearIconTimers();
+    document.querySelectorAll('.icon-outline, .icon-img').forEach(function(el) {
+      el.classList.remove('revealed');
     });
   }
 
