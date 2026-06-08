@@ -746,15 +746,16 @@ main {
 #works-grid[data-active-card="2"] .overlay-tools { display: block; }
 
 /* About (card-0) */
-.about-photo-wrap { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
-#works-grid[data-active-card="0"] .about-photo-wrap { display: flex; }
+.about-photo-wrap { display: none; position: absolute; inset: 0; }
+#works-grid[data-active-card="0"] .about-photo-wrap { display: block; }
 .about-photo {
-  max-height: 78%;
-  max-width: 80%;
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 62%;
   width: auto;
-  height: auto;
   object-fit: contain;
-  display: block;
   filter: grayscale(1);
   transition: filter 0.9s ease;
 }
