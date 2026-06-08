@@ -781,7 +781,7 @@ main {
   display: block;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.35s ease;
 }
 .icon-outline.revealed { opacity: 1; }
 .icon-img.revealed { opacity: 1; }
@@ -2827,23 +2827,15 @@ window._sf = 0; // scatter factor 0→1
   function revealIcons() {
     var outlines = document.querySelectorAll('.icon-outline');
     var imgs     = document.querySelectorAll('.icon-img');
-    var stagger  = 60;          // ms between each icon
-    var colorDelay = 700;       // ms after last outline before color starts
 
-    // Phase 1: outlines appear one by one
-    outlines.forEach(function(el, i) {
-      iconTimers.push(setTimeout(function() { el.classList.add('revealed'); }, i * stagger));
-    });
+    // Phase 1 (t=0): all outlines appear together
+    outlines.forEach(function(el) { el.classList.add('revealed'); });
 
-    // Phase 2: after all outlines visible, crossfade to color
-    var colorStart = outlines.length * stagger + colorDelay;
-    imgs.forEach(function(el, i) {
-      iconTimers.push(setTimeout(function() {
-        el.classList.add('revealed');
-        // fade out the matching outline
-        outlines[i] && outlines[i].classList.remove('revealed');
-      }, colorStart + i * stagger));
-    });
+    // Phase 2 (t=400ms): all color icons appear, outlines fade out — total 0.8s
+    iconTimers.push(setTimeout(function() {
+      imgs.forEach(function(el) { el.classList.add('revealed'); });
+      outlines.forEach(function(el) { el.classList.remove('revealed'); });
+    }, 400));
   }
 
   function hideIcons() {
