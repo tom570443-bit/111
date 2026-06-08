@@ -820,7 +820,10 @@ main {
   color: #888;
   text-align: center;
   white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
+.tool-name.name-revealed { opacity: 1; }
 
 .overlay-content {
   position: absolute;
@@ -2830,11 +2833,13 @@ window._sf = 0; // scatter factor 0→1
   function revealIcons() {
     var circles  = document.querySelectorAll('.tool-icon');
     var outlines = document.querySelectorAll('.icon-outline');
+    var names    = document.querySelectorAll('.tool-name');
     var imgs     = document.querySelectorAll('.icon-img');
 
-    // Phase 1: circles + outlines appear together
+    // Phase 1: circles + outlines + labels appear together
     circles.forEach(function(el) { el.classList.add('circle-revealed'); });
     outlines.forEach(function(el) { el.classList.add('revealed'); });
+    names.forEach(function(el) { el.classList.add('name-revealed'); });
 
     // Phase 2 (t=400ms): color fades in, outlines fade out
     iconTimers.push(setTimeout(function() {
@@ -2847,6 +2852,7 @@ window._sf = 0; // scatter factor 0→1
     clearIconTimers();
     document.querySelectorAll('.tool-icon').forEach(function(el) { el.classList.remove('circle-revealed'); });
     document.querySelectorAll('.icon-outline, .icon-img').forEach(function(el) { el.classList.remove('revealed'); });
+    document.querySelectorAll('.tool-name').forEach(function(el) { el.classList.remove('name-revealed'); });
   }
 
   function openCard(idx) {
@@ -2862,7 +2868,7 @@ window._sf = 0; // scatter factor 0→1
     cols.forEach(function (col) { overlays[col].classList.add('visible'); });
     if (idx === 2) {
       hideIcons();
-      iconRevealTimer = setTimeout(revealIcons, 550);
+      iconRevealTimer = setTimeout(revealIcons, 200);
     }
   }
 
