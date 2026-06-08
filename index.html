@@ -834,7 +834,7 @@ main {
   display: block;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.18s ease;
 }
 .icon-outline.revealed { opacity: 1; }
 .icon-img.revealed { opacity: 1; }
@@ -2909,11 +2909,11 @@ window._sf = 0; // scatter factor 0→1
     outlines.forEach(function(el) { el.classList.add('revealed'); });
     names.forEach(function(el) { el.classList.add('name-revealed'); });
 
-    // Phase 2 (t=400ms): color fades in, outlines fade out
+    // Phase 2 (t=200ms): color fades in, outlines fade out
     iconTimers.push(setTimeout(function() {
       imgs.forEach(function(el) { el.classList.add('revealed'); });
       outlines.forEach(function(el) { el.classList.remove('revealed'); });
-    }, 400));
+    }, 200));
   }
 
   function hideIcons() {
