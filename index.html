@@ -773,7 +773,10 @@ main {
   overflow: hidden;
   flex-shrink: 0;
   position: relative;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
+.tool-icon.circle-revealed { opacity: 1; }
 .icon-outline, .icon-img {
   position: absolute;
   inset: 0;
@@ -2825,13 +2828,15 @@ window._sf = 0; // scatter factor 0→1
   }
 
   function revealIcons() {
+    var circles  = document.querySelectorAll('.tool-icon');
     var outlines = document.querySelectorAll('.icon-outline');
     var imgs     = document.querySelectorAll('.icon-img');
 
-    // Phase 1 (t=0): all outlines appear together
+    // Phase 1: circles + outlines appear together
+    circles.forEach(function(el) { el.classList.add('circle-revealed'); });
     outlines.forEach(function(el) { el.classList.add('revealed'); });
 
-    // Phase 2 (t=400ms): all color icons appear, outlines fade out — total 0.8s
+    // Phase 2 (t=400ms): color fades in, outlines fade out
     iconTimers.push(setTimeout(function() {
       imgs.forEach(function(el) { el.classList.add('revealed'); });
       outlines.forEach(function(el) { el.classList.remove('revealed'); });
@@ -2840,9 +2845,8 @@ window._sf = 0; // scatter factor 0→1
 
   function hideIcons() {
     clearIconTimers();
-    document.querySelectorAll('.icon-outline, .icon-img').forEach(function(el) {
-      el.classList.remove('revealed');
-    });
+    document.querySelectorAll('.tool-icon').forEach(function(el) { el.classList.remove('circle-revealed'); });
+    document.querySelectorAll('.icon-outline, .icon-img').forEach(function(el) { el.classList.remove('revealed'); });
   }
 
   function openCard(idx) {
