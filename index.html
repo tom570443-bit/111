@@ -834,8 +834,9 @@ main {
   display: block;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.18s ease;
 }
+.icon-outline { transition: opacity 0.25s ease; }
+.icon-img     { transition: opacity 0.7s ease; }
 .icon-outline.revealed { opacity: 1; }
 .icon-img.revealed { opacity: 1; }
 .tool-icon-text {
@@ -2904,16 +2905,16 @@ window._sf = 0; // scatter factor 0→1
     var names    = document.querySelectorAll('.tool-name');
     var imgs     = document.querySelectorAll('.icon-img');
 
-    // Phase 1: circles + outlines + labels appear together
+    // All appear together: outlines fast (0.25s), color slow (0.7s)
     circles.forEach(function(el) { el.classList.add('circle-revealed'); });
     outlines.forEach(function(el) { el.classList.add('revealed'); });
     names.forEach(function(el) { el.classList.add('name-revealed'); });
+    imgs.forEach(function(el) { el.classList.add('revealed'); });
 
-    // Phase 2 (t=200ms): color fades in, outlines fade out
+    // Outlines fade out after color is mostly visible
     iconTimers.push(setTimeout(function() {
-      imgs.forEach(function(el) { el.classList.add('revealed'); });
       outlines.forEach(function(el) { el.classList.remove('revealed'); });
-    }, 200));
+    }, 500));
   }
 
   function hideIcons() {
