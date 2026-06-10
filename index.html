@@ -1001,11 +1001,11 @@ main {
 #rope-canvas { z-index: 49; }
 #stone-fixed img {
   width: 100%; height: auto; display: block;
-  filter: grayscale(1);
+  filter: grayscale(1) url(#stone-vblur);
   transition: filter 0.4s ease, transform 0.15s ease;
 }
 #stone-fixed.hot img {
-  filter: grayscale(0);
+  filter: grayscale(0) url(#stone-vblur);
 }
 
 /* Rope canvas */
@@ -3072,6 +3072,11 @@ window._sf = 0; // scatter factor 0→1
 </script>
 <!-- Fixed stone + rope canvas — must be in DOM before the script below -->
 <canvas id="rope-canvas"></canvas>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="stone-vblur" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur id="stone-vblur-g" stdDeviation="0 0"/>
+  </filter>
+</svg>
 <div id="stone-fixed">
   <img id="stone-img" src="stone.png" alt="stone">
   <div id="stone-hot"></div>
@@ -3136,8 +3141,7 @@ window._sf = 0; // scatter factor 0→1
     ripples.push({ t: 0 });
   });
 
-  // Trail ghost history
-  var trail = []; // [{rot, alpha}]
+  var blurG = document.getElementById('stone-vblur-g');
   var lastSy = window.scrollY;
   var velSmooth = 0;
 
@@ -3174,34 +3178,15 @@ window._sf = 0; // scatter factor 0→1
       stoneI.style.transform = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
     }
 
-    // ── Motion trail (canvas) ──
+    // ── Vertical motion blur — scales with scroll speed ──
+    var blurY = Math.min(35, speed * 0.9);
+    blurG.setAttribute('stdDeviation', '0 ' + (blurY < 0.3 ? 0 : blurY.toFixed(1)));
+
     ctx.clearRect(0, 0, vw, vh);
-    if (stoneAlpha <= 0) { trail = []; return; }
+    if (stoneAlpha <= 0) return;
 
     var inSystem = sy >= sTop - vh && sy < sTop + sH + vh;
     var ink = inSystem ? '0,0,0' : '255,255,255';
-
-    // Number of ghost copies scales with speed (0 at rest → up to 8)
-    var trailCount = Math.min(8, Math.floor(speed * 0.55));
-    var stepDeg    = velSmooth * 0.7; // rotation step per ghost (direction of scroll)
-    var stepY      = velSmooth * 0.9; // vertical offset step per ghost
-
-    for (var i = trailCount; i >= 1; i--) {
-      var ghostAlpha = (i / trailCount) * 0.18 * Math.min(1, speed / 6);
-      if (ghostAlpha <= 0.01) continue;
-      var ghostRot = stoneRot - stepDeg * i;
-      var ghostY   = -stepY * i; // trailing behind in the direction of motion
-      ctx.save();
-      ctx.globalAlpha = ghostAlpha;
-      ctx.translate(cx, cy + ghostY);
-      ctx.rotate((ghostRot - stoneRot) * Math.PI / 180); // relative to stone centre
-      // draw stone image as ghost
-      var hw = stoneW.offsetWidth  / 2 || 210;
-      var hh = stoneH / 2;
-      ctx.rotate(ghostRot * Math.PI / 180);
-      ctx.drawImage(stoneI, -hw, -hh, hw * 2, hh * 2);
-      ctx.restore();
-    }
 
     // Ripples — centred on the stone
     ripples = ripples.filter(function(r){ return r.t < 1; });
