@@ -987,7 +987,7 @@ main {
   z-index: 200;
   pointer-events: auto;
   opacity: 1;
-  width: 180px;
+  width: 240px;
 }
 #rope-canvas { z-index: 199; }
 #stone-fixed img {
@@ -3061,6 +3061,13 @@ window._sf = 0; // scatter factor 0→1
     if (active !== -1) closeAll();
   });
 })();
+</script>
+<!-- Fixed stone + rope canvas — must be in DOM before the script below -->
+<canvas id="rope-canvas"></canvas>
+<div id="stone-fixed">
+  <img id="stone-img" src="stone.png" alt="stone">
+</div>
+<script>
 // ── Stone + rope scroll system ─────────────────────────────────────────────
 (function () {
   var cvs    = document.getElementById('rope-canvas');
@@ -3195,10 +3202,5 @@ window._sf = 0; // scatter factor 0→1
   frame();
 })();
 </script>
-<!-- Fixed stone + rope canvas (controlled by scroll JS) -->
-<canvas id="rope-canvas"></canvas>
-<div id="stone-fixed">
-  <img id="stone-img" src="stone.png" alt="stone">
-</div>
 </body>
 </html>
