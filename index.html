@@ -989,6 +989,7 @@ main {
   opacity: 0;
   width: 420px;
   transition: none;
+  filter: url(#stone-vblur); /* applied after child rotation → blur stays vertical */
 }
 #stone-hot {
   position: absolute;
@@ -1001,11 +1002,11 @@ main {
 #rope-canvas { z-index: 49; }
 #stone-fixed img {
   width: 100%; height: auto; display: block;
-  filter: grayscale(1) url(#stone-vblur);
+  filter: grayscale(1);
   transition: filter 0.4s ease, transform 0.15s ease;
 }
 #stone-fixed.hot img {
-  filter: grayscale(0) url(#stone-vblur);
+  filter: grayscale(0);
 }
 
 /* Rope canvas */
