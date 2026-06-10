@@ -507,22 +507,27 @@ main {
   transform: scale(1.08);
 }
 
-/* ── Image lightbox (photo only, no text) ── */
+/* ── Image lightbox — mask-expand effect ── */
 #photo-lightbox {
   position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,0.92);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.35s ease;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+  transition: background 0.5s ease;
 }
-#photo-lightbox.open { opacity: 1; pointer-events: all; }
-#photo-lightbox img {
-  max-width: 88vw; max-height: 88vh;
-  object-fit: contain;
+#photo-lightbox.open {
+  background: rgba(0,0,0,0.88);
+  pointer-events: all;
+}
+#lb-frame {
+  position: fixed;
+  overflow: hidden;
   cursor: zoom-out;
+}
+#lb-frame img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
   filter: grayscale(1) brightness(0.9) contrast(1.1);
-  transform-origin: center center;
-  transition: transform 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
 }
   position: fixed; inset: 0; z-index: 8000;
   background: rgba(0,0,0,0.96);
@@ -1858,51 +1863,48 @@ footer { border-top-color: #e0e0e0; }
     track.style.transform = 'translateX(' + scrollX + 'px)';
   })();
 
-  // Lightbox (photo only) — FLIP zoom from thumbnail position
+  // Lightbox — mask frame expands from thumbnail position to center
+  var ease55 = 'top 0.6s cubic-bezier(0.22,1,0.36,1),left 0.6s cubic-bezier(0.22,1,0.36,1),width 0.6s cubic-bezier(0.22,1,0.36,1),height 0.6s cubic-bezier(0.22,1,0.36,1)';
   function openLightbox(src, thumbEl) {
-    var lb = document.getElementById('photo-lightbox');
+    var lb    = document.getElementById('photo-lightbox');
+    var frame = document.getElementById('lb-frame');
     var lbImg = document.getElementById('photo-lightbox-img');
+    var rect  = thumbEl.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var finalSize = Math.min(vw * 0.82, vh * 0.82);
+    var finalL = (vw - finalSize) / 2, finalT = (vh - finalSize) / 2;
+
     lbImg.src = src;
 
-    // Compute transform origin based on thumb's center relative to viewport center
-    var rect = thumbEl.getBoundingClientRect();
-    var thumbCX = rect.left + rect.width / 2;
-    var thumbCY = rect.top  + rect.height / 2;
-    var vw = window.innerWidth, vh = window.innerHeight;
-
-    // Scale factor: thumb size vs final display size (88vw/88vh max, square image ~min of both)
-    var finalSize = Math.min(vw * 0.88, vh * 0.88);
-    var scaleX = rect.width  / finalSize;
-    var scaleY = rect.height / finalSize;
-    var scale  = Math.max(scaleX, scaleY);
-
-    // Translate so image starts at thumb's center
-    var tx = thumbCX - vw / 2;
-    var ty = thumbCY - vh / 2;
-
-    // Start state: small, at thumb position
-    lbImg.style.transition = 'none';
-    lbImg.style.transform  = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
-    lbImg.style.opacity    = '0.6';
+    // Snap frame to thumbnail position with no transition
+    frame.style.transition = 'none';
+    frame.style.left   = rect.left   + 'px';
+    frame.style.top    = rect.top    + 'px';
+    frame.style.width  = rect.width  + 'px';
+    frame.style.height = rect.height + 'px';
 
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Next frame: animate to center
+    // Two rAFs ensure start state is painted before transition begins
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        lbImg.style.transition = 'transform 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease';
-        lbImg.style.transform  = 'translate(0,0) scale(1)';
-        lbImg.style.opacity    = '1';
+        frame.style.transition = ease55;
+        frame.style.left   = finalL    + 'px';
+        frame.style.top    = finalT    + 'px';
+        frame.style.width  = finalSize + 'px';
+        frame.style.height = finalSize + 'px';
       });
     });
   }
   function closeLightbox() {
     var lb = document.getElementById('photo-lightbox');
-    if (lb) { lb.classList.remove('open'); document.body.style.overflow = ''; }
+    if (!lb || !lb.classList.contains('open')) return;
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
   }
   document.addEventListener('click', function(e) {
-    if (e.target && (e.target.id === 'photo-lightbox' || e.target.id === 'photo-lightbox-img')) closeLightbox();
+    if (e.target && (e.target.id === 'photo-lightbox' || e.target.id === 'lb-frame' || e.target.id === 'photo-lightbox-img')) closeLightbox();
   });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
 
@@ -2702,7 +2704,7 @@ window._sf = 0; // scatter factor 0→1
 })();
 </script>
 <!-- Image detail overlay -->
-<div id="photo-lightbox"><img id="photo-lightbox-img" src="" alt=""></div>
+<div id="photo-lightbox"><div id="lb-frame"><img id="photo-lightbox-img" src="" alt=""></div></div>
 <div id="img-detail">
   <div class="detail-close">[ ESC / CLOSE ]</div>
   <div class="detail-inner">
