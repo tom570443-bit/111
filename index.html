@@ -989,8 +989,20 @@ main {
   width: 420px;
   transition: none;
 }
-/* blurred copy underneath — wrapper filter stays vertical (child rotates) */
-#stone-fixed { z-index: 50; filter: url(#stone-vblur); }
+/* blurred copy underneath — wrapper filter stays vertical (child rotates).
+   Gradient mask fades the smear out smoothly toward the stone, no hard edge. */
+#stone-fixed {
+  z-index: 50;
+  filter: url(#stone-vblur);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 56%);
+  -webkit-mask-size: 100% 300%;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 56%);
+  mask-size: 100% 300%;
+  mask-position: center;
+  mask-repeat: no-repeat;
+}
 /* sharp copy on top */
 #stone-sharp { z-index: 51; }
 #stone-hot {
@@ -3188,8 +3200,8 @@ window._sf = 0; // scatter factor 0→1
       cut = Math.max(0, wEdge - stoneTop);
     }
     stoneS.style.clipPath = cut > 0 ? 'inset(' + cut + 'px 0 0 0)' : 'none';
-    // top: open upward (negative) unless works edge requires a cut
-    stoneW.style.clipPath = 'inset(' + (cut > 0 ? cut + 'px' : '-100vh') + ' -50% 50% -50%)';
+    // blurred copy: gradient mask (CSS) handles bottom fade; only clip for works reveal
+    stoneW.style.clipPath = cut > 0 ? 'inset(' + cut + 'px -50% 0 -50%)' : 'none';
 
     // Stone rotation driven by scroll
     stoneRot = (sy - bTop) * 0.06;
