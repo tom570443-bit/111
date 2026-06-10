@@ -948,27 +948,6 @@ main {
   color: rgba(255,255,255,0.82);
   transform: translateY(0);
 }
-/* Spike transition between black (belief) and white (system) pages */
-.page-spike {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110px;
-  height: 42vh;
-  pointer-events: none;
-  z-index: 1;
-}
-.page-spike--white {
-  bottom: 0;
-  background: #ffffff;
-  clip-path: polygon(50% 0, 0 100%, 100% 100%); /* apex up */
-}
-.page-spike--black {
-  top: 0;
-  background: #000000;
-  clip-path: polygon(0 0, 100% 0, 50% 100%); /* apex down */
-}
-
 .twist-en {
   display: block;
   font-size: 0.85rem;
@@ -1737,13 +1716,10 @@ footer { border-top-color: #e0e0e0; }
     <div class="twist-text twist-left"  style="top:240vh;">追问<span class="twist-en">Inquiry</span></div>
     <div class="twist-text twist-right" style="top:320vh;">与展望<span class="twist-en">and Prospect</span></div>
     <!-- white spike piercing up into the black page at the boundary -->
-    <div class="page-spike page-spike--white"></div>
   </section>
 
   <!-- SECTION 5: white, falling stone with work photos -->
   <section id="system" style="position:relative;overflow:hidden;">
-    <!-- black spike hanging down into the white page at the boundary -->
-    <div class="page-spike page-spike--black"></div>
     <!-- 20 alternating work photos, spaced 60vh apart starting at 30vh -->
     <div class="work-photo work-photo--left"  style="top:30vh;"  data-caption="光与影的边界探索">  <img src="https://picsum.photos/480/360?random=101" alt=""><span class="work-caption">光与影的边界探索</span></div>
     <div class="work-photo work-photo--right" style="top:90vh;"  data-caption="城市空间的重新凝视"><img src="https://picsum.photos/480/360?random=102" alt=""><span class="work-caption">城市空间的重新凝视</span></div>
@@ -3193,6 +3169,39 @@ window._sf = 0; // scatter factor 0→1
       stoneI.style.transform = tf;
       stoneI2.style.transform = tf;
     }
+
+    // ── Scissor transition at belief→system boundary ──────────────────────────
+    var transWindow = vh * 1.2;
+    var tp = Math.max(0, Math.min(1, (sy - (sTop - transWindow)) / (2 * transWindow)));
+    if (tp > 0 && tp < 1) {
+      var ang  = tp * Math.PI;           // 0 → π (arms open then close)
+      var bndY = sTop - sy;              // boundary Y on screen
+      var dist2 = Math.max(vw, vh) * 3;
+
+      // White wedge opening UPWARD into the black section
+      ctx.save();
+      ctx.fillStyle = '#000000';         // base: fill the lower half black first
+      ctx.fillRect(0, bndY, vw, vh - bndY);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(cx, bndY);
+      ctx.arc(cx, bndY, dist2, -Math.PI / 2 - ang, -Math.PI / 2 + ang, false);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Black wedge closing DOWNWARD into the white section (inverse arm)
+      var remAng = Math.PI - ang;
+      ctx.save();
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.moveTo(cx, bndY);
+      ctx.arc(cx, bndY, dist2, Math.PI / 2 - remAng, Math.PI / 2 + remAng, false);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    // ──────────────────────────────────────────────────────────────────────────
 
     // ── Vertical motion blur — scales with scroll speed ──
     // Smear side follows scroll direction: down → above, up → below
