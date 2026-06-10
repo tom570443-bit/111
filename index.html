@@ -3203,7 +3203,7 @@ window._sf = 0; // scatter factor 0→1
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, R, -Math.PI / 2 - psi, -Math.PI / 2 + psi, false);
+      ctx.arc(cx, cy, R, Math.PI / 2 - psi, Math.PI / 2 + psi, false);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
