@@ -986,8 +986,8 @@ main {
   transform: translate(-50%, -50%);
   z-index: 200;
   pointer-events: auto;
-  opacity: 1;
-  width: 240px;
+  opacity: 0;
+  width: 300px;
 }
 #rope-canvas { z-index: 199; }
 #stone-fixed img {
@@ -3080,7 +3080,8 @@ window._sf = 0; // scatter factor 0→1
   var ctx = cvs.getContext('2d');
   var ripples = [];
   var stoneRot = 0;
-  var bTop = 0, bH = 0, sTop = 0, sH = 0;
+  var works  = document.getElementById('works');
+  var bTop = 0, bH = 0, sTop = 0, sH = 0, wBottom = 0;
 
   // Walk offsetParent chain for true absolute Y (immune to transforms on ancestors)
   function absTop(el) {
@@ -3090,10 +3091,11 @@ window._sf = 0; // scatter factor 0→1
   }
 
   function cachePositions() {
-    bTop = absTop(belief);
-    bH   = belief.offsetHeight;
-    sTop = absTop(system);
-    sH   = system.offsetHeight;
+    bTop    = absTop(belief);
+    bH      = belief.offsetHeight;
+    sTop    = absTop(system);
+    sH      = system.offsetHeight;
+    wBottom = absTop(works) + works.offsetHeight; // bottom of section 3 (works)
   }
 
   function resize() {
@@ -3126,66 +3128,37 @@ window._sf = 0; // scatter factor 0→1
     var vw = cvs.width, vh = cvs.height;
     var cx = vw / 2, cy = vh / 2;
 
-    var inBelief = sy >= bTop - vh && sy < sTop + vh;
-    var inSystem = sy >= sTop - vh && sy < sTop + sH + vh;
-    var inEither = inBelief || inSystem;
+    // Stone appears as user scrolls past works section (section 3)
+    var fadeStart = wBottom - vh * 0.3;
+    var fadeEnd   = wBottom + vh * 0.3;
+    var stoneAlpha = Math.max(0, Math.min(1, (sy - fadeStart) / (fadeEnd - fadeStart)));
 
-    // Stone visibility
-    stoneW.style.opacity = inEither ? '1' : '0';
+    var inActive = sy >= fadeStart && sy < sTop + sH + vh;
+    stoneW.style.opacity = stoneAlpha;
 
     // Stone rotation
-    if (inEither && !stoneI._clicking) {
-      stoneRot = (sy - bTop) * 0.05;
+    if (inActive && !stoneI._clicking) {
+      stoneRot = (sy - bTop) * 0.04;
       stoneI.style.transform = 'rotate('+stoneRot+'deg)';
     }
 
-    // Canvas rope
+    // Canvas rope — single straight line above stone only
     ctx.clearRect(0, 0, vw, vh);
-    if (!inEither) return;
+    if (stoneAlpha <= 0) return;
 
-    if (inBelief) {
-      var prog = Math.max(0, Math.min(1, (sy - bTop + vh) / (bH + vh * 0.5)));
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-      var steps = 100, twists = 3, maxAmp = 80;
-      // Line 1
-      ctx.beginPath();
-      for (var i = 0; i <= steps; i++) {
-        var t = i / steps;
-        var y = t * cy;
-        var phase = t * Math.PI * 2 * twists + prog * Math.PI * 6;
-        var amp = maxAmp * (1 - t) * Math.sin(t * Math.PI);
-        var x = cx + Math.sin(phase) * amp;
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      // Line 2
-      ctx.beginPath();
-      for (var i = 0; i <= steps; i++) {
-        var t = i / steps;
-        var y = t * cy;
-        var phase = t * Math.PI * 2 * twists + prog * Math.PI * 6 + Math.PI;
-        var amp = maxAmp * (1 - t) * Math.sin(t * Math.PI);
-        var x = cx + Math.sin(phase) * amp;
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      // Tail below stone
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, vh); ctx.stroke();
-    }
-
-    if (inSystem) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.65)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, cy); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, vh); ctx.stroke();
-    }
+    var inSystem = sy >= sTop - vh && sy < sTop + sH + vh;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = inSystem ? 'rgba(0,0,0,' + (stoneAlpha * 0.7) + ')' : 'rgba(255,255,255,' + (stoneAlpha * 0.8) + ')';
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, cy);
+    ctx.stroke();
 
     // Ripples
     ripples = ripples.filter(function(r){ return r.t < 1; });
     ripples.forEach(function(r) {
       r.t += 0.02;
-      var white = sy < sTop;
+      var white = !inSystem;
       for (var n = 0; n < 4; n++) {
         var rad = (r.t + n * 0.2) * 130;
         if (rad < 10) continue;
