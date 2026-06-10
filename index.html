@@ -1610,23 +1610,6 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- BELIEF / MANIFESTO -->
   <section id="belief">
-    <div class="belief-bg-text" aria-hidden="true">DATA</div>
-    <div class="belief-content">
-      <div class="belief-label">// manifesto.txt</div>
-      <p class="belief-statement">
-        WE BELIEVE IN<br>
-        THE <em>RAW</em> BEAUTY<br>
-        OF DATA.
-      </p>
-      <div class="belief-footer">
-        <div class="belief-data">
-          SYSTEM_CLOCK: <span id="sys-clock">00:00:00</span> &nbsp;|&nbsp;
-          UPTIME: 847d 14h 22m &nbsp;|&nbsp;
-          PACKETS: 2,847,391
-        </div>
-        <a href="#contact" class="belief-cta">INITIATE CONTACT &#8599;</a>
-      </div>
-    </div>
   </section>
 
   <!-- SYSTEM / SKILLS -->
@@ -1961,6 +1944,7 @@ footer { border-top-color: #e0e0e0; }
 // ── System clock ──────────────────────────────────────────────────────────────
 (function() {
   var el = document.getElementById('sys-clock');
+  if (!el) return;
   function update() {
     var d = new Date();
     el.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()]
