@@ -3189,18 +3189,21 @@ window._sf = 0; // scatter factor 0→1
     var tp = Math.max(0, Math.min(1, (sy - (sTop - transWindow)) / (2 * transWindow)));
     if (tp > 0 && tp < 1) {
       var psi  = tp * Math.PI;           // sector half-angle 0 → π
-      var bndY = sTop - sy;              // pivot Y on screen
       var R = Math.max(vw, vh) * 3;
+      // fade the whole overlay in/out at the edges so underlying
+      // text/photos appear and disappear smoothly
+      var ramp = Math.min(1, tp / 0.15, (1 - tp) / 0.15);
 
       ctx.save();
+      ctx.globalAlpha = ramp;
       // base: everything black
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, vw, vh);
-      // white sector centred on the up-axis
+      // white sector centred on the up-axis, pivot ON the stone (screen centre)
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.moveTo(cx, bndY);
-      ctx.arc(cx, bndY, R, -Math.PI / 2 - psi, -Math.PI / 2 + psi, false);
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, -Math.PI / 2 - psi, -Math.PI / 2 + psi, false);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
