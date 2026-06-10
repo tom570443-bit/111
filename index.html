@@ -938,10 +938,6 @@ main {
   color: #333;
 }
 
-/* ── Section heights for scroll sections ── */
-#belief { min-height: 420vh; background: #000; }
-#system { min-height: 1280vh; background: #fff; }
-
 /* Twist text */
 .twist-text {
   position: absolute;
@@ -1092,12 +1088,10 @@ main {
 /* ── BELIEF SECTION ── */
 #belief {
   background: #000;
-  padding: 100px 48px;
-  min-height: 100vh;
-  border-bottom: 1px solid var(--gray3);
+  min-height: 420vh;
   position: relative;
   z-index: 10;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .belief-bg-text {
@@ -1196,11 +1190,8 @@ main {
   position: relative;
   z-index: 10;
   background: #ffffff;
-  padding: 80px 48px;
-  border-bottom: 1px solid var(--gray3);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
+  min-height: 1280vh;
+  overflow: visible;
 }
 
 .sys-panel {
@@ -3234,27 +3225,28 @@ window._sf = 0; // scatter factor 0→1
   }
   requestAnimationFrame(drawRope);
 
-  window.addEventListener('scroll', function () {
+  function updateStone() {
     var sy    = window.scrollY;
     var bTop  = belief.offsetTop;
     var sTop  = system.offsetTop;
     var sEnd  = sTop + system.offsetHeight;
-    var showFrom = bTop - window.innerHeight * 0.6;
+    var showFrom = bTop - window.innerHeight * 0.8;
 
     if (sy >= showFrom && sy < sEnd + window.innerHeight) {
       stoneW.style.opacity = '1';
-      // Rotation driven by scroll
       stoneRot = (sy - bTop) * 0.06;
       if (!stoneI._clicking) {
         stoneI.style.transition = 'filter 0.4s';
         stoneI.style.transform = 'rotate(' + stoneRot + 'deg)';
       }
-      // Stone color: b&w in belief, still b&w in system (photos are the color element)
       stoneI.style.filter = 'grayscale(1)';
     } else {
       stoneW.style.opacity = '0';
     }
-  }, { passive: true });
+  }
+  window.addEventListener('scroll', updateStone, { passive: true });
+  // Also run on load (in case user refreshes mid-page)
+  updateStone();
 })();
 </script>
 <!-- Fixed stone + rope canvas (controlled by scroll JS) -->
