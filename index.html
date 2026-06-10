@@ -592,7 +592,7 @@ main {
 /* ── WORKS SECTION ── */
 #works {
   position: relative;
-  z-index: 10;
+  z-index: 60; /* above stone (50) so stone slides out from behind */
   background: #000;
   padding: 0;
   border-bottom: none;
@@ -984,13 +984,13 @@ main {
   position: fixed;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 200;
+  z-index: 50;
   pointer-events: auto;
   opacity: 0;
-  width: 600px;
+  width: 420px;
   transition: none;
 }
-#rope-canvas { z-index: 199; }
+#rope-canvas { z-index: 49; }
 #stone-fixed img {
   width: 100%; height: auto; display: block;
   filter: grayscale(1);
@@ -3132,8 +3132,8 @@ window._sf = 0; // scatter factor 0→1
     // Stone appears as user scrolls past works section (section 3)
     var fadeStart = wBottom - vh * 0.3;
     var fadeEnd   = wBottom + vh * 0.3;
-    // Show stone instantly once works section has scrolled past viewport center
-    var stoneAlpha = (sy >= wBottom - cy) ? 1 : 0;
+    // Stone sits behind works (z-index) — show it early so it slides out naturally
+    var stoneAlpha = (sy >= wBottom - vh) ? 1 : 0;
 
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
