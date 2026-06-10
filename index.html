@@ -3157,8 +3157,11 @@ window._sf = 0; // scatter factor 0→1
       stoneW.style.clipPath = 'none';
     }
 
-    // Stone rotation disabled
-    stoneRot = 0;
+    // Fixed tilt angle
+    stoneRot = -35;
+    if (inActive && !stoneI._clicking) {
+      stoneI.style.transform = 'rotate('+stoneRot+'deg)';
+    }
 
     // Canvas rope — single straight line above stone only
     ctx.clearRect(0, 0, vw, vh);
