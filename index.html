@@ -987,7 +987,7 @@ main {
   z-index: 200;
   pointer-events: auto;
   opacity: 1;
-  width: 180px;
+  width: 110px;
 }
 #rope-canvas { z-index: 199; }
 #stone-fixed img {
@@ -3090,6 +3090,9 @@ window._sf = 0; // scatter factor 0→1
     cachePositions();
   }
   resize();
+  // Re-cache after full paint so getBCR values are accurate
+  window.addEventListener('load', function() { resize(); });
+  setTimeout(cachePositions, 500);
   window.addEventListener('resize', resize);
   window.addEventListener('scroll', cachePositions, { passive: true });
 
