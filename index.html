@@ -3194,8 +3194,11 @@ window._sf = 0; // scatter factor 0→1
     // ── Scissor transition at belief→system boundary ──
     // White sector pivoting at the stone: arms start as a thin downward
     // line, sweep 180° (through horizontal) until everything is white.
-    var transStart = sTop - vh * 0.6;  // starts later
-    var transEnd   = sTop + vh * 0.9;  // ends sooner
+    // Must start exactly when the boundary enters the viewport bottom and end
+    // when it leaves the top, so the overlay matches the real page state at
+    // both ends (no flash).
+    var transStart = sTop - vh;
+    var transEnd   = sTop;
     var tp = Math.max(0, Math.min(1, (sy - transStart) / (transEnd - transStart)));
     if (tp > 0 && tp < 1) {
       var psi = tp * Math.PI;            // sector half-angle 0 → π
