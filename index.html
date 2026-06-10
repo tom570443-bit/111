@@ -1027,7 +1027,6 @@ main {
   pointer-events: auto;
   cursor: pointer;
 }
-#rope-canvas { z-index: 49; }
 #stone-fixed img, #stone-sharp img {
   width: 100%; height: auto; display: block;
   filter: grayscale(1);
@@ -1043,7 +1042,7 @@ main {
   inset: 0;
   width: 100%; height: 100%;
   pointer-events: none;
-  z-index: 45;
+  z-index: 5; /* below sections (10) so text/photos float above the transition */
 }
 
 .card-hotspot {
@@ -1124,7 +1123,7 @@ main {
 
 /* ── BELIEF SECTION ── */
 #belief {
-  background: #000;
+  background: transparent; /* painted by rope-canvas underneath */
   min-height: 420vh;
   position: relative;
   z-index: 10;
@@ -1226,7 +1225,7 @@ main {
 #system {
   position: relative;
   z-index: 10;
-  background: #ffffff;
+  background: transparent; /* painted by rope-canvas underneath */
   min-height: 1280vh;
   overflow: visible;
 }
@@ -3177,36 +3176,41 @@ window._sf = 0; // scatter factor 0→1
     blurG.setAttribute('stdDeviation', '0 ' + (blurY < 0.3 ? 0 : blurY.toFixed(1)));
 
     ctx.clearRect(0, 0, vw, vh);
+
+    // ── Paint section backgrounds (belief black / system white) ──
+    // Sections are transparent; this canvas (z-index 5) is their backdrop,
+    // so text/photos in the sections always float above the transition.
+    var beliefTopY = bTop - sy;            // belief top on screen
+    var bndY       = sTop - sy;            // belief/system boundary on screen
+    var sysBotY    = sTop + sH - sy;       // system bottom on screen
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, Math.max(0, beliefTopY), vw, Math.min(vh, bndY) - Math.max(0, beliefTopY));
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, Math.max(0, bndY), vw, Math.min(vh, sysBotY) - Math.max(0, bndY));
+
     if (stoneAlpha <= 0) return;
 
     var inSystem = sy >= sTop - vh && sy < sTop + sH + vh;
     var ink = inSystem ? '0,0,0' : '255,255,255';
 
     // ── Scissor transition at belief→system boundary ──
-    // One white sector pivoting at the boundary point: arms start as a thin
-    // upward line, sweep 180° (through horizontal) until everything is white.
+    // White sector pivoting at the stone: arms start as a thin downward
+    // line, sweep 180° (through horizontal) until everything is white.
     var transWindow = vh * 1.2;
     var tp = Math.max(0, Math.min(1, (sy - (sTop - transWindow)) / (2 * transWindow)));
     if (tp > 0 && tp < 1) {
-      var psi  = tp * Math.PI;           // sector half-angle 0 → π
+      var psi = tp * Math.PI;            // sector half-angle 0 → π
       var R = Math.max(vw, vh) * 3;
-      // fade the whole overlay in/out at the edges so underlying
-      // text/photos appear and disappear smoothly
-      var ramp = Math.min(1, tp / 0.15, (1 - tp) / 0.15);
-
-      ctx.save();
-      ctx.globalAlpha = ramp;
       // base: everything black
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, vw, vh);
-      // white sector centred on the up-axis, pivot ON the stone (screen centre)
+      // white sector centred on the down-axis, pivot on the stone
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, R, Math.PI / 2 - psi, Math.PI / 2 + psi, false);
       ctx.closePath();
       ctx.fill();
-      ctx.restore();
     }
 
     // Ripples — centred on the stone
