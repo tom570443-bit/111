@@ -496,8 +496,35 @@ main {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8);
 }
 
-/* ── Image detail overlay ── */
-#img-detail {
+/* Strip hover: blur siblings */
+.strip-track-hovering .strip-img {
+  filter: grayscale(1) brightness(0.72) contrast(1.1) blur(3px);
+  transform: scale(0.96);
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+.strip-track-hovering .strip-img.strip-hovered {
+  filter: grayscale(1) brightness(1) contrast(1.1) blur(0px);
+  transform: scale(1.08);
+}
+
+/* ── Image lightbox (photo only, no text) ── */
+#photo-lightbox {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.92);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+#photo-lightbox.open { opacity: 1; pointer-events: all; }
+#photo-lightbox img {
+  max-width: 88vw; max-height: 88vh;
+  object-fit: contain;
+  transform: scale(0.85);
+  transition: transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  cursor: zoom-out;
+  filter: grayscale(1) brightness(0.9) contrast(1.1);
+}
+#photo-lightbox.open img { transform: scale(1); }
   position: fixed; inset: 0; z-index: 8000;
   background: rgba(0,0,0,0.96);
   display: flex; align-items: center; justify-content: center;
@@ -1832,31 +1859,36 @@ footer { border-top-color: #e0e0e0; }
     track.style.transform = 'translateX(' + scrollX + 'px)';
   })();
 
+  // Lightbox (photo only)
+  var lb = document.getElementById('photo-lightbox');
+  var lbImg = document.getElementById('photo-lightbox-img');
+  function openLightbox(src) {
+    lbImg.src = src.replace('200/200', '800/800');
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  lb.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
   // Bind mouseenter/mouseleave directly to each image
   var imgs = track.querySelectorAll('.strip-img');
   imgs.forEach(function (img) {
     img.addEventListener('mouseenter', function () {
       isHovering = true;
-      img.style.transform = 'scale(1.10)';
-      img.style.filter = 'grayscale(0) brightness(1) contrast(1)';
+      track.classList.add('strip-track-hovering');
+      img.classList.add('strip-hovered');
     });
     img.addEventListener('mouseleave', function () {
       isHovering = false;
-      img.style.transform = '';
-      img.style.filter = '';
+      track.classList.remove('strip-track-hovering');
+      img.classList.remove('strip-hovered');
     });
     img.addEventListener('click', function () {
-      if (!img.dataset.idx) return;
-      var d = DATA[parseInt(img.dataset.idx)];
-      var overlay = document.getElementById('img-detail');
-      overlay.querySelector('.detail-img').src = img.src.replace('200/200', '600/600');
-      overlay.querySelector('.detail-cat').textContent  = d.cat.toUpperCase();
-      overlay.querySelector('.detail-year').textContent = d.year;
-      overlay.querySelector('.detail-title').textContent = d.title;
-      overlay.querySelector('.detail-desc').textContent  = d.desc;
-      overlay.querySelector('.detail-num').textContent   = '// ' + String(d.id).padStart(3,'0');
-      overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      openLightbox(img.src);
     });
   });
 
@@ -2638,6 +2670,7 @@ window._sf = 0; // scatter factor 0→1
 })();
 </script>
 <!-- Image detail overlay -->
+<div id="photo-lightbox"><img id="photo-lightbox-img" src="" alt=""></div>
 <div id="img-detail">
   <div class="detail-close">[ ESC / CLOSE ]</div>
   <div class="detail-inner">
