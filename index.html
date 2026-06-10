@@ -3073,14 +3073,19 @@ window._sf = 0; // scatter factor 0→1
   var ctx = cvs.getContext('2d');
   var ripples = [];
   var stoneRot = 0;
-  // Cache section positions (recomputed on resize)
   var bTop = 0, bH = 0, sTop = 0, sH = 0;
 
+  // Walk offsetParent chain for true absolute Y (immune to transforms on ancestors)
+  function absTop(el) {
+    var y = 0;
+    while (el) { y += el.offsetTop; el = el.offsetParent; }
+    return y;
+  }
+
   function cachePositions() {
-    // Use scrollY + getBCR for accurate absolute position
-    bTop = belief.getBoundingClientRect().top + window.scrollY;
+    bTop = absTop(belief);
     bH   = belief.offsetHeight;
-    sTop = system.getBoundingClientRect().top + window.scrollY;
+    sTop = absTop(system);
     sH   = system.offsetHeight;
   }
 
@@ -3089,12 +3094,9 @@ window._sf = 0; // scatter factor 0→1
     cvs.height = window.innerHeight;
     cachePositions();
   }
-  resize();
-  // Re-cache after full paint so getBCR values are accurate
   window.addEventListener('load', function() { resize(); });
-  setTimeout(cachePositions, 500);
+  resize();
   window.addEventListener('resize', resize);
-  window.addEventListener('scroll', cachePositions, { passive: true });
 
   // Stone interactions
   stoneW.addEventListener('mouseenter', function () { stoneI.style.transform = 'rotate('+stoneRot+'deg) scale(1.08)'; });
