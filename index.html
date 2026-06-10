@@ -1003,6 +1003,11 @@ main {
   mask-position: center;
   mask-repeat: no-repeat;
 }
+/* scrolling up — smear flips below the stone */
+#stone-fixed.up {
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 50%, transparent 56%);
+  mask-image: linear-gradient(to top, black 0%, black 50%, transparent 56%);
+}
 /* sharp copy on top */
 #stone-sharp { z-index: 51; }
 #stone-hot {
@@ -3212,6 +3217,8 @@ window._sf = 0; // scatter factor 0→1
     }
 
     // ── Vertical motion blur — scales with scroll speed ──
+    // Smear side follows scroll direction: down → above, up → below
+    stoneW.classList.toggle('up', velSmooth < -0.5);
     var blurY = Math.min(35, speed * 0.9);
     blurG.setAttribute('stdDeviation', '0 ' + (blurY < 0.3 ? 0 : blurY.toFixed(1)));
 
