@@ -1862,12 +1862,7 @@ footer { border-top-color: #e0e0e0; }
   function openLightbox(src, thumbEl) {
     var lb = document.getElementById('photo-lightbox');
     var lbImg = document.getElementById('photo-lightbox-img');
-    // Start with cached thumbnail immediately, load hi-res in background
-    var hiResSrc = src.replace('200/200', '800/800');
     lbImg.src = src;
-    var hiRes = new Image();
-    hiRes.onload = function() { lbImg.src = hiResSrc; };
-    hiRes.src = hiResSrc;
 
     // Compute transform origin based on thumb's center relative to viewport center
     var rect = thumbEl.getBoundingClientRect();
