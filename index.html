@@ -1860,18 +1860,20 @@ footer { border-top-color: #e0e0e0; }
   })();
 
   // Lightbox (photo only)
-  var lb = document.getElementById('photo-lightbox');
-  var lbImg = document.getElementById('photo-lightbox-img');
   function openLightbox(src) {
+    var lb = document.getElementById('photo-lightbox');
+    var lbImg = document.getElementById('photo-lightbox-img');
     lbImg.src = src.replace('200/200', '800/800');
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
   function closeLightbox() {
-    lb.classList.remove('open');
-    document.body.style.overflow = '';
+    var lb = document.getElementById('photo-lightbox');
+    if (lb) { lb.classList.remove('open'); document.body.style.overflow = ''; }
   }
-  lb.addEventListener('click', closeLightbox);
+  document.addEventListener('click', function(e) {
+    if (e.target && (e.target.id === 'photo-lightbox' || e.target.id === 'photo-lightbox-img')) closeLightbox();
+  });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
 
   // Bind mouseenter/mouseleave directly to each image
