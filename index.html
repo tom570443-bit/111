@@ -1614,61 +1614,6 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- SYSTEM / SKILLS -->
   <section id="system">
-    <div class="s-reveal">
-      <div class="section-label" style="margin-bottom:24px;">// skill_matrix</div>
-      <h2 class="section-title" style="font-size:2rem;">Capabilities</h2>
-      <div style="margin-top:40px;">
-        <div class="sys-panel">
-          <div class="sys-title">TECH_STACK</div>
-          <div id="skills-list">
-            <div class="skill-row">
-              <span class="skill-name">WebGL/GLSL</span>
-              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="95"></div></div>
-              <span class="skill-pct">95%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-name">Three.js</span>
-              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="90"></div></div>
-              <span class="skill-pct">90%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-name">React/Next</span>
-              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="88"></div></div>
-              <span class="skill-pct">88%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-name">Rust</span>
-              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="72"></div></div>
-              <span class="skill-pct">72%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-name">ML / AI</span>
-              <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="80"></div></div>
-              <span class="skill-pct">80%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="s-reveal">
-      <div class="section-label" style="margin-bottom:24px;">// system_log</div>
-      <h2 class="section-title" style="font-size:2rem;">Log Stream</h2>
-      <div style="margin-top:40px;">
-        <div class="sys-panel" style="height:260px;overflow:hidden;">
-          <div class="sys-title">RUNTIME_LOG</div>
-          <div class="terminal-log" id="log-output"></div>
-        </div>
-        <div style="margin-top:1px; border: 1px solid var(--gray3); padding: 14px 16px;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="color:var(--green);font-size:0.72rem;">root@sys:~$</span>
-            <input id="terminal-input" type="text"
-              style="flex:1;background:transparent;border:none;outline:none;color:var(--white);font-family:var(--mono);font-size:0.72rem;letter-spacing:0.05em;"
-              placeholder="type a command..." autocomplete="off">
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 
   <!-- CONTACT -->
@@ -1957,6 +1902,7 @@ footer { border-top-color: #e0e0e0; }
 // ── Terminal log stream ───────────────────────────────────────────────────────
 (function() {
   var out = document.getElementById('log-output');
+  if (!out) return;
   var logs = [
     {t:'00:00:01', msg:'<span class="ok">[OK]</span> kernel loaded — 4.19.88-rt56'},
     {t:'00:00:02', msg:'<span class="ok">[OK]</span> GPU driver: NVIDIA 535.104'},
