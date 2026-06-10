@@ -938,6 +938,81 @@ main {
   color: #333;
 }
 
+/* ── Section heights for scroll sections ── */
+#belief { min-height: 420vh; background: #000; }
+#system { min-height: 1280vh; background: #fff; }
+
+/* Twist text */
+.twist-text {
+  position: absolute;
+  font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  font-weight: 100;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.82);
+  transform: translateY(0);
+}
+.twist-left  { left: 8vw; }
+.twist-right { right: 8vw; text-align: right; }
+
+/* Work photos */
+.work-photo {
+  position: absolute;
+  width: 36vw;
+  cursor: pointer;
+}
+.work-photo--left  { left: 8vw; }
+.work-photo--right { right: 8vw; }
+.work-photo img {
+  width: 100%; height: auto; display: block;
+  filter: grayscale(1) brightness(0.85);
+  transition: filter 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.work-photo:hover img {
+  filter: grayscale(0) brightness(1);
+  transform: scale(1.04);
+}
+.work-caption {
+  display: block;
+  text-align: right;
+  font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 200;
+  letter-spacing: 0.1em;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* Fixed stone */
+#stone-fixed {
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 46;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  width: 180px;
+}
+#stone-fixed img {
+  width: 100%; height: auto; display: block;
+  filter: grayscale(1);
+  transition: filter 0.4s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+#stone-fixed:hover img {
+  filter: grayscale(0);
+}
+
+/* Rope canvas */
+#rope-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 45;
+}
+
 .card-hotspot {
   position: absolute;
   top: 20%; left: 10%;
@@ -1609,12 +1684,38 @@ footer { border-top-color: #e0e0e0; }
     </div>
   </div>
 
-  <!-- BELIEF / MANIFESTO -->
-  <section id="belief">
+  <!-- SECTION 4: black, falling stone with twisted rope + text -->
+  <section id="belief" style="position:relative;overflow:hidden;">
+    <!-- Twist text items: left/right alternating, spaced 80vh apart starting at 80vh -->
+    <div class="twist-text twist-left"  style="top:80vh;">现代</div>
+    <div class="twist-text twist-right" style="top:160vh;">与传统</div>
+    <div class="twist-text twist-left"  style="top:240vh;">追问</div>
+    <div class="twist-text twist-right" style="top:320vh;">与展望</div>
   </section>
 
-  <!-- SYSTEM / SKILLS -->
-  <section id="system">
+  <!-- SECTION 5: white, falling stone with work photos -->
+  <section id="system" style="position:relative;overflow:hidden;">
+    <!-- 20 alternating work photos, spaced 60vh apart starting at 30vh -->
+    <div class="work-photo work-photo--left"  style="top:30vh;"  data-caption="光与影的边界探索">  <img src="https://picsum.photos/480/360?random=101" alt=""><span class="work-caption">光与影的边界探索</span></div>
+    <div class="work-photo work-photo--right" style="top:90vh;"  data-caption="城市空间的重新凝视"><img src="https://picsum.photos/480/360?random=102" alt=""><span class="work-caption">城市空间的重新凝视</span></div>
+    <div class="work-photo work-photo--left"  style="top:150vh;" data-caption="传统纹样的当代转译"><img src="https://picsum.photos/480/360?random=103" alt=""><span class="work-caption">传统纹样的当代转译</span></div>
+    <div class="work-photo work-photo--right" style="top:210vh;" data-caption="材质语言与触觉想象"><img src="https://picsum.photos/480/360?random=104" alt=""><span class="work-caption">材质语言与触觉想象</span></div>
+    <div class="work-photo work-photo--left"  style="top:270vh;" data-caption="时间切片中的记忆碎片"><img src="https://picsum.photos/480/360?random=105" alt=""><span class="work-caption">时间切片中的记忆碎片</span></div>
+    <div class="work-photo work-photo--right" style="top:330vh;" data-caption="自然形态的抽象提炼"><img src="https://picsum.photos/480/360?random=106" alt=""><span class="work-caption">自然形态的抽象提炼</span></div>
+    <div class="work-photo work-photo--left"  style="top:390vh;" data-caption="人工智能介入的视觉叙事"><img src="https://picsum.photos/480/360?random=107" alt=""><span class="work-caption">人工智能介入的视觉叙事</span></div>
+    <div class="work-photo work-photo--right" style="top:450vh;" data-caption="身体与空间的感知关系"><img src="https://picsum.photos/480/360?random=108" alt=""><span class="work-caption">身体与空间的感知关系</span></div>
+    <div class="work-photo work-photo--left"  style="top:510vh;" data-caption="数字媒介的物质性研究"><img src="https://picsum.photos/480/360?random=109" alt=""><span class="work-caption">数字媒介的物质性研究</span></div>
+    <div class="work-photo work-photo--right" style="top:570vh;" data-caption="社会议题的视觉化表达"><img src="https://picsum.photos/480/360?random=110" alt=""><span class="work-caption">社会议题的视觉化表达</span></div>
+    <div class="work-photo work-photo--left"  style="top:630vh;" data-caption="器物之美与日常诗意"><img src="https://picsum.photos/480/360?random=111" alt=""><span class="work-caption">器物之美与日常诗意</span></div>
+    <div class="work-photo work-photo--right" style="top:690vh;" data-caption="运动轨迹与时间叠影"><img src="https://picsum.photos/480/360?random=112" alt=""><span class="work-caption">运动轨迹与时间叠影</span></div>
+    <div class="work-photo work-photo--left"  style="top:750vh;" data-caption="建筑语言中的呼吸节奏"><img src="https://picsum.photos/480/360?random=113" alt=""><span class="work-caption">建筑语言中的呼吸节奏</span></div>
+    <div class="work-photo work-photo--right" style="top:810vh;" data-caption="色彩作为情绪的直接书写"><img src="https://picsum.photos/480/360?random=114" alt=""><span class="work-caption">色彩作为情绪的直接书写</span></div>
+    <div class="work-photo work-photo--left"  style="top:870vh;" data-caption="符号系统与意义的漂移"><img src="https://picsum.photos/480/360?random=115" alt=""><span class="work-caption">符号系统与意义的漂移</span></div>
+    <div class="work-photo work-photo--right" style="top:930vh;" data-caption="地图作为一种世界观"><img src="https://picsum.photos/480/360?random=116" alt=""><span class="work-caption">地图作为一种世界观</span></div>
+    <div class="work-photo work-photo--left"  style="top:990vh;" data-caption="手工痕迹与机械复制的对话"><img src="https://picsum.photos/480/360?random=117" alt=""><span class="work-caption">手工痕迹与机械复制的对话</span></div>
+    <div class="work-photo work-photo--right" style="top:1050vh;" data-caption="植物作为设计语言的起源"><img src="https://picsum.photos/480/360?random=118" alt=""><span class="work-caption">植物作为设计语言的起源</span></div>
+    <div class="work-photo work-photo--left"  style="top:1110vh;" data-caption="边界的模糊与新秩序的生成"><img src="https://picsum.photos/480/360?random=119" alt=""><span class="work-caption">边界的模糊与新秩序的生成</span></div>
+    <div class="work-photo work-photo--right" style="top:1170vh;" data-caption="沉默作为一种设计语言"><img src="https://picsum.photos/480/360?random=120" alt=""><span class="work-caption">沉默作为一种设计语言</span></div>
   </section>
 
   <!-- CONTACT -->
@@ -2969,6 +3070,197 @@ window._sf = 0; // scatter factor 0→1
     if (active !== -1) closeAll();
   });
 })();
+// ── Stone + rope scroll system ─────────────────────────────────────────────
+(function () {
+  var cvs    = document.getElementById('rope-canvas');
+  var stoneW = document.getElementById('stone-fixed');
+  var stoneI = document.getElementById('stone-img');
+  var belief = document.getElementById('belief');
+  var system = document.getElementById('system');
+  if (!cvs || !stoneW || !belief || !system) return;
+
+  var ctx = cvs.getContext('2d');
+  var ripples = [];
+  var stoneRot = 0;
+
+  function resize() {
+    cvs.width  = window.innerWidth;
+    cvs.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Stone hover scale
+  stoneW.addEventListener('mouseenter', function () {
+    stoneI.style.transform = 'scale(1.08)';
+  });
+  stoneW.addEventListener('mouseleave', function () {
+    if (!stoneI._clicking) stoneI.style.transform = 'rotate(' + stoneRot + 'deg)';
+  });
+
+  // Stone click: elastic shrink + ripple
+  stoneW.addEventListener('click', function () {
+    stoneI._clicking = true;
+    stoneI.style.transition = 'transform 0.1s ease, filter 0.4s';
+    stoneI.style.transform = 'rotate(' + stoneRot + 'deg) scale(0.78)';
+    setTimeout(function () {
+      stoneI.style.transition = 'transform 0.6s cubic-bezier(0.34,2.2,0.64,1), filter 0.4s';
+      stoneI.style.transform = 'rotate(' + stoneRot + 'deg) scale(1)';
+      stoneI._clicking = false;
+    }, 120);
+    ripples.push({ t: 0 });
+  });
+
+  function drawRope() {
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    var sy   = window.scrollY;
+    var vw   = cvs.width;
+    var vh   = cvs.height;
+    var cx   = vw / 2;
+    var cy   = vh / 2;
+    var bTop = belief.offsetTop;
+    var bH   = belief.offsetHeight;
+    var sTop = system.offsetTop;
+    var sH   = system.offsetHeight;
+
+    var inBelief = sy >= bTop - vh && sy < sTop;
+    var inSystem = sy >= sTop && sy < sTop + sH + vh;
+
+    if (!inBelief && !inSystem) {
+      requestAnimationFrame(drawRope);
+      return;
+    }
+
+    if (inBelief) {
+      // Progress 0→1 through belief section
+      var prog = Math.max(0, Math.min(1, (sy - bTop + vh) / (bH + vh)));
+
+      // Two lines: start diverged at top, intertwine, converge at stone
+      // Amplitude envelope: rises then falls to 0 at stone
+      // Phase offset creates crossing/intertwining
+
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+
+      var steps = 120;
+      var twists = 4; // number of crossings
+      var maxAmp = 72;
+
+      // Line 1
+      ctx.beginPath();
+      for (var i = 0; i <= steps; i++) {
+        var t  = i / steps;                  // 0=top of viewport, 1=stone
+        var y  = t * cy;                     // 0 → cy
+        // Convergence: amplitude → 0 as we approach stone
+        var convergeFactor = 1 - t;
+        // Intertwine: sinusoidal with scroll-driven phase
+        var phase = t * Math.PI * 2 * twists + prog * Math.PI * 4;
+        var amp = maxAmp * Math.sin(t * Math.PI * 0.9) * convergeFactor;
+        var x  = cx + Math.sin(phase) * amp;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Line 2 (π offset)
+      ctx.beginPath();
+      for (var i = 0; i <= steps; i++) {
+        var t  = i / steps;
+        var y  = t * cy;
+        var convergeFactor = 1 - t;
+        var phase = t * Math.PI * 2 * twists + prog * Math.PI * 4 + Math.PI;
+        var amp = maxAmp * Math.sin(t * Math.PI * 0.9) * convergeFactor;
+        var x  = cx + Math.sin(phase) * amp;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Single line below stone (trailing)
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, vh);
+      ctx.stroke();
+    }
+
+    if (inSystem) {
+      var color = 'rgba(0,0,0,0.6)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+
+      // Line from top to stone
+      ctx.beginPath();
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx, cy);
+      ctx.stroke();
+
+      // Line from stone downward with slight wave (trailing)
+      ctx.beginPath();
+      var steps = 60;
+      var syProgress = (sy - sTop) / (sH || 1);
+      for (var i = 0; i <= steps; i++) {
+        var t = i / steps;
+        var y = cy + t * (vh - cy);
+        var amp = 8 * (1 - t);
+        var x = cx + Math.sin(t * Math.PI * 3 + syProgress * 10) * amp;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Ripples
+    ripples = ripples.filter(function (r) { return r.t < 1; });
+    ripples.forEach(function (r) {
+      r.t += 0.018;
+      var isWhite = sy < sTop;
+      for (var n = 0; n < 4; n++) {
+        var rad = (r.t + n * 0.18) * 140;
+        if (rad < 0) continue;
+        var alpha = Math.max(0, (1 - r.t) * (1 - n * 0.22));
+        ctx.strokeStyle = isWhite
+          ? 'rgba(255,255,255,' + alpha + ')'
+          : 'rgba(0,0,0,' + alpha + ')';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // Use actual stone contour approximation (irregular oval)
+        ctx.save();
+        ctx.translate(cvs.width / 2, cvs.height / 2);
+        ctx.scale(1 + rad / 80, 1.3 + rad / 60);
+        ctx.arc(0, 0, 50 + rad * 0.3, 0, Math.PI * 2);
+        ctx.restore();
+        ctx.stroke();
+      }
+    });
+
+    requestAnimationFrame(drawRope);
+  }
+  requestAnimationFrame(drawRope);
+
+  window.addEventListener('scroll', function () {
+    var sy    = window.scrollY;
+    var bTop  = belief.offsetTop;
+    var sTop  = system.offsetTop;
+    var sEnd  = sTop + system.offsetHeight;
+    var showFrom = bTop - window.innerHeight * 0.6;
+
+    if (sy >= showFrom && sy < sEnd + window.innerHeight) {
+      stoneW.style.opacity = '1';
+      // Rotation driven by scroll
+      stoneRot = (sy - bTop) * 0.06;
+      if (!stoneI._clicking) {
+        stoneI.style.transition = 'filter 0.4s';
+        stoneI.style.transform = 'rotate(' + stoneRot + 'deg)';
+      }
+      // Stone color: b&w in belief, still b&w in system (photos are the color element)
+      stoneI.style.filter = 'grayscale(1)';
+    } else {
+      stoneW.style.opacity = '0';
+    }
+  }, { passive: true });
+})();
 </script>
+<!-- Fixed stone + rope canvas (controlled by scroll JS) -->
+<canvas id="rope-canvas"></canvas>
+<div id="stone-fixed">
+  <img id="stone-img" src="stone.png" alt="stone">
+</div>
 </body>
 </html>
