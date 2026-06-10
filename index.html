@@ -987,7 +987,8 @@ main {
   z-index: 200;
   pointer-events: auto;
   opacity: 0;
-  width: 300px;
+  width: 600px;
+  transition: none;
 }
 #rope-canvas { z-index: 199; }
 #stone-fixed img {
@@ -3131,9 +3132,10 @@ window._sf = 0; // scatter factor 0→1
     // Stone appears as user scrolls past works section (section 3)
     var fadeStart = wBottom - vh * 0.3;
     var fadeEnd   = wBottom + vh * 0.3;
-    var stoneAlpha = Math.max(0, Math.min(1, (sy - fadeStart) / (fadeEnd - fadeStart)));
+    // Show stone instantly once works section has scrolled past viewport center
+    var stoneAlpha = (sy >= wBottom - cy) ? 1 : 0;
 
-    var inActive = sy >= fadeStart && sy < sTop + sH + vh;
+    var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
 
     // Stone rotation
