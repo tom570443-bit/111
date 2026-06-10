@@ -2961,8 +2961,8 @@ window._sf = 0; // scatter factor 0→1
   function positionOverlay(overlayEl, cardEl) {
     var gridRect = document.getElementById('works-grid').getBoundingClientRect();
     var cardRect = cardEl.getBoundingClientRect();
-    overlayEl.style.left  = (cardRect.left - gridRect.left - 1) + 'px';
-    overlayEl.style.width = (cardRect.width + 1) + 'px';
+    overlayEl.style.left  = (cardRect.left - gridRect.left) + 'px';
+    overlayEl.style.width = cardRect.width + 'px';
   }
 
   var grid = document.getElementById('works-grid');
@@ -3007,7 +3007,7 @@ window._sf = 0; // scatter factor 0→1
     cols.forEach(function (col) { positionOverlay(overlays[col], cards[col]); });
     if (cols.length === 2 && cols[1] === cols[0] + 1) {
       var leftOv = overlays[cols[0]];
-      leftOv.style.width = (parseFloat(leftOv.style.width) + 1) + 'px';
+      leftOv.style.width = (parseFloat(leftOv.style.width) + 2) + 'px';
     }
     cols.forEach(function (col) { overlays[col].classList.add('visible'); });
     if (idx === 2) {
