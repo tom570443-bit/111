@@ -1310,12 +1310,8 @@ main {
 #contact {
   position: relative;
   z-index: 10;
-  background: #ffffff;
-  padding: 80px 48px 100px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: start;
+  background: #000;
+  min-height: 100vh;
 }
 
 .contact-big {
@@ -1737,60 +1733,8 @@ footer { border-top-color: #e0e0e0; }
     <div class="work-photo work-photo--right" style="top:1170vh;" data-caption="沉默作为一种设计语言"><img src="https://picsum.photos/480/360?random=120" alt=""><span class="work-caption">沉默作为一种设计语言</span></div>
   </section>
 
-  <!-- CONTACT -->
-  <section id="contact">
-    <div class="s-reveal">
-      <div class="contact-big">
-        LET'S<br>
-        <span class="green">BUILD</span><br>
-        TOGETHER
-      </div>
-      <p class="contact-sub">
-        Open for select projects, collaborations, and systems that push the boundaries of digital experience. Response time: &lt;24h.
-      </p>
-      <div style="margin-top:36px;font-size:0.7rem;color:var(--gray3);line-height:2;letter-spacing:0.08em;">
-        <div>MAIL___ hello@systems-only.io</div>
-        <div>BASE___ San Francisco, CA</div>
-        <div>TZ_____ UTC-8</div>
-      </div>
-    </div>
-
-    <div class="s-reveal">
-      <div class="section-label" style="margin-bottom:24px;">// contact.form</div>
-      <form class="contact-form" onsubmit="return false;">
-        <div class="form-field">
-          <label>NAME_</label>
-          <input type="text" placeholder="your_name">
-        </div>
-        <div class="form-field">
-          <label>EMAIL_</label>
-          <input type="email" placeholder="your@email.io">
-        </div>
-        <div class="form-field">
-          <label>PROJECT_TYPE_</label>
-          <input type="text" placeholder="e.g. WebGL / AI / Dashboard">
-        </div>
-        <div class="form-field">
-          <label>MESSAGE_</label>
-          <textarea placeholder="describe your system..."></textarea>
-        </div>
-        <button class="form-submit" type="submit">SEND_TRANSMISSION &#8594;</button>
-      </form>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-left">
-      &copy; 2026 SYSTEMS_ONLY — ALL RIGHTS RESERVED &nbsp;|&nbsp; BUILT WITH RAW CODE
-    </div>
-    <div class="footer-right">
-      <a href="#" class="footer-link">Github</a>
-      <a href="#" class="footer-link">Dribbble</a>
-      <a href="#" class="footer-link">Twitter</a>
-      <a href="#" class="footer-link">Resume</a>
-    </div>
-  </footer>
+  <!-- CONTACT — emptied, black -->
+  <section id="contact" style="background:#000;"></section>
 
 </main>
 
