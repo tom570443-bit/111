@@ -1720,8 +1720,6 @@ footer { border-top-color: #e0e0e0; }
   <!-- SECTION 5: white, falling stone with work photos -->
   <section id="system" style="position:relative;overflow:hidden;">
     <!-- 20 alternating work photos, spaced 60vh apart starting at 30vh -->
-    <div class="work-photo work-photo--left"  style="top:30vh;"  data-caption="光与影的边界探索">  <img src="https://picsum.photos/480/360?random=101" alt=""><span class="work-caption">光与影的边界探索</span></div>
-    <div class="work-photo work-photo--right" style="top:90vh;"  data-caption="城市空间的重新凝视"><img src="https://picsum.photos/480/360?random=102" alt=""><span class="work-caption">城市空间的重新凝视</span></div>
     <div class="work-photo work-photo--left"  style="top:150vh;" data-caption="传统纹样的当代转译"><img src="https://picsum.photos/480/360?random=103" alt=""><span class="work-caption">传统纹样的当代转译</span></div>
     <div class="work-photo work-photo--right" style="top:210vh;" data-caption="材质语言与触觉想象"><img src="https://picsum.photos/480/360?random=104" alt=""><span class="work-caption">材质语言与触觉想象</span></div>
     <div class="work-photo work-photo--left"  style="top:270vh;" data-caption="时间切片中的记忆碎片"><img src="https://picsum.photos/480/360?random=105" alt=""><span class="work-caption">时间切片中的记忆碎片</span></div>
@@ -3196,8 +3194,9 @@ window._sf = 0; // scatter factor 0→1
     // ── Scissor transition at belief→system boundary ──
     // White sector pivoting at the stone: arms start as a thin downward
     // line, sweep 180° (through horizontal) until everything is white.
-    var transWindow = vh * 1.2;
-    var tp = Math.max(0, Math.min(1, (sy - (sTop - transWindow)) / (2 * transWindow)));
+    var transStart = sTop - vh * 0.6;  // starts later
+    var transEnd   = sTop + vh * 0.9;  // ends sooner
+    var tp = Math.max(0, Math.min(1, (sy - transStart) / (transEnd - transStart)));
     if (tp > 0 && tp < 1) {
       var psi = tp * Math.PI;            // sector half-angle 0 → π
       var R = Math.max(vw, vh) * 3;
