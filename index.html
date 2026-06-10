@@ -3136,16 +3136,21 @@ window._sf = 0; // scatter factor 0→1
     ripples.push({ t: 0 });
   });
 
-  // Physics state
-  var lastSy = window.scrollY, inertia = 0; // smoothed scroll-velocity tilt
-  var stoneCX = 0, stoneCY = 0;             // stone centre in viewport coords
+  // Trail ghost history
+  var trail = []; // [{rot, alpha}]
+  var lastSy = window.scrollY;
+  var velSmooth = 0;
 
   function frame(now) {
     requestAnimationFrame(frame);
-    var t  = (now || 0) / 1000;
     var sy = window.scrollY;
     var vw = cvs.width, vh = cvs.height;
     var cx = vw / 2, cy = vh / 2;
+
+    // Scroll velocity
+    var rawVel = sy - lastSy; lastSy = sy;
+    velSmooth += (rawVel - velSmooth) * 0.18;
+    var speed = Math.abs(velSmooth);
 
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
@@ -3153,67 +3158,50 @@ window._sf = 0; // scatter factor 0→1
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
 
-    // ── Physics: pendulum swing + scroll inertia + breathing bob ──
-    var vel = sy - lastSy; lastSy = sy;
-    var targetTilt = Math.max(-8, Math.min(8, -vel * 0.25));
-    inertia += (targetTilt - inertia) * 0.06;          // smooth approach + decay
-
-    var swing = 2.5 * Math.sin(t * Math.PI * 2 / 3.6); // gentle ±2.5° pendulum
-    var bob   = 4   * Math.sin(t * Math.PI * 2 / 2.8); // ±4px vertical breathing
-    var angD  = swing + inertia;                        // total pendulum angle (deg)
-    var angR  = angD * Math.PI / 180;
-
+    // Clip stone above the works bottom edge
     var stoneH = stoneW.offsetHeight || 300;
-    // Pivot at top of screen; rope attaches at the stone top
-    var attachLen = cy - stoneH / 2 + bob;
-    var ax = cx + Math.sin(angR) * attachLen;
-    var ay = Math.cos(angR) * attachLen;
-    // Stone centre hangs below attach point along rope direction
-    stoneCX = ax + Math.sin(angR) * stoneH / 2;
-    stoneCY = ay + Math.cos(angR) * stoneH / 2;
-
-    // Move wrapper; rotation/scale live on the img
-    stoneW.style.transform = 'translate(calc(-50% + ' + (stoneCX - cx).toFixed(2) + 'px), calc(-50% + ' + (stoneCY - cy).toFixed(2) + 'px))';
-    stoneRot = 35 + angD * 1.4; // base tilt + sways with the pendulum
-    if (inActive && !stoneI._clicking) {
-      stoneI.style.transform = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
-    }
-
-    // Clip stone above the works bottom edge so it slides out from behind it
     if (inActive && wEdge > 0) {
-      var stoneTop = stoneCY - stoneH / 2;
+      var stoneTop = cy - stoneH / 2;
       var cut = Math.max(0, wEdge - stoneTop);
       stoneW.style.clipPath = 'inset(' + cut + 'px 0 0 0)';
     } else {
       stoneW.style.clipPath = 'none';
     }
 
-    // ── Rope: curved line with tension, from top pivot to attach point ──
+    // Stone rotation driven by scroll
+    stoneRot = (sy - bTop) * 0.06;
+    if (inActive && !stoneI._clicking) {
+      stoneI.style.transform = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
+    }
+
+    // ── Motion trail (canvas) ──
     ctx.clearRect(0, 0, vw, vh);
-    if (stoneAlpha <= 0) return;
+    if (stoneAlpha <= 0) { trail = []; return; }
 
     var inSystem = sy >= sTop - vh && sy < sTop + sH + vh;
     var ink = inSystem ? '0,0,0' : '255,255,255';
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(' + ink + ',0.8)';
-    var ropeTop = Math.max(0, wEdge);
-    ctx.beginPath();
-    ctx.moveTo(cx, ropeTop);
-    // control point: midway, bowing slightly opposite the swing for tension feel
-    ctx.quadraticCurveTo(cx - Math.sin(angR) * 30, (ropeTop + ay) * 0.55, ax, ay);
-    ctx.stroke();
 
-    // ── Wrap coils where the rope meets the stone ──
-    ctx.save();
-    ctx.translate(ax, ay);
-    ctx.rotate(angR + 0.35);
-    for (var c = 0; c < 3; c++) {
-      ctx.strokeStyle = 'rgba(' + ink + ',' + (0.75 - c * 0.18) + ')';
-      ctx.beginPath();
-      ctx.ellipse(0, 8 + c * 9, 26 - c * 3, 8, 0, 0, Math.PI * 2);
-      ctx.stroke();
+    // Number of ghost copies scales with speed (0 at rest → up to 8)
+    var trailCount = Math.min(8, Math.floor(speed * 0.55));
+    var stepDeg    = velSmooth * 0.7; // rotation step per ghost (direction of scroll)
+    var stepY      = velSmooth * 0.9; // vertical offset step per ghost
+
+    for (var i = trailCount; i >= 1; i--) {
+      var ghostAlpha = (i / trailCount) * 0.18 * Math.min(1, speed / 6);
+      if (ghostAlpha <= 0.01) continue;
+      var ghostRot = stoneRot - stepDeg * i;
+      var ghostY   = -stepY * i; // trailing behind in the direction of motion
+      ctx.save();
+      ctx.globalAlpha = ghostAlpha;
+      ctx.translate(cx, cy + ghostY);
+      ctx.rotate((ghostRot - stoneRot) * Math.PI / 180); // relative to stone centre
+      // draw stone image as ghost
+      var hw = stoneW.offsetWidth  / 2 || 210;
+      var hh = stoneH / 2;
+      ctx.rotate(ghostRot * Math.PI / 180);
+      ctx.drawImage(stoneI, -hw, -hh, hw * 2, hh * 2);
+      ctx.restore();
     }
-    ctx.restore();
 
     // Ripples — centred on the stone
     ripples = ripples.filter(function(r){ return r.t < 1; });
@@ -3226,7 +3214,7 @@ window._sf = 0; // scatter factor 0→1
         ctx.strokeStyle = 'rgba(' + ink + ',' + alpha + ')';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.save(); ctx.translate(stoneCX, stoneCY); ctx.scale(1, 0.75);
+        ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.75);
         ctx.arc(0, 0, rad, 0, Math.PI * 2);
         ctx.restore(); ctx.stroke();
       }
