@@ -984,12 +984,13 @@ main {
   position: fixed;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 46;
+  z-index: 200;
   pointer-events: auto;
   opacity: 0;
   transition: opacity 0.6s ease;
   width: 180px;
 }
+#rope-canvas { z-index: 199; }
 #stone-fixed img {
   width: 100%; height: auto; display: block;
   filter: grayscale(1);
@@ -3102,6 +3103,10 @@ window._sf = 0; // scatter factor 0→1
     ripples.push({ t: 0 });
   });
 
+  function sectionTop(el) {
+    return el.getBoundingClientRect().top + window.scrollY;
+  }
+
   function drawRope() {
     ctx.clearRect(0, 0, cvs.width, cvs.height);
     var sy   = window.scrollY;
@@ -3109,9 +3114,9 @@ window._sf = 0; // scatter factor 0→1
     var vh   = cvs.height;
     var cx   = vw / 2;
     var cy   = vh / 2;
-    var bTop = belief.offsetTop;
+    var bTop = sectionTop(belief);
     var bH   = belief.offsetHeight;
-    var sTop = system.offsetTop;
+    var sTop = sectionTop(system);
     var sH   = system.offsetHeight;
 
     var inBelief = sy >= bTop - vh && sy < sTop;
@@ -3227,8 +3232,8 @@ window._sf = 0; // scatter factor 0→1
 
   function updateStone() {
     var sy    = window.scrollY;
-    var bTop  = belief.offsetTop;
-    var sTop  = system.offsetTop;
+    var bTop  = sectionTop(belief);
+    var sTop  = sectionTop(system);
     var sEnd  = sTop + system.offsetHeight;
     var showFrom = bTop - window.innerHeight * 0.8;
 
