@@ -985,19 +985,26 @@ main {
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
   z-index: 50;
-  pointer-events: auto;
+  pointer-events: none; /* interaction handled by #stone-hot only */
   opacity: 0;
   width: 420px;
   transition: none;
+}
+#stone-hot {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%; height: 70%;
+  pointer-events: auto;
+  cursor: pointer;
 }
 #rope-canvas { z-index: 49; }
 #stone-fixed img {
   width: 100%; height: auto; display: block;
   filter: grayscale(1);
   transition: filter 0.4s ease, transform 0.15s ease;
-  cursor: pointer;
 }
-#stone-fixed:hover img {
+#stone-fixed.hot img {
   filter: grayscale(0);
 }
 
@@ -3067,6 +3074,7 @@ window._sf = 0; // scatter factor 0→1
 <canvas id="rope-canvas"></canvas>
 <div id="stone-fixed">
   <img id="stone-img" src="stone.png" alt="stone">
+  <div id="stone-hot"></div>
 </div>
 <script>
 // ── Stone + rope scroll system ─────────────────────────────────────────────
@@ -3108,10 +3116,11 @@ window._sf = 0; // scatter factor 0→1
   resize();
   window.addEventListener('resize', resize);
 
-  // Stone interactions
-  stoneW.addEventListener('mouseenter', function () { stoneI.style.transform = 'rotate('+stoneRot+'deg) scale(1.08)'; });
-  stoneW.addEventListener('mouseleave', function () { if (!stoneI._clicking) stoneI.style.transform = 'rotate('+stoneRot+'deg)'; });
-  stoneW.addEventListener('click', function () {
+  // Stone interactions — bound to small central hotspot only
+  var hot = document.getElementById('stone-hot');
+  hot.addEventListener('mouseenter', function () { stoneW.classList.add('hot'); stoneI.style.transform = 'rotate('+stoneRot+'deg) scale(1.08)'; });
+  hot.addEventListener('mouseleave', function () { stoneW.classList.remove('hot'); if (!stoneI._clicking) stoneI.style.transform = 'rotate('+stoneRot+'deg)'; });
+  hot.addEventListener('click', function () {
     stoneI._clicking = true;
     stoneI.style.transition = 'transform 0.1s ease';
     stoneI.style.transform = 'rotate('+stoneRot+'deg) scale(0.78)';
@@ -3129,14 +3138,21 @@ window._sf = 0; // scatter factor 0→1
     var vw = cvs.width, vh = cvs.height;
     var cx = vw / 2, cy = vh / 2;
 
-    // Stone appears as user scrolls past works section (section 3)
-    var fadeStart = wBottom - vh * 0.3;
-    var fadeEnd   = wBottom + vh * 0.3;
-    // Stone sits behind works (z-index) — show it early so it slides out naturally
-    var stoneAlpha = (sy >= wBottom - vh) ? 1 : 0;
+    // Works section bottom edge in viewport coordinates
+    var wEdge = wBottom - sy;
+    var stoneAlpha = (wEdge < vh) ? 1 : 0; // visible once works bottom enters viewport
 
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
+
+    // Clip stone above the works bottom edge so it slides out from behind it
+    if (inActive && wEdge > 0) {
+      var stoneTop = cy - stoneW.offsetHeight / 2;
+      var cut = Math.max(0, wEdge - stoneTop);
+      stoneW.style.clipPath = 'inset(' + cut + 'px 0 0 0)';
+    } else {
+      stoneW.style.clipPath = 'none';
+    }
 
     // Stone rotation
     if (inActive && !stoneI._clicking) {
@@ -3152,7 +3168,7 @@ window._sf = 0; // scatter factor 0→1
     ctx.lineWidth = 1;
     ctx.strokeStyle = inSystem ? 'rgba(0,0,0,' + (stoneAlpha * 0.7) + ')' : 'rgba(255,255,255,' + (stoneAlpha * 0.8) + ')';
     ctx.beginPath();
-    ctx.moveTo(cx, 0);
+    ctx.moveTo(cx, Math.max(0, wEdge)); // line starts below works bottom edge
     ctx.lineTo(cx, cy);
     ctx.stroke();
 
