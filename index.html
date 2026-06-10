@@ -3104,7 +3104,10 @@ window._sf = 0; // scatter factor 0→1
     bH      = belief.offsetHeight;
     sTop    = absTop(system);
     sH      = system.offsetHeight;
-    wBottom = absTop(works) + works.offsetHeight; // bottom of section 3 (works)
+    // Reveal boundary = bottom of the marquee strip between works and belief
+    var mq = document.querySelector('.marquee-strip-2');
+    var edgeEl = mq || works;
+    wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
   }
 
   function resize() {
