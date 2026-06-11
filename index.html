@@ -199,7 +199,7 @@ main {
 /* word-trans no longer used — title scales directly */
 #word-trans { display: none; }
 
-/* ── Hero brick-wall background ── */
+/* ── Hero background: blurred 磊 + white dot grid, behind stone & title ── */
 #hero-bg {
   position: fixed;
   inset: 0;
@@ -207,12 +207,24 @@ main {
   overflow: hidden;
   pointer-events: none;
 }
-#hero-bg img {
-  width: 100%; height: 100%;
-  object-fit: cover;
+#hero-bg-char {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'SimSun', 'Songti SC', 'STSong', serif;
+  font-size: 105vh;
+  line-height: 1;
+  color: rgba(255,255,255,0.55);
   filter: blur(14px);
-  transform: scale(1.08); /* hide blur edge */
-  opacity: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+#hero-bg-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.45) 2px, transparent 2.6px);
+  background-size: 64px 64px;
+  background-position: 16px 16px;
 }
 
 /* torus canvas fills the whole hero and sits behind text */
@@ -1605,8 +1617,11 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- HERO -->
   <section id="hero">
-    <!-- brick wall blurred background -->
-    <div id="hero-bg"><img src="brick.jpg" alt=""></div>
+    <!-- blurred 磊 + dot-grid background -->
+    <div id="hero-bg">
+      <div id="hero-bg-char">磊</div>
+      <div id="hero-bg-dots"></div>
+    </div>
 
     <!-- torus canvas injected by JS -->
 
