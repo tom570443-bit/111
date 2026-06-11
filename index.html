@@ -199,6 +199,22 @@ main {
 /* word-trans no longer used — title scales directly */
 #word-trans { display: none; }
 
+/* ── Hero brick-wall background ── */
+#hero-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+#hero-bg img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: blur(14px);
+  transform: scale(1.08); /* hide blur edge */
+  opacity: 1;
+}
+
 /* torus canvas fills the whole hero and sits behind text */
 #hero canvas {
   position: absolute;
@@ -1589,6 +1605,9 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- HERO -->
   <section id="hero">
+    <!-- brick wall blurred background -->
+    <div id="hero-bg"><img src="brick.jpg" alt=""></div>
+
     <!-- torus canvas injected by JS -->
 
     <!-- halftone overlay canvas — sits above asteroid, below title -->
@@ -2100,6 +2119,7 @@ window._sf = 0; // scatter factor 0→1
   var heroSub     = document.querySelector('.hero-sub');
   var heroMeta    = document.querySelector('.hero-meta');
   var heroScroll  = document.querySelector('.hero-scroll-hint');
+  var heroBg      = document.getElementById('hero-bg');
   var worksEl     = document.getElementById('works');
 
   var TRANS_START = 0, TRANS_END = 0, SLIDE_START = 0, SLIDE_END = 0;
@@ -2144,6 +2164,7 @@ window._sf = 0; // scatter factor 0→1
     if (heroSub)    heroSub.style.opacity    = '';
     if (heroMeta)   heroMeta.style.opacity   = '';
     if (heroScroll) heroScroll.style.opacity = '';
+    if (heroBg)     heroBg.style.opacity     = '';
   }
 
   function resetSlide() {
@@ -2232,6 +2253,7 @@ window._sf = 0; // scatter factor 0→1
       var op    = p < 0.45 ? 1 : Math.max(0, 1 - (p - 0.45) / 0.55);
 
       if (heroTitle) { heroTitle.style.transform = 'scale(' + scale.toFixed(4) + ')'; heroTitle.style.filter = blur > 0.5 ? 'blur(' + blur.toFixed(1) + 'px)' : ''; heroTitle.style.opacity = op.toFixed(3); heroTitle.style.zIndex = '999'; }
+      if (heroBg)    heroBg.style.opacity = op.toFixed(3);
       return;
     }
 
@@ -2239,6 +2261,7 @@ window._sf = 0; // scatter factor 0→1
     slideActive = true;
     hideSections();
     if (heroTitle) { heroTitle.style.transform = 'scale(6.5)'; heroTitle.style.opacity = '0'; heroTitle.style.filter = 'blur(32px)'; }
+    if (heroBg)    heroBg.style.opacity = '0';
 
     var cv = window._torusCanvas;
     var sp  = Math.min((sy - SLIDE_START) / (SLIDE_END - SLIDE_START), 1);
