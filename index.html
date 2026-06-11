@@ -2720,9 +2720,9 @@ window._sf = 0; // scatter factor 0→1
   var snapping = false;
 
   function getSnapPoints() {
-    var system = document.getElementById('system');
+    var works = document.getElementById('works');
     var pts = [];
-    if (system) pts.push(system.offsetTop);
+    if (works) pts.push(works.offsetTop);
     return pts;
   }
 
@@ -2739,10 +2739,6 @@ window._sf = 0; // scatter factor 0→1
         var d = Math.abs(p - sy);
         if (d < minDist) { minDist = d; nearest = p; }
       });
-      // Don't snap during the scissor transition zone (sTop-vh → sTop)
-      var systemEl = document.getElementById('system');
-      var sTopNow  = systemEl ? systemEl.offsetTop : Infinity;
-      if (sy > sTopNow - vh && sy < sTopNow) return;
       if (nearest !== null && minDist > 6 && minDist < threshold) {
         snapping = true;
         var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
@@ -3185,11 +3181,7 @@ window._sf = 0; // scatter factor 0→1
     sTop = absTop(system);
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
-    var stoneFadeEnd = sTop + 300;
-    var stoneAlpha = 0;
-    if (wEdge < vh && sy < stoneFadeEnd) {
-      stoneAlpha = sy > sTop ? Math.max(0, 1 - (sy - sTop) / 300) : 1;
-    }
+    var stoneAlpha = (wEdge < vh) ? 1 : 0;
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
