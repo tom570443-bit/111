@@ -1857,7 +1857,8 @@ footer { border-top-color: #e0e0e0; }
   var doubled = DATA.concat(DATA);
   track.innerHTML = doubled.map(function (d, idx) {
     var isReal = idx < DATA.length;
-    return '<img class="strip-img" src="https://picsum.photos/200/200?random=' + (d.id + 200) + '" ' +
+    var src = 'work-' + (d.id < 10 ? '0' : '') + d.id + '.webp';
+    return '<img class="strip-img" src="' + src + '" ' +
            (isReal ? 'data-idx="' + (d.id - 1) + '"' : '') + ' alt="' + d.title + '">';
   }).join('');
 
