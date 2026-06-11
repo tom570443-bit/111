@@ -535,36 +535,6 @@ main {
   transform: scale(1.08);
 }
 
-/* ── Image lightbox — mask-expand effect ── */
-#photo-lightbox {
-  position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,0);
-  pointer-events: none;
-  transition: background 0.5s ease;
-}
-#photo-lightbox.open {
-  background: rgba(0,0,0,0.88);
-  pointer-events: all;
-}
-#lb-frame {
-  position: fixed;
-  overflow: hidden;
-  cursor: zoom-out;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s;
-}
-#photo-lightbox.open #lb-frame {
-  opacity: 1;
-  visibility: visible;
-  transition: none;
-}
-#lb-frame img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: grayscale(1) brightness(0.9) contrast(1.1);
-}
 #img-detail {
   position: fixed; inset: 0; z-index: 8000;
   background: rgba(0,0,0,0.96);
@@ -1907,51 +1877,6 @@ footer { border-top-color: #e0e0e0; }
     track.style.transform = 'translateX(' + scrollX + 'px)';
   })();
 
-  // Lightbox — mask frame expands from thumbnail position to center
-  var ease55 = 'top 0.6s cubic-bezier(0.22,1,0.36,1),left 0.6s cubic-bezier(0.22,1,0.36,1),width 0.6s cubic-bezier(0.22,1,0.36,1),height 0.6s cubic-bezier(0.22,1,0.36,1)';
-  function openLightbox(src, thumbEl) {
-    var lb    = document.getElementById('photo-lightbox');
-    var frame = document.getElementById('lb-frame');
-    var lbImg = document.getElementById('photo-lightbox-img');
-    var rect  = thumbEl.getBoundingClientRect();
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var finalSize = Math.min(vw * 0.82, vh * 0.82);
-    var finalL = (vw - finalSize) / 2, finalT = (vh - finalSize) / 2;
-
-    lbImg.src = src;
-
-    // Snap frame to thumbnail position with no transition
-    frame.style.transition = 'none';
-    frame.style.left   = rect.left   + 'px';
-    frame.style.top    = rect.top    + 'px';
-    frame.style.width  = rect.width  + 'px';
-    frame.style.height = rect.height + 'px';
-
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
-
-    // Two rAFs ensure start state is painted before transition begins
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        frame.style.transition = ease55;
-        frame.style.left   = finalL    + 'px';
-        frame.style.top    = finalT    + 'px';
-        frame.style.width  = finalSize + 'px';
-        frame.style.height = finalSize + 'px';
-      });
-    });
-  }
-  function closeLightbox() {
-    var lb = document.getElementById('photo-lightbox');
-    if (!lb || !lb.classList.contains('open')) return;
-    lb.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  document.addEventListener('click', function(e) {
-    if (e.target && (e.target.id === 'photo-lightbox' || e.target.id === 'lb-frame' || e.target.id === 'photo-lightbox-img')) closeLightbox();
-  });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
-
   // Bind mouseenter/mouseleave directly to each image
   var imgs = track.querySelectorAll('.strip-img');
   imgs.forEach(function (img) {
@@ -1964,9 +1889,6 @@ footer { border-top-color: #e0e0e0; }
       isHovering = false;
       track.classList.remove('strip-track-hovering');
       img.classList.remove('strip-hovered');
-    });
-    img.addEventListener('click', function () {
-      openLightbox(img.src, img);
     });
   });
 
@@ -2747,7 +2669,6 @@ window._sf = 0; // scatter factor 0→1
 })();
 </script>
 <!-- Image detail overlay -->
-<div id="photo-lightbox"><div id="lb-frame"><img id="photo-lightbox-img" src="" alt=""></div></div>
 <div id="img-detail">
   <div class="detail-close">[ ESC / CLOSE ]</div>
   <div class="detail-inner">
