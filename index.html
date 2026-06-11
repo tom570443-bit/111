@@ -2442,7 +2442,7 @@ window._sf = 0; // scatter factor 0→1
     scene.add(wireMesh);
   }
 
-  fetch('asteroid1.obj')
+  fetch('asteroid1_hq.obj')
     .then(function(r){ return r.text(); })
     .then(parseAndAddOBJ)
     .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); });
