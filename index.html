@@ -3111,9 +3111,14 @@ window._sf = 0; // scatter factor 0→1
     return y;
   }
 
+  var twistCenters = [];
   function cachePositions() {
     bTop    = absTop(belief);
     bH      = belief.offsetHeight;
+    twistCenters = [];
+    belief.querySelectorAll('.twist-text').forEach(function (el) {
+      twistCenters.push(absTop(el) + el.offsetHeight / 2);
+    });
     sTop    = absTop(system);
     sH      = system.offsetHeight;
     // Reveal boundary = bottom of the marquee strip between works and belief
@@ -3194,8 +3199,27 @@ window._sf = 0; // scatter factor 0→1
     // blurred copy: gradient mask (CSS) handles bottom fade; only clip for works reveal
     stoneW.style.clipPath = cut > 0 ? 'inset(' + cut + 'px -50% 0 -50%)' : 'none';
 
-    // Stone rotation driven by scroll
-    stoneRot = (sy - bTop) * 0.06;
+    // ── Magnetic dwell at each belief twist text ──
+    // While a text's centerline is near the stone, the stone travels with
+    // the page (tracks the text), then eases back to viewport center.
+    var dwellOff = 0, dwellW = 0;
+    var dwellR = vh * 0.42;
+    for (var ti = 0; ti < twistCenters.length; ti++) {
+      var dd = sy - (twistCenters[ti] - cy);   // 0 = perfectly aligned
+      var u = Math.abs(dd) / dwellR;
+      if (u < 1) {
+        var wgt = (1 - u * u) * (1 - u * u);   // smooth bump, slope 1 at center
+        dwellOff = -dd * wgt;
+        dwellW = wgt;
+        break;
+      }
+    }
+    var baseTf = 'translate(-50%, calc(-50% + ' + dwellOff.toFixed(2) + 'px))';
+    stoneW.style.transform = baseTf;
+    stoneS.style.transform = baseTf;
+
+    // Stone rotation driven by scroll (pauses while dwelling on a text)
+    stoneRot = (sy + dwellOff - bTop) * 0.06;
     if (inActive && !stoneI._clickScale) {
       var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
       stoneI.style.transform = tf;
@@ -3205,7 +3229,7 @@ window._sf = 0; // scatter factor 0→1
     // ── Vertical motion blur — scales with scroll speed ──
     // Smear side follows scroll direction: down → above, up → below
     stoneW.classList.toggle('up', velSmooth < -0.5);
-    var blurY = Math.min(35, speed * 0.9);
+    var blurY = Math.min(35, speed * 0.9) * (1 - dwellW);
     blurG.setAttribute('stdDeviation', '0 ' + (blurY < 0.3 ? 0 : blurY.toFixed(1)));
 
     ctx.clearRect(0, 0, vw, vh);
