@@ -531,7 +531,7 @@ main {
   transition: transform 0.4s ease, filter 0.4s ease;
 }
 .strip-track-hovering .strip-img.strip-hovered {
-  filter: grayscale(1) brightness(1) contrast(1.1) blur(0px);
+  filter: grayscale(0) brightness(1) contrast(1) blur(0px);
   transform: scale(1.08);
 }
 
@@ -3102,6 +3102,9 @@ window._sf = 0; // scatter factor 0→1
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
     stoneS.style.pointerEvents = inActive ? '' : 'none';
+    // #stone-hot has its own pointer-events:auto, which overrides the
+    // parent's none — toggle it explicitly or it blocks hovers at screen center
+    hot.style.pointerEvents = inActive ? 'auto' : 'none';
 
     // Clip both copies above the works bottom edge (reveal effect);
     // blurred copy is also clipped below its middle so the smear only
