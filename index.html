@@ -3178,6 +3178,7 @@ window._sf = 0; // scatter factor 0→1
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
+    stoneS.style.pointerEvents = inActive ? '' : 'none';
 
     // Clip both copies above the works bottom edge (reveal effect);
     // blurred copy is also clipped below its middle so the smear only
