@@ -2462,9 +2462,8 @@ window._sf = 0; // scatter factor 0→1
   });
 
   var rotY = 0, rotX = 0;
-  var _stoneRafId = 0;
   function animate() {
-    _stoneRafId = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
     var sf = window._sf || 0;
     var solidOp = Math.max(0, 1 - sf * 4);
     var wireIn  = Math.min(1, sf * 4);
@@ -2474,7 +2473,6 @@ window._sf = 0; // scatter factor 0→1
     wireMat.opacity = wireOp;
     if (solidOp <= 0 && wireOp <= 0) {
       renderer.clear();
-      if (window._heroJumped) { cancelAnimationFrame(_stoneRafId); }
       return;
     }
     rotY += 0.003;
