@@ -3177,6 +3177,8 @@ window._sf = 0; // scatter factor 0→1
     velSmooth += (rawVel - velSmooth) * 0.18;
     var speed = Math.abs(velSmooth);
 
+    // Re-read sTop each frame so cached value can't drift after hero slide
+    sTop = absTop(system);
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
     var stoneAlpha = (wEdge < vh && sy < sTop) ? 1 : 0;
