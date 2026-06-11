@@ -2719,31 +2719,24 @@ window._sf = 0; // scatter factor 0→1
   var snapTimer;
   var snapping = false;
 
-  function getSnapPoints() {
-    var belief = document.getElementById('belief');
-    var pts = [];
-    if (belief) pts.push(belief.offsetTop);
-    return pts;
-  }
-
   window.addEventListener('scroll', function () {
     if (snapping) return;
     clearTimeout(snapTimer);
     snapTimer = setTimeout(function () {
       var sy  = window.scrollY;
       var vh  = window.innerHeight;
-      var pts = getSnapPoints();
+      var worksEl = document.getElementById('works');
+      if (!worksEl) return;
+      var worksTop = worksEl.offsetTop;
+      // Only snap approaching works from above (hero zone) — not from belief below
+      if (sy >= worksTop) return;
+      var dist = Math.abs(worksTop - sy);
       var threshold = vh * 0.55;
-      var nearest = null, minDist = Infinity;
-      pts.forEach(function (p) {
-        var d = Math.abs(p - sy);
-        if (d < minDist) { minDist = d; nearest = p; }
-      });
-      if (nearest !== null && minDist > 6 && minDist < threshold) {
+      if (dist > 6 && dist < threshold) {
         snapping = true;
         var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
         if (window._lenis) {
-          window._lenis.scrollTo(nearest, { duration: 0.7, easing: ease });
+          window._lenis.scrollTo(worksTop, { duration: 0.7, easing: ease });
         } else {
           window.scrollTo({ top: nearest, behavior: 'smooth' });
         }
