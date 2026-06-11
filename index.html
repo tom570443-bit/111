@@ -2336,7 +2336,7 @@ window._sf = 0; // scatter factor 0→1
   if (typeof THREE === 'undefined') return;
   var hero = document.getElementById('hero');
   var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.4;
@@ -2362,7 +2362,7 @@ window._sf = 0; // scatter factor 0→1
     roughness: 1.0,
     metalness: 0.0,
     normalMap: normalTex,
-    normalScale: new THREE.Vector2(1.5, 1.5),
+    normalScale: new THREE.Vector2(2.2, 2.2),
     roughnessMap: roughTex,
     aoMap: aoTex,
     aoMapIntensity: 1.2,
@@ -2418,6 +2418,38 @@ window._sf = 0; // scatter factor 0→1
       posArr.push(verts[vi], verts[vi+1], verts[vi+2]);
       uvArr.push(uvs[ti], uvs[ti+1]);
     }
+
+    /* midpoint subdivision — splits each triangle into 4, quadrupling face count */
+    function subdivide(pA, uA) {
+      var pB = [], uB = [];
+      for (var i = 0; i < pA.length; i += 9) {
+        var ax=pA[i],   ay=pA[i+1], az=pA[i+2];
+        var bx=pA[i+3], by=pA[i+4], bz=pA[i+5];
+        var cx=pA[i+6], cy=pA[i+7], cz=pA[i+8];
+        var mabx=(ax+bx)/2, maby=(ay+by)/2, mabz=(az+bz)/2;
+        var mbcx=(bx+cx)/2, mbcy=(by+cy)/2, mbcz=(bz+cz)/2;
+        var mcax=(cx+ax)/2, mcay=(cy+ay)/2, mcaz=(cz+az)/2;
+        var au=uA[i/9*6],   av=uA[i/9*6+1];
+        var bu=uA[i/9*6+2], bv=uA[i/9*6+3];
+        var cu=uA[i/9*6+4], cv2=uA[i/9*6+5];
+        var mabu=(au+bu)/2, mabv=(av+bv)/2;
+        var mbcu=(bu+cu)/2, mbcv=(bv+cv2)/2;
+        var mcau=(cu+au)/2, mcav=(cv2+av)/2;
+        // 4 child triangles
+        pB.push(ax,ay,az, mabx,maby,mabz, mcax,mcay,mcaz);
+        pB.push(mabx,maby,mabz, bx,by,bz, mbcx,mbcy,mbcz);
+        pB.push(mcax,mcay,mcaz, mbcx,mbcy,mbcz, cx,cy,cz);
+        pB.push(mabx,maby,mabz, mbcx,mbcy,mbcz, mcax,mcay,mcaz);
+        uB.push(au,av, mabu,mabv, mcau,mcav);
+        uB.push(mabu,mabv, bu,bv, mbcu,mbcv);
+        uB.push(mcau,mcav, mbcu,mbcv, cu,cv2);
+        uB.push(mabu,mabv, mbcu,mbcv, mcau,mcav);
+      }
+      return [pB, uB];
+    }
+    var r = subdivide(posArr, uvArr);
+    posArr = r[0]; uvArr = r[1];
+
     var geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(posArr, 3));
     geo.setAttribute('uv',       new THREE.Float32BufferAttribute(uvArr,  2));
@@ -2442,7 +2474,7 @@ window._sf = 0; // scatter factor 0→1
     scene.add(wireMesh);
   }
 
-  fetch('asteroid1_hq.obj')
+  fetch('asteroid1.obj')
     .then(function(r){ return r.text(); })
     .then(parseAndAddOBJ)
     .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); });
