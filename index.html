@@ -2212,7 +2212,10 @@ window._sf = 0; // scatter factor 0→1
     return hz ? (hz.offsetTop + hz.offsetHeight) : -1;
   }
 
+  var _titleRaf = 0;
   window.addEventListener('scroll', function () {
+    cancelAnimationFrame(_titleRaf);
+    _titleRaf = requestAnimationFrame(function () {
     var sy = window.scrollY;
     var hzEnd = getHzEnd();
 
@@ -2328,6 +2331,7 @@ window._sf = 0; // scatter factor 0→1
         else window.scrollTo({ top: target });
       }
     }
+    }); // end rAF
   }, { passive: true });
 })();
 
@@ -2749,10 +2753,8 @@ window._sf = 0; // scatter factor 0→1
   var snapping = false;
 
   function getSnapPoints() {
-    var pts = [0];
-    var works  = document.getElementById('works');
     var system = document.getElementById('system');
-    if (works)  pts.push(works.offsetTop);
+    var pts = [];
     if (system) pts.push(system.offsetTop);
     return pts;
   }
@@ -3212,7 +3214,7 @@ window._sf = 0; // scatter factor 0→1
 
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
-    var stoneAlpha = (wEdge < vh) ? 1 : 0;
+    var stoneAlpha = (wEdge < vh && sy < sTop + vh) ? 1 : 0;
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
