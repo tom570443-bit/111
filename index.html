@@ -2353,9 +2353,9 @@ window._sf = 0; // scatter factor 0→1
 
   /* load PBR textures */
   var texLoader = new THREE.TextureLoader();
-  var normalTex   = texLoader.load('tex_normal.jpg');
-  var roughTex    = texLoader.load('tex_roughness.jpg');
-  var aoTex       = texLoader.load('tex_ao.jpg');
+  var normalTex   = texLoader.load('DefaultMaterial_Normal.png');
+  var roughTex    = texLoader.load('DefaultMaterial_Roughness.png');
+  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.png');
 
   var mat = new THREE.MeshStandardMaterial({
     color: 0x999999,
