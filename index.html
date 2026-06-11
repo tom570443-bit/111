@@ -3179,7 +3179,7 @@ window._sf = 0; // scatter factor 0→1
 
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
-    var stoneAlpha = (wEdge < vh && sy < sTop + vh) ? 1 : 0;
+    var stoneAlpha = (wEdge < vh && sy < sTop) ? 1 : 0;
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
