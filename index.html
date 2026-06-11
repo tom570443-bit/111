@@ -2749,10 +2749,11 @@ window._sf = 0; // scatter factor 0→1
   var snapping = false;
 
   function getSnapPoints() {
-    // Only snap at hero top and works entry — rest of site is free scroll
     var pts = [0];
-    var works = document.getElementById('works');
-    if (works) pts.push(works.offsetTop);
+    var works  = document.getElementById('works');
+    var system = document.getElementById('system');
+    if (works)  pts.push(works.offsetTop);
+    if (system) pts.push(system.offsetTop);
     return pts;
   }
 
@@ -2763,7 +2764,7 @@ window._sf = 0; // scatter factor 0→1
       var sy  = window.scrollY;
       var vh  = window.innerHeight;
       var pts = getSnapPoints();
-      var threshold = vh * 0.35;
+      var threshold = vh * 0.55;
       var nearest = null, minDist = Infinity;
       pts.forEach(function (p) {
         var d = Math.abs(p - sy);
