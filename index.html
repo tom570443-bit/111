@@ -2739,8 +2739,6 @@ window._sf = 0; // scatter factor 0→1
         var d = Math.abs(p - sy);
         if (d < minDist) { minDist = d; nearest = p; }
       });
-      // Don't snap while deep in the hero animation zone UNLESS we're near a snap point
-      if (sy > 0 && sy < vh * 3.0 && minDist > threshold * 0.5) return;
       if (nearest !== null && minDist > 6 && minDist < threshold) {
         snapping = true;
         var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
