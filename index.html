@@ -2800,6 +2800,7 @@ window._sf = 0; // scatter factor 0→1
   // ── Visibility gate: pause RAF loops when #works is off-screen ───────────────
   var worksVisible = true;
   var _wakeRegistry = [];
+  var _sleepRegistry = [];
 
   var worksSection = document.getElementById('works');
   if (worksSection && 'IntersectionObserver' in window) {
@@ -2809,6 +2810,10 @@ window._sf = 0; // scatter factor 0→1
         if (worksVisible) {
           // Resume any renderer that was hovered when section comes back
           _wakeRegistry.forEach(function (fn) { fn(); });
+        } else {
+          // Section left the viewport: clear all hover state so no stone
+          // spontaneously fades back in when the user scrolls past again.
+          _sleepRegistry.forEach(function (fn) { fn(); });
         }
       });
     }, { threshold: 0 });
@@ -3001,6 +3006,17 @@ window._sf = 0; // scatter factor 0→1
 
       // Register wake so IntersectionObserver can resume on re-entry
       _wakeRegistry.push(function () { if (hovered || progress > 0) wake(); });
+      // Register sleep so leaving the section fully resets the stone (no
+      // spontaneous re-appearance on scroll-back without a fresh hover).
+      _sleepRegistry.push(function () {
+        hovered = false;
+        progress = 0;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        wireMat.opacity = 0;
+        solidMat.opacity = 0;
+        cvs.style.opacity = '0';
+        if (grain) grain.style.opacity = '0';
+      });
 
       var hotspot = card;
       var trigger = hotspot || card;
