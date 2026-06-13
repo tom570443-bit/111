@@ -2154,6 +2154,8 @@ window._sf = 0; // scatter factor 0→1
       cv.style.pointerEvents = 'none';
     }
     slideActive = false;
+    // Re-cache wBottom now that works is back in document flow
+    requestAnimationFrame(cachePositions);
   }
 
   function getHzEnd() {
@@ -3160,10 +3162,12 @@ window._sf = 0; // scatter factor 0→1
     cTop    = contactEl0 ? absTop(contactEl0) : (sTop + sH);
     cH      = contactEl0 ? (contactEl0.offsetHeight || (window.innerHeight * 3.8)) : 0;
     stoneFixedH = stoneW.offsetHeight || 300;
-    // Reveal boundary = bottom of the marquee strip between works and belief
-    var mq = document.querySelector('.marquee-strip-2');
-    var edgeEl = mq || works;
-    wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
+    // Skip wBottom update while works is position:fixed (hero slide) — absTop() would return wrong value
+    if (!slideActive) {
+      var mq = document.querySelector('.marquee-strip-2');
+      var edgeEl = mq || works;
+      wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
+    }
   }
 
   function resize() {
