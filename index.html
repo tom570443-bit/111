@@ -3153,7 +3153,7 @@ window._sf = 0; // scatter factor 0→1
     // so the spin is always visible from the moment the stone shows up.
     var rotStart = wBottom - vh;
     var rotSpan  = Math.max(1, contactStart - rotStart);
-    var rotTurns = Math.max(2, Math.round(rotSpan * 0.4 / 360));
+    var rotTurns = 1;
     var rp = Math.max(0, Math.min(1, (sy - rotStart) / rotSpan));
     var rotEase = 1 - Math.pow(1 - rp, 2);    // ease-out → speed reaches 0 at the end
     stoneRot = rotTurns * 360 * rotEase;
