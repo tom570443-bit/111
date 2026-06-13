@@ -3249,10 +3249,12 @@ window._sf = 0; // scatter factor 0→1
     var contactStart = cTop + vh * 0.3;   // where logo assembly begins
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
-    var stoneAlpha = (wEdge < vh) ? 1 : 0;
+    // Fade in: 0 while marquee bottom is above viewport bottom (wEdge >= vh),
+    // rises to 1 once marquee bottom scrolls to viewport top (wEdge <= 0).
+    var stoneAlpha = Math.max(0, Math.min(1, 1 - wEdge / vh));
     var inActive = stoneAlpha > 0;
-    stoneW.style.opacity = stoneAlpha;
-    stoneS.style.opacity = stoneAlpha;
+    stoneW.style.opacity = stoneAlpha.toFixed(3);
+    stoneS.style.opacity = stoneAlpha.toFixed(3);
     stoneS.style.pointerEvents = 'none';
     hot.style.pointerEvents = 'none';
 
