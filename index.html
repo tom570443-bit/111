@@ -3242,7 +3242,7 @@ window._sf = 0; // scatter factor 0→1
       // Assembled CONTENT-center offsets (px from viewport center), tuned from
       // a preview composite. Group center G ≈ logo center (logo dominates bbox).
       var P_ast  = [4, -6];       // asteroid (right piece) content center
-      var P_logo = [-36, 12];     // two-stone unit content center
+      var P_logo = [-36, -5];     // two-stone unit content center
       var G      = [-31, 12];     // bounding-box center of the assembled logo
       // Asteroid content is offset from its element center (stone.png isn't
       // centered in its frame); correct for it so alignment is exact.
@@ -3266,8 +3266,10 @@ window._sf = 0; // scatter factor 0→1
 
         // ── Asteroid (right piece) — already upright on arrival; no settle spin ──
         var aRot = 0;
-        var aX = curX(P_ast) - AOX * s;   // element offset = content - contentOffset*scale
-        var aY = curY(P_ast) - AOY * s;
+        var aXfull = curX(P_ast) - AOX * s;
+        var aYfull = curY(P_ast) - AOY * s;
+        var aX = aXfull * p1;   // ease from center (0) to logo position
+        var aY = aYfull * p1;
         var aTf = 'translate(calc(-50% + ' + aX.toFixed(1) + 'px), calc(-50% + ' + aY.toFixed(1) + 'px)) rotate(' + aRot.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
         stoneW.style.transform = aTf;
         stoneS.style.transform = aTf;
