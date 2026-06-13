@@ -2183,7 +2183,15 @@ window._sf = 0; // scatter factor 0→1
     lastSy = sy;
 
     // ── Skip hero transition logic when already past hero-zone ──
-    if (heroJumped) return;
+    if (heroJumped) {
+      // Bulletproof: once settled past the hero (and not mid-slide), make sure
+      // #works never keeps the slide's lowered z-index (20). If it does, the
+      // fixed stone (z-50) paints over the works grid on the cards page.
+      if (!slideActive && worksEl.style.zIndex && worksEl.style.zIndex !== '') {
+        worksEl.style.zIndex = '';
+      }
+      return;
+    }
 
     /* ── before title phase ── */
     if (sy <= TRANS_START) {
