@@ -3101,6 +3101,7 @@ window._sf = 0; // scatter factor 0→1
   var lastSy = window.scrollY;
   var velSmooth = 0;
   var logoActive = false;
+  var stoneEntryRot = 0;
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -3229,14 +3230,17 @@ window._sf = 0; // scatter factor 0→1
       var p1 = eO3(cProg / 0.45);              // 0→0.45  assembly (rise + derotate)
       var p3 = eO3((cProg - 0.6) / 0.4);       // 0.6→1.0 shrink + center
 
-      // Assembled element-center offsets (px from viewport center), measured
-      // from the preview composite. Group center G ≈ logo center (logo dominates).
-      var P_ast  = [0, 0];        // asteroid sits at viewport center
-      var P_logo = [-46, 99];     // two-stone unit lower-left of asteroid
-      var G      = [-45.5, 98.5]; // bounding-box center of the assembled logo
+      // Assembled CONTENT-center offsets (px from viewport center), tuned from
+      // a preview composite. Group center G ≈ logo center (logo dominates bbox).
+      var P_ast  = [-12, 14];     // asteroid (right piece) content center
+      var P_logo = [-44, 72];     // two-stone unit content center
+      var G      = [-44, 72];     // bounding-box center of the assembled logo
+      // Asteroid content is offset from its element center (stone.png isn't
+      // centered in its frame); correct for it so alignment is exact.
+      var AOX = -4.46, AOY = -7.09;
       var s = 1 - 0.6 * p3;       // group scale 1.0 → 0.4
 
-      // shrink-and-center transform applied to an assembled offset P
+      // shrink-and-center transform applied to an assembled content offset P
       function curX(P) { return (P[0] - G[0]) * s + G[0] * (1 - p3); }
       function curY(P) { return (P[1] - G[1]) * s + G[1] * (1 - p3); }
 
@@ -3247,14 +3251,22 @@ window._sf = 0; // scatter factor 0→1
         stoneS.style.transform = '';
         logoActive = false;
       } else {
+        // Capture the spin angle once, reduced to within ±180° of upright, so
+        // the settle is bounded and identical no matter how long the works
+        // page grows (no violent unwind of accumulated rotation).
+        if (!logoActive) {
+          var raw = stoneRot % 360;
+          if (raw > 180) raw -= 360; else if (raw < -180) raw += 360;
+          stoneEntryRot = raw;
+        }
         logoActive = true;
         stoneW.classList.add('logo-mode');
         blurG.setAttribute('stdDeviation', '0 0');  // no motion blur in logo mode
 
-        // ── Asteroid (right piece) — derotate, then shrink toward center ──
-        var aRot = stoneRot * (1 - p1);
-        var aX = curX(P_ast);
-        var aY = curY(P_ast);
+        // ── Asteroid (right piece) — settle to upright, then shrink to center ──
+        var aRot = stoneEntryRot * (1 - p1);
+        var aX = curX(P_ast) - AOX * s;   // element offset = content - contentOffset*scale
+        var aY = curY(P_ast) - AOY * s;
         var aTf = 'translate(calc(-50% + ' + aX.toFixed(1) + 'px), calc(-50% + ' + aY.toFixed(1) + 'px)) rotate(' + aRot.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
         stoneW.style.transform = aTf;
         stoneS.style.transform = aTf;
