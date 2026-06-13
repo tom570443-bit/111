@@ -1034,6 +1034,23 @@ main {
   filter: grayscale(0);
 }
 
+/* Logo assembly stones */
+#logo-left-stone, #logo-base-stone {
+  position: fixed;
+  left: 50%; top: 50%;
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 52;
+}
+#logo-left-stone img { width: 130px; display: block; }
+#logo-base-stone img { width: 220px; display: block; }
+#stone-fixed.logo-mode {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
 /* Rope canvas */
 #rope-canvas {
   position: fixed;
@@ -1745,7 +1762,7 @@ footer { border-top-color: #e0e0e0; }
   </section>
 
   <!-- CONTACT — emptied, black -->
-  <section id="contact" style="background:#000;"></section>
+  <section id="contact" style="background:#000;min-height:380vh;"></section>
 
 </main>
 
@@ -3008,6 +3025,9 @@ window._sf = 0; // scatter factor 0→1
   <img id="stone-img2" src="stone.png" alt="">
   <div id="stone-hot"></div>
 </div>
+<!-- Logo assembly pieces (contact section) -->
+<div id="logo-left-stone"><img src="logo-left.webp" alt=""></div>
+<div id="logo-base-stone"><img src="logo-base.webp" alt=""></div>
 <script>
 // ── Stone + rope scroll system ─────────────────────────────────────────────
 (function () {
@@ -3191,6 +3211,74 @@ window._sf = 0; // scatter factor 0→1
         ctx.restore(); ctx.stroke();
       }
     });
+
+    // ── Contact: logo assembly animation ──────────────────────────────────────
+    var cEl   = document.getElementById('contact');
+    var logoL = document.getElementById('logo-left-stone');
+    var logoB = document.getElementById('logo-base-stone');
+    if (cEl && logoL && logoB) {
+      var cTopAbs = absTop(cEl);
+      var cHAbs   = cEl.offsetHeight || (vh * 3.8);
+      // Progress through contact: 0 when contact top hits 60% down viewport
+      var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs - vh * 0.4)) / (cHAbs - vh * 0.6)));
+
+      function eO3(t) { return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }
+
+      // Phase 1: 0→0.45 — stones fly in, rotation eases to 0
+      var p1 = eO3(cProg / 0.45);
+      // Phase 3: 0.65→1.0 — group shrinks to center
+      var p3 = eO3((cProg - 0.65) / 0.35);
+      var scl = 1 - 0.65 * p3;  // scale: 1.0 → 0.35
+
+      if (cProg <= 0) {
+        logoL.style.opacity = 0;
+        logoB.style.opacity = 0;
+        stoneW.classList.remove('logo-mode');
+      } else {
+        stoneW.classList.add('logo-mode');
+        blurG.setAttribute('stdDeviation', '0 0');  // no blur in logo mode
+
+        // ── Stone (right piece of logo) ──
+        // Assembly: shifts right (+65px) and falls down (+40px), rotation → 0
+        // Phase 3: shifts further to center and scales down
+        var stRot   = stoneRot * (1 - p1);
+        var stAsmX  = 65;   var stAsmY  = 40;
+        var stCtrX  = 51;   var stCtrY  = 3.5;   // centered at scale 0.35
+        var stX = stAsmX + (stCtrX - stAsmX) * p3;
+        var stY = stAsmY * p1 + (stCtrY - stAsmY) * p1 * p3;
+
+        var stTf = 'translate(calc(-50% + ' + stX.toFixed(1) + 'px), calc(-50% + ' + stY.toFixed(1) + 'px)) rotate(' + stRot.toFixed(2) + 'deg) scale(' + scl.toFixed(3) + ')';
+        stoneW.style.transform = stTf;
+        stoneS.style.transform = stTf;
+        // rotation already in wrapper transform — clear sub-element transform
+        stoneI.style.transform  = '';
+        stoneI2.style.transform = '';
+
+        // ── logo-left (tall narrow, top-left piece) ──
+        // Assembly: (-185, -110) from screen center
+        // Start: rises from below screen, tilted -22°
+        // Phase 3 centered: (-67, -43)
+        var lAsmX = -185; var lAsmY = -110;
+        var lCtrX = -67;  var lCtrY = -43;
+        var lX  = lAsmX + (lCtrX - lAsmX) * p3;
+        var lY  = lAsmY * p1 + (vh * 0.85) * (1 - p1) + (lCtrY - lAsmY) * p1 * p3;
+        var lRot = -22 * (1 - p1);
+        logoL.style.opacity   = p1.toFixed(3);
+        logoL.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + lRot.toFixed(1) + 'deg) scale(' + scl.toFixed(3) + ')';
+
+        // ── logo-base (L-shape, bottom piece) ──
+        // Assembly: (-120, 145) from screen center
+        // Start: rises from below screen, tilted +18°
+        // Phase 3 centered: (-15, 42)
+        var bAsmX = -120; var bAsmY = 145;
+        var bCtrX = -15;  var bCtrY = 42;
+        var bX  = bAsmX + (bCtrX - bAsmX) * p3;
+        var bY  = bAsmY * p1 + (vh * 0.9) * (1 - p1) + (bCtrY - bAsmY) * p1 * p3;
+        var bRot = 18 * (1 - p1);
+        logoB.style.opacity   = p1.toFixed(3);
+        logoB.style.transform = 'translate(calc(-50% + ' + bX.toFixed(1) + 'px), calc(-50% + ' + bY.toFixed(1) + 'px)) rotate(' + bRot.toFixed(1) + 'deg) scale(' + scl.toFixed(3) + ')';
+      }
+    }
   }
   frame();
 })();
