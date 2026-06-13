@@ -2162,6 +2162,7 @@ window._sf = 0; // scatter factor 0→1
   }
 
   window.addEventListener('scroll', function () {
+    if (window._navScrolling) return;   // nav-driven scroll: don't hijack
     var sy = window.scrollY;
     var hzEnd = getHzEnd();
 
@@ -2287,17 +2288,34 @@ window._sf = 0; // scatter factor 0→1
     while (el) { y += el.offsetTop; el = el.offsetParent; }
     return y;
   }
-  function jumpTo(y) {
-    lastSy = y;
-    if (window._lenis) window._lenis.scrollTo(y, { immediate: true });
-    else window.scrollTo({ top: y });
+  // Smooth scroll while suppressing the hero-zone scroll hijack (see guard
+  // `if (window._navScrolling) return;` at the top of the scroll handlers).
+  function smoothTo(y, onDone) {
+    window._navScrolling = true;
+    var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
+    function finish() {
+      window._navScrolling = false;
+      lastSy = window.scrollY;
+      if (onDone) onDone();
+    }
+    if (window._lenis) {
+      window._lenis.scrollTo(y, { duration: 0.9, easing: ease, onComplete: finish });
+    } else {
+      window.scrollTo({ top: y, behavior: 'smooth' });
+      setTimeout(finish, 900);
+    }
   }
   function navHome() {
-    heroJumped = false; window._heroJumped = false;
-    window._cardsTriggered = false;
-    if (window._worksResetCards) window._worksResetCards();
+    // Settle hero/works to normal flow first so the slide-up reveals the hero.
+    heroJumped = true; window._heroJumped = true;   // keep hijack off during travel
     resetSlide(); resetTitle();
-    jumpTo(0);
+    if (window._worksShowInstant) window._worksShowInstant();
+    smoothTo(0, function () {
+      heroJumped = false; window._heroJumped = false;
+      window._cardsTriggered = false;
+      if (window._worksResetCards) window._worksResetCards();
+      resetSlide(); resetTitle();
+    });
   }
   function enterPastHero() {
     heroJumped = true; window._heroJumped = true;
@@ -2307,14 +2325,14 @@ window._sf = 0; // scatter factor 0→1
   }
   function navIntro() {           // works grid (个人简介 / 设计理念 / 设计工具)
     enterPastHero();
-    jumpTo(getHzEnd() + 4);
+    smoothTo(getHzEnd() + 4);
   }
   function navWork() {            // first work photo (传统纹样的当代转译) in #system
     enterPastHero();
     var sysEl = document.getElementById('system');
     if (!sysEl) return;
     var vhh = window.innerHeight;
-    jumpTo(absTopOf(sysEl) + vhh * 1.5 - vhh * 0.42);
+    smoothTo(absTopOf(sysEl) + vhh * 1.5 - vhh * 0.42);
   }
   var navMap = { home: navHome, intro: navIntro, work: navWork };
   document.querySelectorAll('.nav-links a').forEach(function (a) {
@@ -2723,7 +2741,7 @@ window._sf = 0; // scatter factor 0→1
   var snapping = false;
 
   window.addEventListener('scroll', function () {
-    if (snapping) return;
+    if (snapping || window._navScrolling) return;
     clearTimeout(snapTimer);
     snapTimer = setTimeout(function () {
       var sy  = window.scrollY;
