@@ -3101,7 +3101,7 @@ window._sf = 0; // scatter factor 0→1
   var lastSy = window.scrollY;
   var velSmooth = 0;
   var logoActive = false;
-  var stoneEntryRot = 0;
+  var stoneEntryRot = 0, stoneTargetRot = 0;
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -3251,20 +3251,21 @@ window._sf = 0; // scatter factor 0→1
         stoneS.style.transform = '';
         logoActive = false;
       } else {
-        // Capture the spin angle once, reduced to within ±180° of upright, so
-        // the settle is bounded and identical no matter how long the works
-        // page grows (no violent unwind of accumulated rotation).
+        // Capture the spin angle once on entry, then continue spinning FORWARD
+        // (same direction as the scroll spin) to the next upright. Travel is
+        // always within one turn, so it never snaps backwards and is identical
+        // no matter how long the works page grows.
         if (!logoActive) {
-          var raw = stoneRot % 360;
-          if (raw > 180) raw -= 360; else if (raw < -180) raw += 360;
-          stoneEntryRot = raw;
+          stoneEntryRot  = stoneRot;
+          stoneTargetRot = Math.ceil(stoneRot / 360) * 360;  // next upright forward
+          if (stoneTargetRot - stoneEntryRot < 1) stoneTargetRot += 360; // ensure a settle
         }
         logoActive = true;
         stoneW.classList.add('logo-mode');
         blurG.setAttribute('stdDeviation', '0 0');  // no motion blur in logo mode
 
         // ── Asteroid (right piece) — settle to upright, then shrink to center ──
-        var aRot = stoneEntryRot * (1 - p1);
+        var aRot = stoneEntryRot + (stoneTargetRot - stoneEntryRot) * p1;
         var aX = curX(P_ast) - AOX * s;   // element offset = content - contentOffset*scale
         var aY = curY(P_ast) - AOY * s;
         var aTf = 'translate(calc(-50% + ' + aX.toFixed(1) + 'px), calc(-50% + ' + aY.toFixed(1) + 'px)) rotate(' + aRot.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
