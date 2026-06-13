@@ -3075,27 +3075,6 @@ window._sf = 0; // scatter factor 0→1
   // Stone interactions — bound to small central hotspot only
   var hot = document.getElementById('stone-hot');
   var hovered = false;
-  hot.addEventListener('mouseenter', function () { hovered = true;  stoneS.classList.add('hot'); });
-  hot.addEventListener('mouseleave', function () { hovered = false; stoneS.classList.remove('hot'); });
-  hot.addEventListener('click', function () {
-    stoneI._clickScale = 0.78;
-    [stoneI, stoneI2].forEach(function (im) {
-      im.style.transition = 'transform 0.1s ease';
-      im.style.transform = 'rotate(' + stoneRot.toFixed(2) + 'deg) scale(0.78)';
-    });
-    setTimeout(function () {
-      stoneI._clickScale = 1;
-      [stoneI, stoneI2].forEach(function (im) {
-        im.style.transition = 'transform 0.6s cubic-bezier(0.34,2.2,0.64,1)';
-        im.style.transform = 'rotate(' + stoneRot.toFixed(2) + 'deg) scale(1)';
-      });
-      setTimeout(function () {
-        stoneI._clickScale = 0;
-        [stoneI, stoneI2].forEach(function (im) { im.style.transition = 'none'; });
-      }, 600);
-    }, 120);
-    ripples.push({ t: 0 });
-  });
 
   var blurG = document.getElementById('stone-vblur-g');
   var lastSy = window.scrollY;
@@ -3124,10 +3103,8 @@ window._sf = 0; // scatter factor 0→1
     var inActive = stoneAlpha > 0;
     stoneW.style.opacity = stoneAlpha;
     stoneS.style.opacity = stoneAlpha;
-    stoneS.style.pointerEvents = inActive ? '' : 'none';
-    // #stone-hot has its own pointer-events:auto, which overrides the
-    // parent's none — toggle it explicitly or it blocks hovers at screen center
-    hot.style.pointerEvents = inActive ? 'auto' : 'none';
+    stoneS.style.pointerEvents = 'none';
+    hot.style.pointerEvents = 'none';
 
     // Clip both copies above the works bottom edge (reveal effect);
     // blurred copy is also clipped below its middle so the smear only
@@ -3153,8 +3130,8 @@ window._sf = 0; // scatter factor 0→1
     stoneRot = rotTurns * 360 * rotEase;
     // Hard-clamp to 0° once rp hits 1 (no flag needed — self-corrects on scroll-back)
     if (rp >= 1) stoneRot = rotTurns * 360;
-    if (inActive && !stoneI._clickScale && !logoActive) {
-      var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
+    if (inActive && !logoActive) {
+      var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)';
       stoneI.style.transform = tf;
       stoneI2.style.transform = tf;
     }
