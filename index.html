@@ -1045,7 +1045,7 @@ main {
   z-index: 52;
   will-change: transform, opacity;
 }
-#logo-unit img { width: 182px; display: block; filter: grayscale(1); }
+#logo-unit img { width: 150px; display: block; filter: grayscale(1); }
 #stone-fixed.logo-mode {
   -webkit-mask-image: none !important;
   mask-image: none !important;
@@ -3232,9 +3232,9 @@ window._sf = 0; // scatter factor 0→1
 
       // Assembled CONTENT-center offsets (px from viewport center), tuned from
       // a preview composite. Group center G ≈ logo center (logo dominates bbox).
-      var P_ast  = [-12, 14];     // asteroid (right piece) content center
-      var P_logo = [-44, 72];     // two-stone unit content center
-      var G      = [-44, 72];     // bounding-box center of the assembled logo
+      var P_ast  = [4, -6];       // asteroid (right piece) content center
+      var P_logo = [-20, 30];     // two-stone unit content center
+      var G      = [-20, 30];     // bounding-box center of the assembled logo
       // Asteroid content is offset from its element center (stone.png isn't
       // centered in its frame); correct for it so alignment is exact.
       var AOX = -4.46, AOY = -7.09;
