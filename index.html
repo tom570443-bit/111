@@ -1034,8 +1034,8 @@ main {
   filter: grayscale(0);
 }
 
-/* Logo assembly stones */
-#logo-left-stone, #logo-base-stone {
+/* Logo assembly unit */
+#logo-unit {
   position: fixed;
   left: 50%; top: 50%;
   transform-origin: center;
@@ -1043,9 +1043,9 @@ main {
   pointer-events: none;
   opacity: 0;
   z-index: 52;
+  will-change: transform, opacity;
 }
-#logo-left-stone img { width: 130px; display: block; }
-#logo-base-stone img { width: 220px; display: block; }
+#logo-unit img { width: 182px; display: block; filter: grayscale(1); }
 #stone-fixed.logo-mode {
   -webkit-mask-image: none !important;
   mask-image: none !important;
@@ -3025,9 +3025,8 @@ window._sf = 0; // scatter factor 0→1
   <img id="stone-img2" src="stone.png" alt="">
   <div id="stone-hot"></div>
 </div>
-<!-- Logo assembly pieces (contact section) -->
-<div id="logo-left-stone"><img src="logo-left.webp" alt=""></div>
-<div id="logo-base-stone"><img src="logo-base.webp" alt=""></div>
+<!-- Logo assembly unit (the two stones as one piece; asteroid completes it) -->
+<div id="logo-unit"><img src="logo-unit.webp" alt=""></div>
 <script>
 // ── Stone + rope scroll system ─────────────────────────────────────────────
 (function () {
@@ -3101,6 +3100,7 @@ window._sf = 0; // scatter factor 0→1
   var blurG = document.getElementById('stone-vblur-g');
   var lastSy = window.scrollY;
   var velSmooth = 0;
+  var logoActive = false;
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -3139,9 +3139,9 @@ window._sf = 0; // scatter factor 0→1
     // blurred copy: gradient mask (CSS) handles bottom fade; only clip for works reveal
     stoneW.style.clipPath = cut > 0 ? 'inset(' + cut + 'px -50% 0 -50%)' : 'none';
 
-    // Stone rotation driven by scroll
+    // Stone rotation driven by scroll (suspended while logo assembly is active)
     stoneRot = (sy - bTop) * 0.06;
-    if (inActive && !stoneI._clickScale) {
+    if (inActive && !stoneI._clickScale && !logoActive) {
       var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
       stoneI.style.transform = tf;
       stoneI2.style.transform = tf;
@@ -3213,70 +3213,61 @@ window._sf = 0; // scatter factor 0→1
     });
 
     // ── Contact: logo assembly animation ──────────────────────────────────────
+    // The two uploaded stones (logo-unit) are ONE piece; the centered asteroid
+    // falls/derotates into the upper-right gap to complete the logo. The whole
+    // 3-stone group then shrinks and slides to the exact viewport center.
     var cEl   = document.getElementById('contact');
-    var logoL = document.getElementById('logo-left-stone');
-    var logoB = document.getElementById('logo-base-stone');
-    if (cEl && logoL && logoB) {
+    var logoU = document.getElementById('logo-unit');
+    if (cEl && logoU) {
       var cTopAbs = absTop(cEl);
       var cHAbs   = cEl.offsetHeight || (vh * 3.8);
-      // Progress through contact: 0 when contact top hits 60% down viewport
+      // Progress through contact: starts when contact top is 40% down viewport
       var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs - vh * 0.4)) / (cHAbs - vh * 0.6)));
 
       function eO3(t) { return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }
 
-      // Phase 1: 0→0.45 — stones fly in, rotation eases to 0
-      var p1 = eO3(cProg / 0.45);
-      // Phase 3: 0.65→1.0 — group shrinks to center
-      var p3 = eO3((cProg - 0.65) / 0.35);
-      var scl = 1 - 0.65 * p3;  // scale: 1.0 → 0.35
+      var p1 = eO3(cProg / 0.45);              // 0→0.45  assembly (rise + derotate)
+      var p3 = eO3((cProg - 0.6) / 0.4);       // 0.6→1.0 shrink + center
+
+      // Assembled element-center offsets (px from viewport center), measured
+      // from the preview composite. Group center G ≈ logo center (logo dominates).
+      var P_ast  = [0, 0];        // asteroid sits at viewport center
+      var P_logo = [-46, 99];     // two-stone unit lower-left of asteroid
+      var G      = [-45.5, 98.5]; // bounding-box center of the assembled logo
+      var s = 1 - 0.6 * p3;       // group scale 1.0 → 0.4
+
+      // shrink-and-center transform applied to an assembled offset P
+      function curX(P) { return (P[0] - G[0]) * s + G[0] * (1 - p3); }
+      function curY(P) { return (P[1] - G[1]) * s + G[1] * (1 - p3); }
 
       if (cProg <= 0) {
-        logoL.style.opacity = 0;
-        logoB.style.opacity = 0;
+        logoU.style.opacity = 0;
         stoneW.classList.remove('logo-mode');
+        stoneW.style.transform = '';
+        stoneS.style.transform = '';
+        logoActive = false;
       } else {
+        logoActive = true;
         stoneW.classList.add('logo-mode');
-        blurG.setAttribute('stdDeviation', '0 0');  // no blur in logo mode
+        blurG.setAttribute('stdDeviation', '0 0');  // no motion blur in logo mode
 
-        // ── Stone (right piece of logo) ──
-        // Assembly: shifts right (+65px) and falls down (+40px), rotation → 0
-        // Phase 3: shifts further to center and scales down
-        var stRot   = stoneRot * (1 - p1);
-        var stAsmX  = 65;   var stAsmY  = 40;
-        var stCtrX  = 51;   var stCtrY  = 3.5;   // centered at scale 0.35
-        var stX = stAsmX + (stCtrX - stAsmX) * p3;
-        var stY = stAsmY * p1 + (stCtrY - stAsmY) * p1 * p3;
-
-        var stTf = 'translate(calc(-50% + ' + stX.toFixed(1) + 'px), calc(-50% + ' + stY.toFixed(1) + 'px)) rotate(' + stRot.toFixed(2) + 'deg) scale(' + scl.toFixed(3) + ')';
-        stoneW.style.transform = stTf;
-        stoneS.style.transform = stTf;
-        // rotation already in wrapper transform — clear sub-element transform
-        stoneI.style.transform  = '';
+        // ── Asteroid (right piece) — derotate, then shrink toward center ──
+        var aRot = stoneRot * (1 - p1);
+        var aX = curX(P_ast);
+        var aY = curY(P_ast);
+        var aTf = 'translate(calc(-50% + ' + aX.toFixed(1) + 'px), calc(-50% + ' + aY.toFixed(1) + 'px)) rotate(' + aRot.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
+        stoneW.style.transform = aTf;
+        stoneS.style.transform = aTf;
+        stoneI.style.transform  = '';   // rotation lives on the wrapper now
         stoneI2.style.transform = '';
 
-        // ── logo-left (tall narrow, top-left piece) ──
-        // Assembly: (-185, -110) from screen center
-        // Start: rises from below screen, tilted -22°
-        // Phase 3 centered: (-67, -43)
-        var lAsmX = -185; var lAsmY = -110;
-        var lCtrX = -67;  var lCtrY = -43;
-        var lX  = lAsmX + (lCtrX - lAsmX) * p3;
-        var lY  = lAsmY * p1 + (vh * 0.85) * (1 - p1) + (lCtrY - lAsmY) * p1 * p3;
-        var lRot = -22 * (1 - p1);
-        logoL.style.opacity   = p1.toFixed(3);
-        logoL.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + lRot.toFixed(1) + 'deg) scale(' + scl.toFixed(3) + ')';
-
-        // ── logo-base (L-shape, bottom piece) ──
-        // Assembly: (-120, 145) from screen center
-        // Start: rises from below screen, tilted +18°
-        // Phase 3 centered: (-15, 42)
-        var bAsmX = -120; var bAsmY = 145;
-        var bCtrX = -15;  var bCtrY = 42;
-        var bX  = bAsmX + (bCtrX - bAsmX) * p3;
-        var bY  = bAsmY * p1 + (vh * 0.9) * (1 - p1) + (bCtrY - bAsmY) * p1 * p3;
-        var bRot = 18 * (1 - p1);
-        logoB.style.opacity   = p1.toFixed(3);
-        logoB.style.transform = 'translate(calc(-50% + ' + bX.toFixed(1) + 'px), calc(-50% + ' + bY.toFixed(1) + 'px)) rotate(' + bRot.toFixed(1) + 'deg) scale(' + scl.toFixed(3) + ')';
+        // ── Two-stone unit — rises from below + derotates, then shrink/center ──
+        var entryDY  = (vh * 0.55) * (1 - p1);   // falls in from below
+        var entryRot = 14 * (1 - p1);            // settles to 0° tilt
+        var lX = curX(P_logo);
+        var lY = curY(P_logo) + entryDY;
+        logoU.style.opacity   = p1.toFixed(3);
+        logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
       }
     }
   }
