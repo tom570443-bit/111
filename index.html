@@ -1058,11 +1058,11 @@ main {
   text-align: center;
   opacity: 0; pointer-events: none;
   z-index: 55;
-  font-family: 'PingFang SC', 'PingFang TC', 'STHeiti', 'Microsoft YaHei', sans-serif;
-  font-weight: 200;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  line-height: 2;
+  font-family: 'PingFang SC', 'PingFang TC', 'Helvetica Neue', sans-serif;
+  font-weight: 100;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  line-height: 2.2;
   color: #000;
 }
 #logo-unit img { width: 150px; display: block; filter: grayscale(1); }
@@ -3298,8 +3298,8 @@ window._sf = 0; // scatter factor 0→1
         logoU.style.opacity   = p1.toFixed(3);
         logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
 
-        // ── Contact info Y: follows logo group center ──
-        var infoY = GC[1] + 120 * s;
+        // ── Contact info Y: below logo group, scales with group ──
+        var infoY = GC[1] + 200 * s;
         if (contactInfo) contactInfo.style.transform = 'translate(-50%, calc(-50% + ' + infoY.toFixed(1) + 'px))';
       }
     }
