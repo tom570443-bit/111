@@ -2154,6 +2154,9 @@ window._sf = 0; // scatter factor 0→1
       cv.style.pointerEvents = 'none';
     }
     slideActive = false;
+    // Re-cache stone positions now that works is back in document flow.
+    // cachePositions lives in the stone IIFE; it's exposed on window.
+    if (window._cacheStonePositions) requestAnimationFrame(window._cacheStonePositions);
   }
 
   function getHzEnd() {
@@ -2181,7 +2184,15 @@ window._sf = 0; // scatter factor 0→1
     lastSy = sy;
 
     // ── Skip hero transition logic when already past hero-zone ──
-    if (heroJumped) return;
+    if (heroJumped) {
+      // Bulletproof: once settled past the hero (and not mid-slide), make sure
+      // #works never keeps the slide's lowered z-index (20). If it does, the
+      // fixed stone (z-50) paints over the works grid on the cards page.
+      if (!slideActive && worksEl.style.zIndex && worksEl.style.zIndex !== '') {
+        worksEl.style.zIndex = '';
+      }
+      return;
+    }
 
     /* ── before title phase ── */
     if (sy <= TRANS_START) {
@@ -2798,6 +2809,7 @@ window._sf = 0; // scatter factor 0→1
   // ── Visibility gate: pause RAF loops when #works is off-screen ───────────────
   var worksVisible = true;
   var _wakeRegistry = [];
+  var _sleepRegistry = [];
 
   var worksSection = document.getElementById('works');
   if (worksSection && 'IntersectionObserver' in window) {
@@ -2807,6 +2819,10 @@ window._sf = 0; // scatter factor 0→1
         if (worksVisible) {
           // Resume any renderer that was hovered when section comes back
           _wakeRegistry.forEach(function (fn) { fn(); });
+        } else {
+          // Section left the viewport: clear all hover state so no stone
+          // spontaneously fades back in when the user scrolls past again.
+          _sleepRegistry.forEach(function (fn) { fn(); });
         }
       });
     }, { threshold: 0 });
@@ -2999,6 +3015,17 @@ window._sf = 0; // scatter factor 0→1
 
       // Register wake so IntersectionObserver can resume on re-entry
       _wakeRegistry.push(function () { if (hovered || progress > 0) wake(); });
+      // Register sleep so leaving the section fully resets the stone (no
+      // spontaneous re-appearance on scroll-back without a fresh hover).
+      _sleepRegistry.push(function () {
+        hovered = false;
+        progress = 0;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        wireMat.opacity = 0;
+        solidMat.opacity = 0;
+        cvs.style.opacity = '0';
+        if (grain) grain.style.opacity = '0';
+      });
 
       var hotspot = card;
       var trigger = hotspot || card;
@@ -3153,6 +3180,12 @@ window._sf = 0; // scatter factor 0→1
   function cachePositions() {
     // All layout reads batched here (called on scroll/resize, NOT every frame)
     // to avoid layout thrashing in the rAF loop.
+    // While #works is pulled out of flow during the hero slide (position:fixed),
+    // every later section's absTop() is short by one works-height (100vh), which
+    // makes bTop/wBottom too small and reveals the stone over the works grid.
+    // Skip the entire update in that state — values are refreshed once works
+    // returns to normal flow (resetSlide schedules a recompute).
+    if (works && works.style.position === 'fixed') return;
     bTop    = absTop(belief);
     bH      = belief.offsetHeight;
     sTop    = absTop(system);
@@ -3160,11 +3193,13 @@ window._sf = 0; // scatter factor 0→1
     cTop    = contactEl0 ? absTop(contactEl0) : (sTop + sH);
     cH      = contactEl0 ? (contactEl0.offsetHeight || (window.innerHeight * 3.8)) : 0;
     stoneFixedH = stoneW.offsetHeight || 300;
-    // Reveal boundary = bottom of the marquee strip between works and belief
     var mq = document.querySelector('.marquee-strip-2');
     var edgeEl = mq || works;
     wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
   }
+  // Exposed so the hero-transition IIFE (resetSlide) can trigger a recompute
+  // once #works returns to normal flow after the slide.
+  window._cacheStonePositions = cachePositions;
 
   function resize() {
     cvs.width  = window.innerWidth;
@@ -3203,6 +3238,21 @@ window._sf = 0; // scatter factor 0→1
     velSmooth += (rawVel - velSmooth) * 0.18;
     var speed = Math.abs(velSmooth);
 
+    // ── Force-hide during the hero slide ─────────────────────────────────────
+    // While #works is pulled out of flow (position:fixed during the slide),
+    // cached positions (bTop/wBottom) are stale/unreliable, so the reveal math
+    // can wrongly show the stone over the pinned works grid. Hide it outright
+    // until works returns to normal document flow. Cheap inline-style read.
+    if (works && works.style.position === 'fixed') {
+      if (!_hiddenAbove) {
+        ctx.clearRect(0, 0, vw, vh);
+        stoneW.style.opacity = 0;
+        stoneS.style.opacity = 0;
+        _hiddenAbove = true;
+      }
+      return;
+    }
+
     // ── Cheap early-out ──────────────────────────────────────────────────────
     // Nothing this system draws (stone, belief/system bg, contact logo) is near
     // the viewport while still up in works/hero. Skip all work to avoid jank.
@@ -3221,10 +3271,12 @@ window._sf = 0; // scatter factor 0→1
     var contactStart = cTop + vh * 0.3;   // where logo assembly begins
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
-    var stoneAlpha = (wEdge < vh) ? 1 : 0;
+    // Fade in: 0 while marquee bottom is above viewport bottom (wEdge >= vh),
+    // rises to 1 once marquee bottom scrolls to viewport top (wEdge <= 0).
+    var stoneAlpha = Math.max(0, Math.min(1, 1 - wEdge / vh));
     var inActive = stoneAlpha > 0;
-    stoneW.style.opacity = stoneAlpha;
-    stoneS.style.opacity = stoneAlpha;
+    stoneW.style.opacity = stoneAlpha.toFixed(3);
+    stoneS.style.opacity = stoneAlpha.toFixed(3);
     stoneS.style.pointerEvents = 'none';
     hot.style.pointerEvents = 'none';
 
