@@ -3101,6 +3101,8 @@ window._sf = 0; // scatter factor 0→1
   var lastSy = window.scrollY;
   var velSmooth = 0;
   var logoActive = false;
+  var stoneFrozen = false;
+  var frozenRot = 0;
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -3151,6 +3153,13 @@ window._sf = 0; // scatter factor 0→1
     var rp = Math.max(0, Math.min(1, (sy - bTop) / rotSpan));
     var rotEase = 1 - Math.pow(1 - rp, 2);    // ease-out → speed reaches 0 at the end
     stoneRot = rotTurns * 360 * rotEase;
+    // Once the stone reaches within 5° of upright, lock it there permanently
+    var targetRot = rotTurns * 360;
+    if (!stoneFrozen && Math.abs(stoneRot - targetRot) < 5) {
+      stoneFrozen = true;
+      frozenRot = targetRot;
+    }
+    if (stoneFrozen) stoneRot = frozenRot;
     if (inActive && !stoneI._clickScale && !logoActive) {
       var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
       stoneI.style.transform = tf;
