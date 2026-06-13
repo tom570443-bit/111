@@ -3125,7 +3125,7 @@ window._sf = 0; // scatter factor 0→1
     sTop = absTop(system);
     // Where the logo assembly begins (matches cProg=0 in the contact block)
     var contactEl0  = document.getElementById('contact');
-    var contactStart = contactEl0 ? (absTop(contactEl0) - vh * 0.6) : (sTop + sH);
+    var contactStart = contactEl0 ? (absTop(contactEl0) + vh * 0.3) : (sTop + sH);
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
     var stoneAlpha = (wEdge < vh) ? 1 : 0;
@@ -3240,7 +3240,7 @@ window._sf = 0; // scatter factor 0→1
       var cTopAbs = absTop(cEl);
       var cHAbs   = cEl.offsetHeight || (vh * 3.8);
       // Progress through contact: starts when contact top is 40% down viewport
-      var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs - vh * 0.6)) / (cHAbs - vh * 0.6)));
+      var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs + vh * 0.3)) / (cHAbs - vh * 0.6)));
 
       function eO3(t) { return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }
 
@@ -3250,7 +3250,7 @@ window._sf = 0; // scatter factor 0→1
       // Assembled positions relative to viewport center (px)
       var P_stone = [0, 0];         // stone assembled position (center)
       var P_logo  = [-42, -14];     // logo-unit assembled position
-      var GC      = [12, 0];        // shrink converges slightly right of center
+      var GC      = [28, 0];        // shrink converges right of center
       var s = 1 - 0.35 * p3;      // group scale 1→0.65 (less aggressive)
 
       // p3 sub-progress for fade effects (starts a bit after p3)
@@ -3299,7 +3299,7 @@ window._sf = 0; // scatter factor 0→1
         logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
 
         // ── Contact info Y: below logo group, scales with group ──
-        var infoY = GC[1] + 200 * s;
+        var infoY = GC[1] + 260 * s;
         if (contactInfo) contactInfo.style.transform = 'translate(-50%, calc(-50% + ' + infoY.toFixed(1) + 'px))';
       }
     }
