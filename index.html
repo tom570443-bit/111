@@ -3185,7 +3185,7 @@ window._sf = 0; // scatter factor 0→1
     // makes bTop/wBottom too small and reveals the stone over the works grid.
     // Skip the entire update in that state — values are refreshed once works
     // returns to normal flow (resetSlide schedules a recompute).
-    if (works && getComputedStyle(works).position === 'fixed') return;
+    if (works && works.style.position === 'fixed') return;
     bTop    = absTop(belief);
     bH      = belief.offsetHeight;
     sTop    = absTop(system);
@@ -3237,6 +3237,21 @@ window._sf = 0; // scatter factor 0→1
     var rawVel = sy - lastSy; lastSy = sy;
     velSmooth += (rawVel - velSmooth) * 0.18;
     var speed = Math.abs(velSmooth);
+
+    // ── Force-hide during the hero slide ─────────────────────────────────────
+    // While #works is pulled out of flow (position:fixed during the slide),
+    // cached positions (bTop/wBottom) are stale/unreliable, so the reveal math
+    // can wrongly show the stone over the pinned works grid. Hide it outright
+    // until works returns to normal document flow. Cheap inline-style read.
+    if (works && works.style.position === 'fixed') {
+      if (!_hiddenAbove) {
+        ctx.clearRect(0, 0, vw, vh);
+        stoneW.style.opacity = 0;
+        stoneS.style.opacity = 0;
+        _hiddenAbove = true;
+      }
+      return;
+    }
 
     // ── Cheap early-out ──────────────────────────────────────────────────────
     // Nothing this system draws (stone, belief/system bg, contact logo) is near
