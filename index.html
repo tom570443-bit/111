@@ -2305,16 +2305,23 @@ window._sf = 0; // scatter factor 0→1
       setTimeout(finish, 900);
     }
   }
+  function clearScatter() {
+    // Un-scatter the torus/strip: _sf drives them via rAF, but the strip's
+    // visible class is toggled by a scroll listener that won't fire at rest.
+    window._sf = 0;
+    var strip = document.getElementById('scatter-strip');
+    if (strip) strip.classList.remove('visible');
+  }
   function navHome() {
     // Settle hero/works to normal flow first so the slide-up reveals the hero.
     heroJumped = true; window._heroJumped = true;   // keep hijack off during travel
-    resetSlide(); resetTitle();
+    resetSlide(); resetTitle(); clearScatter();
     if (window._worksShowInstant) window._worksShowInstant();
     smoothTo(0, function () {
       heroJumped = false; window._heroJumped = false;
       window._cardsTriggered = false;
       if (window._worksResetCards) window._worksResetCards();
-      resetSlide(); resetTitle();
+      resetSlide(); resetTitle(); clearScatter();
     });
   }
   function enterPastHero() {
