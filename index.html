@@ -3101,7 +3101,6 @@ window._sf = 0; // scatter factor 0→1
   var lastSy = window.scrollY;
   var velSmooth = 0;
   var logoActive = false;
-  var stoneEntryRot = 0, stoneTargetRot = 0;
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -3116,6 +3115,9 @@ window._sf = 0; // scatter factor 0→1
 
     // Re-read sTop each frame so cached value can't drift after hero slide
     sTop = absTop(system);
+    // Where the logo assembly begins (matches cProg=0 in the contact block)
+    var contactEl0  = document.getElementById('contact');
+    var contactStart = contactEl0 ? (absTop(contactEl0) - vh * 0.4) : (sTop + sH);
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
     var stoneAlpha = (wEdge < vh) ? 1 : 0;
@@ -3140,8 +3142,15 @@ window._sf = 0; // scatter factor 0→1
     // blurred copy: gradient mask (CSS) handles bottom fade; only clip for works reveal
     stoneW.style.clipPath = cut > 0 ? 'inset(' + cut + 'px -50% 0 -50%)' : 'none';
 
-    // Stone rotation driven by scroll (suspended while logo assembly is active)
-    stoneRot = (sy - bTop) * 0.06;
+    // Stone rotation: spins with scroll, but eased so it DECELERATES to a stop
+    // landing exactly upright (a whole number of turns) right as the logo forms.
+    // Turn count derives from the scroll length, so it stays upright and smooth
+    // no matter how long the works page grows — and there's no sudden settle.
+    var rotSpan  = Math.max(1, contactStart - bTop);
+    var rotTurns = Math.max(1, Math.round(rotSpan * 0.06 / 360));
+    var rp = Math.max(0, Math.min(1, (sy - bTop) / rotSpan));
+    var rotEase = 1 - Math.pow(1 - rp, 2);    // ease-out → speed reaches 0 at the end
+    stoneRot = rotTurns * 360 * rotEase;
     if (inActive && !stoneI._clickScale && !logoActive) {
       var tf = 'rotate(' + stoneRot.toFixed(2) + 'deg)' + (hovered ? ' scale(1.08)' : '');
       stoneI.style.transform = tf;
@@ -3233,8 +3242,8 @@ window._sf = 0; // scatter factor 0→1
       // Assembled CONTENT-center offsets (px from viewport center), tuned from
       // a preview composite. Group center G ≈ logo center (logo dominates bbox).
       var P_ast  = [4, -6];       // asteroid (right piece) content center
-      var P_logo = [-20, 30];     // two-stone unit content center
-      var G      = [-20, 30];     // bounding-box center of the assembled logo
+      var P_logo = [-36, 12];     // two-stone unit content center
+      var G      = [-31, 12];     // bounding-box center of the assembled logo
       // Asteroid content is offset from its element center (stone.png isn't
       // centered in its frame); correct for it so alignment is exact.
       var AOX = -4.46, AOY = -7.09;
@@ -3251,21 +3260,12 @@ window._sf = 0; // scatter factor 0→1
         stoneS.style.transform = '';
         logoActive = false;
       } else {
-        // Capture the spin angle once on entry, then continue spinning FORWARD
-        // (same direction as the scroll spin) to the next upright. Travel is
-        // always within one turn, so it never snaps backwards and is identical
-        // no matter how long the works page grows.
-        if (!logoActive) {
-          stoneEntryRot  = stoneRot;
-          stoneTargetRot = Math.ceil(stoneRot / 360) * 360;  // next upright forward
-          if (stoneTargetRot - stoneEntryRot < 1) stoneTargetRot += 360; // ensure a settle
-        }
         logoActive = true;
         stoneW.classList.add('logo-mode');
         blurG.setAttribute('stdDeviation', '0 0');  // no motion blur in logo mode
 
-        // ── Asteroid (right piece) — settle to upright, then shrink to center ──
-        var aRot = stoneEntryRot + (stoneTargetRot - stoneEntryRot) * p1;
+        // ── Asteroid (right piece) — already upright on arrival; no settle spin ──
+        var aRot = 0;
         var aX = curX(P_ast) - AOX * s;   // element offset = content - contentOffset*scale
         var aY = curY(P_ast) - AOY * s;
         var aTf = 'translate(calc(-50% + ' + aX.toFixed(1) + 'px), calc(-50% + ' + aY.toFixed(1) + 'px)) rotate(' + aRot.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
