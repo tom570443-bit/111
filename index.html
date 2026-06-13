@@ -2154,8 +2154,9 @@ window._sf = 0; // scatter factor 0→1
       cv.style.pointerEvents = 'none';
     }
     slideActive = false;
-    // Re-cache wBottom now that works is back in document flow
-    requestAnimationFrame(cachePositions);
+    // Re-cache stone positions now that works is back in document flow.
+    // cachePositions lives in the stone IIFE; it's exposed on window.
+    if (window._cacheStonePositions) requestAnimationFrame(window._cacheStonePositions);
   }
 
   function getHzEnd() {
@@ -3179,6 +3180,12 @@ window._sf = 0; // scatter factor 0→1
   function cachePositions() {
     // All layout reads batched here (called on scroll/resize, NOT every frame)
     // to avoid layout thrashing in the rAF loop.
+    // While #works is pulled out of flow during the hero slide (position:fixed),
+    // every later section's absTop() is short by one works-height (100vh), which
+    // makes bTop/wBottom too small and reveals the stone over the works grid.
+    // Skip the entire update in that state — values are refreshed once works
+    // returns to normal flow (resetSlide schedules a recompute).
+    if (works && getComputedStyle(works).position === 'fixed') return;
     bTop    = absTop(belief);
     bH      = belief.offsetHeight;
     sTop    = absTop(system);
@@ -3186,13 +3193,13 @@ window._sf = 0; // scatter factor 0→1
     cTop    = contactEl0 ? absTop(contactEl0) : (sTop + sH);
     cH      = contactEl0 ? (contactEl0.offsetHeight || (window.innerHeight * 3.8)) : 0;
     stoneFixedH = stoneW.offsetHeight || 300;
-    // Skip wBottom update while works is position:fixed (hero slide) — absTop() would return wrong value
-    if (!slideActive) {
-      var mq = document.querySelector('.marquee-strip-2');
-      var edgeEl = mq || works;
-      wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
-    }
+    var mq = document.querySelector('.marquee-strip-2');
+    var edgeEl = mq || works;
+    wBottom = absTop(edgeEl) + edgeEl.offsetHeight;
   }
+  // Exposed so the hero-transition IIFE (resetSlide) can trigger a recompute
+  // once #works returns to normal flow after the slide.
+  window._cacheStonePositions = cachePositions;
 
   function resize() {
     cvs.width  = window.innerWidth;
