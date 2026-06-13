@@ -3242,8 +3242,9 @@ window._sf = 0; // scatter factor 0→1
       var p3 = eO3((cProg - 0.6) / 0.4);       // shrink + center both pieces
 
       // Assembled positions relative to viewport center (px)
-      var P_stone = [0, 0];         // stone stays at center
-      var P_logo  = [-36, -5];      // logo-unit rests here when assembled
+      var P_stone = [0, 0];         // stone assembled position
+      var P_logo  = [-42, -14];     // logo-unit assembled position (left + up a bit)
+      var GC      = [-22, -8];      // group center — both pieces converge here during p3
       var s = 1 - 0.6 * p3;        // group scale 1→0.4
 
       if (cProg <= 0) {
@@ -3257,9 +3258,9 @@ window._sf = 0; // scatter factor 0→1
         stoneW.classList.add('logo-mode');
         blurG.setAttribute('stdDeviation', '0 0');
 
-        // ── Stone — locked upright at center, shrinks during p3 ──
-        var sX = P_stone[0] * p3;   // pulls toward center (already 0, stays 0)
-        var sY = P_stone[1] * p3;
+        // ── Stone — moves from P_stone toward GC, shrinks ──
+        var sX = GC[0] + (P_stone[0] - GC[0]) * s;
+        var sY = GC[1] + (P_stone[1] - GC[1]) * s;
         var aTf = 'translate(calc(-50% + ' + sX.toFixed(1) + 'px), calc(-50% + ' + sY.toFixed(1) + 'px)) rotate(0deg) scale(' + s.toFixed(3) + ')';
         stoneW.style.transform = aTf;
         stoneS.style.transform = aTf;
@@ -3268,11 +3269,11 @@ window._sf = 0; // scatter factor 0→1
         stoneI.style.transform  = '';
         stoneI2.style.transform = '';
 
-        // ── Logo-unit — rises from below, then shrinks toward center ──
+        // ── Logo-unit — rises from below, then moves from P_logo toward GC ──
         var entryDY  = (vh * 0.55) * (1 - p1);
         var entryRot = 14 * (1 - p1);
-        var lX = P_logo[0] * (1 - p3);   // slides toward center during p3
-        var lY = P_logo[1] * (1 - p3) + entryDY;
+        var lX = GC[0] + (P_logo[0] - GC[0]) * s;
+        var lY = GC[1] + (P_logo[1] - GC[1]) * s + entryDY;
         logoU.style.opacity   = p1.toFixed(3);
         logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
       }
