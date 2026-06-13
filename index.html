@@ -3140,7 +3140,8 @@ window._sf = 0; // scatter factor 0→1
   var works  = document.getElementById('works');
   var contactOvl  = document.getElementById('contact-overlay');
   var contactInfo = document.getElementById('contact-info');
-  var bTop = 0, bH = 0, sTop = 0, sH = 0, wBottom = 0;
+  var contactEl0  = document.getElementById('contact');
+  var bTop = 0, bH = 0, sTop = 0, sH = 0, wBottom = 0, cTop = 0, cH = 0, stoneFixedH = 0;
 
   // Walk offsetParent chain for true absolute Y (immune to transforms on ancestors)
   function absTop(el) {
@@ -3150,10 +3151,15 @@ window._sf = 0; // scatter factor 0→1
   }
 
   function cachePositions() {
+    // All layout reads batched here (called on scroll/resize, NOT every frame)
+    // to avoid layout thrashing in the rAF loop.
     bTop    = absTop(belief);
     bH      = belief.offsetHeight;
     sTop    = absTop(system);
     sH      = system.offsetHeight;
+    cTop    = contactEl0 ? absTop(contactEl0) : (sTop + sH);
+    cH      = contactEl0 ? (contactEl0.offsetHeight || (window.innerHeight * 3.8)) : 0;
+    stoneFixedH = stoneW.offsetHeight || 300;
     // Reveal boundary = bottom of the marquee strip between works and belief
     var mq = document.querySelector('.marquee-strip-2');
     var edgeEl = mq || works;
@@ -3166,6 +3172,13 @@ window._sf = 0; // scatter factor 0→1
     cachePositions();
   }
   window.addEventListener('load', function() { resize(); });
+  // Refresh cached positions on scroll (throttled to one read per frame via flag)
+  var _posDirty = false;
+  window.addEventListener('scroll', function () {
+    if (_posDirty) return;
+    _posDirty = true;
+    requestAnimationFrame(function () { cachePositions(); _posDirty = false; });
+  }, { passive: true });
   resize();
   window.addEventListener('resize', resize);
 
@@ -3178,6 +3191,7 @@ window._sf = 0; // scatter factor 0→1
   var velSmooth = 0;
   var logoActive = false;
 
+  var _hiddenAbove = false;
   function frame(now) {
     requestAnimationFrame(frame);
     var sy = window.scrollY;
@@ -3189,11 +3203,22 @@ window._sf = 0; // scatter factor 0→1
     velSmooth += (rawVel - velSmooth) * 0.18;
     var speed = Math.abs(velSmooth);
 
-    // Re-read sTop each frame so cached value can't drift after hero slide
-    sTop = absTop(system);
-    // Where the logo assembly begins (matches cProg=0 in the contact block)
-    var contactEl0  = document.getElementById('contact');
-    var contactStart = contactEl0 ? (absTop(contactEl0) + vh * 0.3) : (sTop + sH);
+    // ── Cheap early-out ──────────────────────────────────────────────────────
+    // Nothing this system draws (stone, belief/system bg, contact logo) is near
+    // the viewport while still up in works/hero. Skip all work to avoid jank.
+    if (sy < bTop - vh) {
+      if (!_hiddenAbove) {
+        ctx.clearRect(0, 0, vw, vh);
+        stoneW.style.opacity = 0;
+        stoneS.style.opacity = 0;
+        _hiddenAbove = true;
+      }
+      return;
+    }
+    _hiddenAbove = false;
+
+    // Use cached positions (refreshed on scroll/resize) — no layout reads here.
+    var contactStart = cTop + vh * 0.3;   // where logo assembly begins
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
     var stoneAlpha = (wEdge < vh) ? 1 : 0;
@@ -3206,7 +3231,7 @@ window._sf = 0; // scatter factor 0→1
     // Clip both copies above the works bottom edge (reveal effect);
     // blurred copy is also clipped below its middle so the smear only
     // shows ABOVE the stone — like speed lines.
-    var stoneH = stoneW.offsetHeight || 300;
+    var stoneH = stoneFixedH;
     var cut = 0;
     if (inActive && wEdge > 0) {
       var stoneTop = cy - stoneH / 2;
@@ -3302,11 +3327,10 @@ window._sf = 0; // scatter factor 0→1
     // The two uploaded stones (logo-unit) are ONE piece; the centered asteroid
     // falls/derotates into the upper-right gap to complete the logo. The whole
     // 3-stone group then shrinks and slides to the exact viewport center.
-    var cEl   = document.getElementById('contact');
     var logoU = document.getElementById('logo-unit');
-    if (cEl && logoU) {
-      var cTopAbs = absTop(cEl);
-      var cHAbs   = cEl.offsetHeight || (vh * 3.8);
+    if (contactEl0 && logoU) {
+      var cTopAbs = cTop;
+      var cHAbs   = cH || (vh * 3.8);
       // Progress through contact: starts when contact top is 40% down viewport
       var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs + vh * 0.3)) / (cHAbs - vh * 1.3)));
 
