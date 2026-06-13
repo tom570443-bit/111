@@ -3148,13 +3148,13 @@ window._sf = 0; // scatter factor 0→1
     // blurred copy: gradient mask (CSS) handles bottom fade; only clip for works reveal
     stoneW.style.clipPath = cut > 0 ? 'inset(' + cut + 'px -50% 0 -50%)' : 'none';
 
-    // Stone rotation: spins with scroll, but eased so it DECELERATES to a stop
-    // landing exactly upright (a whole number of turns) right as the logo forms.
-    // Turn count derives from the scroll length, so it stays upright and smooth
-    // no matter how long the works page grows — and there's no sudden settle.
-    var rotSpan  = Math.max(1, contactStart - bTop);
-    var rotTurns = Math.max(1, Math.round(rotSpan * 0.06 / 360));
-    var rp = Math.max(0, Math.min(1, (sy - bTop) / rotSpan));
+    // Stone rotation: starts when stone enters viewport, ends at contactStart.
+    // Using wBottom-vh as rotStart means rp=0 when stone first appears,
+    // so the spin is always visible from the moment the stone shows up.
+    var rotStart = wBottom - vh;
+    var rotSpan  = Math.max(1, contactStart - rotStart);
+    var rotTurns = Math.max(2, Math.round(rotSpan * 0.4 / 360));
+    var rp = Math.max(0, Math.min(1, (sy - rotStart) / rotSpan));
     var rotEase = 1 - Math.pow(1 - rp, 2);    // ease-out → speed reaches 0 at the end
     stoneRot = rotTurns * 360 * rotEase;
     // Hard-clamp to 0° once rp hits 1 (no flag needed — self-corrects on scroll-back)
