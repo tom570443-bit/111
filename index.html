@@ -1045,6 +1045,26 @@ main {
   z-index: 52;
   will-change: transform, opacity;
 }
+#contact-overlay {
+  position: fixed; inset: 0;
+  background: #fff;
+  opacity: 0; pointer-events: none;
+  z-index: 48;
+}
+#contact-info {
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, calc(-50% + 120px));
+  text-align: center;
+  opacity: 0; pointer-events: none;
+  z-index: 55;
+  font-family: 'PingFang SC', 'PingFang TC', 'STHeiti', 'Microsoft YaHei', sans-serif;
+  font-weight: 200;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  line-height: 2;
+  color: #000;
+}
 #logo-unit img { width: 150px; display: block; filter: grayscale(1); }
 #stone-fixed.logo-mode {
   -webkit-mask-image: none !important;
@@ -3027,6 +3047,13 @@ window._sf = 0; // scatter factor 0→1
 </div>
 <!-- Logo assembly unit (the two stones as one piece; asteroid completes it) -->
 <div id="logo-unit"><img src="logo-unit.webp" alt=""></div>
+<!-- Contact overlay: fades in during p3 -->
+<div id="contact-overlay"></div>
+<div id="contact-info">
+  <p>联系我</p>
+  <p>tom570443@gmail.com</p>
+  <p>18663281616</p>
+</div>
 <script>
 // ── Stone + rope scroll system ─────────────────────────────────────────────
 (function () {
@@ -3043,6 +3070,8 @@ window._sf = 0; // scatter factor 0→1
   var ripples = [];
   var stoneRot = 0;
   var works  = document.getElementById('works');
+  var contactOvl  = document.getElementById('contact-overlay');
+  var contactInfo = document.getElementById('contact-info');
   var bTop = 0, bH = 0, sTop = 0, sH = 0, wBottom = 0;
 
   // Walk offsetParent chain for true absolute Y (immune to transforms on ancestors)
@@ -3224,16 +3253,31 @@ window._sf = 0; // scatter factor 0→1
       var GC      = [12, 0];        // shrink converges slightly right of center
       var s = 1 - 0.35 * p3;      // group scale 1→0.65 (less aggressive)
 
+      // p3 sub-progress for fade effects (starts a bit after p3)
+      var p3fade = eO3((cProg - 0.65) / 0.35);
+
       if (cProg <= 0) {
         logoU.style.opacity = 0;
         stoneW.classList.remove('logo-mode');
         stoneW.style.transform = '';
         stoneS.style.transform = '';
         logoActive = false;
+        if (contactOvl)  contactOvl.style.opacity  = 0;
+        if (contactInfo) contactInfo.style.opacity = 0;
       } else {
         logoActive = true;
         stoneW.classList.add('logo-mode');
         blurG.setAttribute('stdDeviation', '0 0');
+
+        // ── White overlay + black silhouette during p3 ──
+        if (contactOvl)  contactOvl.style.opacity  = p3fade.toFixed(3);
+        if (contactInfo) contactInfo.style.opacity = p3fade.toFixed(3);
+        // Stone turns black as overlay brightens
+        var sil = 'grayscale(1) brightness(' + (1 - p3fade).toFixed(3) + ')';
+        stoneI.style.filter  = sil;
+        stoneI2.style.filter = sil;
+        var luImg = logoU.querySelector('img');
+        if (luImg) luImg.style.filter = 'grayscale(1) brightness(' + (1 - p3fade).toFixed(3) + ')';
 
         // ── Stone — moves from P_stone toward GC, shrinks ──
         var sX = GC[0] + (P_stone[0] - GC[0]) * s;
@@ -3253,6 +3297,10 @@ window._sf = 0; // scatter factor 0→1
         var lY = GC[1] + (P_logo[1] - GC[1]) * s + entryDY;
         logoU.style.opacity   = p1.toFixed(3);
         logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
+
+        // ── Contact info Y: follows logo group center ──
+        var infoY = GC[1] + 120 * s;
+        if (contactInfo) contactInfo.style.transform = 'translate(-50%, calc(-50% + ' + infoY.toFixed(1) + 'px))';
       }
     }
   }
