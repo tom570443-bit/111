@@ -3117,7 +3117,7 @@ window._sf = 0; // scatter factor 0→1
     sTop = absTop(system);
     // Where the logo assembly begins (matches cProg=0 in the contact block)
     var contactEl0  = document.getElementById('contact');
-    var contactStart = contactEl0 ? (absTop(contactEl0) - vh * 0.4) : (sTop + sH);
+    var contactStart = contactEl0 ? (absTop(contactEl0) - vh * 0.6) : (sTop + sH);
     // Works section bottom edge in viewport coordinates
     var wEdge = wBottom - sy;
     var stoneAlpha = (wEdge < vh) ? 1 : 0;
@@ -3232,14 +3232,17 @@ window._sf = 0; // scatter factor 0→1
       var cTopAbs = absTop(cEl);
       var cHAbs   = cEl.offsetHeight || (vh * 3.8);
       // Progress through contact: starts when contact top is 40% down viewport
-      var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs - vh * 0.4)) / (cHAbs - vh * 0.6)));
+      var cProg = Math.max(0, Math.min(1, (sy - (cTopAbs - vh * 0.6)) / (cHAbs - vh * 0.6)));
 
       function eO3(t) { return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }
 
-      var p1 = eO3(cProg / 0.45);
+      var p1 = eO3(cProg / 0.45);              // assembly: logo-unit flies in
+      var p3 = eO3((cProg - 0.6) / 0.4);       // shrink + center both pieces
 
-      // Logo-unit resting position relative to viewport center (px)
-      var P_logo = [-36, -5];
+      // Assembled positions relative to viewport center (px)
+      var P_stone = [0, 0];         // stone stays at center
+      var P_logo  = [-36, -5];      // logo-unit rests here when assembled
+      var s = 1 - 0.6 * p3;        // group scale 1→0.4
 
       if (cProg <= 0) {
         logoU.style.opacity = 0;
@@ -3250,22 +3253,24 @@ window._sf = 0; // scatter factor 0→1
       } else {
         logoActive = true;
         stoneW.classList.add('logo-mode');
-        blurG.setAttribute('stdDeviation', '0 0');  // no motion blur in logo mode
+        blurG.setAttribute('stdDeviation', '0 0');
 
-        // ── Asteroid — locked at center, upright, no movement ──
-        var aTf = 'translate(-50%, -50%) rotate(0deg) scale(1)';
+        // ── Stone — locked upright at center, shrinks during p3 ──
+        var sX = P_stone[0] * p3;   // pulls toward center (already 0, stays 0)
+        var sY = P_stone[1] * p3;
+        var aTf = 'translate(calc(-50% + ' + sX.toFixed(1) + 'px), calc(-50% + ' + sY.toFixed(1) + 'px)) rotate(0deg) scale(' + s.toFixed(3) + ')';
         stoneW.style.transform = aTf;
         stoneS.style.transform = aTf;
         stoneI.style.transform  = '';
         stoneI2.style.transform = '';
 
-        // ── Two-stone unit — rises from below + derotates, then holds position ──
+        // ── Logo-unit — rises from below, then shrinks toward center ──
         var entryDY  = (vh * 0.55) * (1 - p1);
         var entryRot = 14 * (1 - p1);
-        var lX = P_logo[0];
-        var lY = P_logo[1] + entryDY;
+        var lX = P_logo[0] * (1 - p3);   // slides toward center during p3
+        var lY = P_logo[1] * (1 - p3) + entryDY;
         logoU.style.opacity   = p1.toFixed(3);
-        logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg)';
+        logoU.style.transform = 'translate(calc(-50% + ' + lX.toFixed(1) + 'px), calc(-50% + ' + lY.toFixed(1) + 'px)) rotate(' + entryRot.toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
       }
     }
   }
