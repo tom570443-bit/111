@@ -122,10 +122,10 @@ nav.nav-visible {
 }
 
 .nav-logo img {
-  height: 22px;
+  height: 38px;
   width: auto;
   display: block;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .nav-links {
@@ -1600,9 +1600,9 @@ footer { border-top-color: #e0e0e0; }
     <img src="白色个人logo-03.png" alt="logo">
   </div>
   <ul class="nav-links">
-    <li><a href="#hero">首页</a></li>
-    <li><a href="#system">介绍</a></li>
-    <li><a href="#works">作品</a></li>
+    <li><a href="#hero" data-nav="home">首页</a></li>
+    <li><a href="#works" data-nav="intro">介绍</a></li>
+    <li><a href="#system" data-nav="work">作品</a></li>
   </ul>
 </nav>
 
@@ -2278,6 +2278,52 @@ window._sf = 0; // scatter factor 0→1
       }
     }
   }, { passive: true });
+
+  // ── Nav click navigation ─────────────────────────────────────────────────
+  // Anchor links can't drive the scroll-hijacked hero transition, so we jump
+  // directly and set the transition state to the correct settled values.
+  function absTopOf(el) {
+    var y = 0;
+    while (el) { y += el.offsetTop; el = el.offsetParent; }
+    return y;
+  }
+  function jumpTo(y) {
+    lastSy = y;
+    if (window._lenis) window._lenis.scrollTo(y, { immediate: true });
+    else window.scrollTo({ top: y });
+  }
+  function navHome() {
+    heroJumped = false; window._heroJumped = false;
+    window._cardsTriggered = false;
+    if (window._worksResetCards) window._worksResetCards();
+    resetSlide(); resetTitle();
+    jumpTo(0);
+  }
+  function enterPastHero() {
+    heroJumped = true; window._heroJumped = true;
+    resetSlide(); resetTitle();
+    window._cardsTriggered = true;
+    if (window._worksShowInstant) window._worksShowInstant();
+  }
+  function navIntro() {           // works grid (个人简介 / 设计理念 / 设计工具)
+    enterPastHero();
+    jumpTo(getHzEnd() + 4);
+  }
+  function navWork() {            // first work photo (传统纹样的当代转译) in #system
+    enterPastHero();
+    var sysEl = document.getElementById('system');
+    if (!sysEl) return;
+    var vhh = window.innerHeight;
+    jumpTo(absTopOf(sysEl) + vhh * 1.5 - vhh * 0.42);
+  }
+  var navMap = { home: navHome, intro: navIntro, work: navWork };
+  document.querySelectorAll('.nav-links a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var fn = navMap[a.getAttribute('data-nav')];
+      if (fn) fn();
+    });
+  });
 })();
 
 // ── Three.js OBJ Stone ───────────────────────────────────────────────────────
@@ -2645,6 +2691,14 @@ window._sf = 0; // scatter factor 0→1
   window._worksSlideIn    = slideIn;
   window._worksSlideOut   = slideOut;
   window._worksResetCards = resetCards;
+  // Show all cards immediately (used by nav jumps that skip the slide animation)
+  window._worksShowInstant = function () {
+    cards.forEach(function (card) {
+      card.style.transition = 'none';
+      card.style.transform  = 'translateY(0)';
+      card.style.opacity    = '1';
+    });
+  };
 
   // If page is loaded while already scrolled past the hero zone, show cards immediately
   (function checkInitialScroll() {
