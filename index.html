@@ -3339,6 +3339,10 @@ window._sf = 0; // scatter factor 0→1
   var _hiddenAbove = false;
   function frame(now) {
     requestAnimationFrame(frame);
+    // Pause all painting while a work-detail overlay is open — it fully covers
+    // the page, and this full-screen canvas loop otherwise competes with video
+    // decode/compositing and causes playback stutter.
+    if (window._detailOpen) return;
     var sy = window.scrollY;
     var vw = cvs.width, vh = cvs.height;
     var cx = vw / 2, cy = vh / 2;
@@ -3621,6 +3625,13 @@ var WORKS=[
   var lenis  = window._lenis;
   var slides = [], curIdx = 0;
 
+  function loadSlide(i) {
+    // assign deferred src for image/video at index i (and free others handled elsewhere)
+    if (i < 0 || i >= slides.length) return;
+    var media = slides[i].querySelector('img,video');
+    if (media && media.dataset.src && !media.src) media.src = media.dataset.src;
+  }
+
   function showSlide(n) {
     if (!slides.length) return;
     curIdx = (n + slides.length) % slides.length;
@@ -3629,6 +3640,9 @@ var WORKS=[
       s.classList.toggle('active', on);
       if (!on) { var v = s.querySelector('video'); if (v) v.pause(); }
     });
+    // load current + next (preload) only — keeps first paint fast
+    loadSlide(curIdx);
+    loadSlide(curIdx + 1);
     counter.textContent = (curIdx + 1) + ' / ' + slides.length;
   }
 
@@ -3647,12 +3661,12 @@ var WORKS=[
       slide.className = 'wd-slide';
       if (m.t === 'video') {
         var v = document.createElement('video');
-        v.src = src; v.controls = true; v.preload = 'none'; v.playsInline = true;
+        v.dataset.src = src; v.controls = true; v.preload = 'none'; v.playsInline = true;
         v.poster = BASE + w.slug + '/' + (w.cover || 'cover.jpg');
         slide.appendChild(v);
       } else {
         var img = document.createElement('img');
-        img.loading = 'lazy'; img.src = src; img.alt = w.name;
+        img.dataset.src = src; img.decoding = 'async'; img.alt = w.name;
         slide.appendChild(img);
       }
       track.appendChild(slide);
@@ -3668,12 +3682,14 @@ var WORKS=[
     panel.scrollTop = 0;
     ov.classList.add('open');
     document.body.style.overflow = 'hidden';
+    window._detailOpen = true;   // pauses background canvas loops (perf)
     if (lenis && lenis.stop) lenis.stop();
   }
 
   function closeDetail() {
     ov.classList.remove('open');
     document.body.style.overflow = '';
+    window._detailOpen = false;
     if (lenis && lenis.start) lenis.start();
     track.querySelectorAll('video').forEach(function (v) { v.pause(); v.removeAttribute('src'); v.load(); });
     setTimeout(function () { track.innerHTML = ''; slides = []; }, 500);
