@@ -1900,34 +1900,43 @@ footer { border-top-color: #e0e0e0; }
   var pct  = 0;
   var step = 0;
   var t0   = Date.now();
-  var MAX_WAIT = 15000; // safety: never block longer than 15s
+  var MAX_WAIT = 20000;
 
   function finish() {
     fill.style.width = '100%';
     log.textContent = '> system ready.';
     setTimeout(function() {
       document.getElementById('loader').classList.add('hidden');
-    }, 350);
+    }, 400);
   }
 
+  // smooth easing: pct slowly chases a target that itself grows with real progress
   var iv = setInterval(function() {
     var ready  = window._stoneReady === true;
     var waited = Date.now() - t0;
-    // climb toward 90% on our own, then let real progress carry the rest
     var realPct = (window._stoneProgress || 0) * 100;
-    var target  = ready ? 100 : Math.min(90, Math.max(pct + Math.random() * 14 + 4, realPct));
-    pct = Math.min(target, ready ? 100 : 90);
-    fill.style.width = pct + '%';
+
+    // target is the higher of: real asset progress, or a slow linear crawl
+    // but cap at 97 until truly ready, so bar is always moving but never finishes early
+    var linearCrawl = Math.min(97, (waited / MAX_WAIT) * 85);
+    var target = ready ? 100 : Math.min(97, Math.max(realPct, linearCrawl));
+
+    // ease toward target (always closing the gap, so speed slows naturally near target)
+    pct += (target - pct) * 0.07;
+
+    fill.style.width = pct.toFixed(1) + '%';
+
     if (step < steps.length) {
       log.textContent = '> ' + steps[step++];
     } else if (!ready) {
-      log.textContent = '> loading 3D model...';
+      log.textContent = '> loading 3D assets...';
     }
+
     if (ready || waited > MAX_WAIT) {
       clearInterval(iv);
       finish();
     }
-  }, 160);
+  }, 80);
 })();
 
 // ── Cursor ────────────────────────────────────────────────────────────────────
@@ -2513,9 +2522,9 @@ window._sf = 0; // scatter factor 0→1
 
   /* load PBR textures */
   var texLoader = new THREE.TextureLoader();
-  var normalTex   = texLoader.load('DefaultMaterial_Normal.png',   _assetDone, undefined, _assetDone);
-  var roughTex    = texLoader.load('DefaultMaterial_Roughness.png', _assetDone, undefined, _assetDone);
-  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.png',  _assetDone, undefined, _assetDone);
+  var normalTex   = texLoader.load('DefaultMaterial_Normal.webp',   _assetDone, undefined, _assetDone);
+  var roughTex    = texLoader.load('DefaultMaterial_Roughness.webp', _assetDone, undefined, _assetDone);
+  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.webp',  _assetDone, undefined, _assetDone);
 
   var mat = new THREE.MeshStandardMaterial({
     color: 0x999999,
