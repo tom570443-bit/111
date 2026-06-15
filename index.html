@@ -985,49 +985,102 @@ main {
   font-size: 0.62rem;
 }
 
-/* ── Work detail overlay ───────────────────────────────────────────── */
+/* ── Work detail overlay (left media carousel · right text) ─────────── */
 #work-detail {
+  --pf: 'PingFang SC','苹方','PingFang TC','Noto Sans SC','Microsoft YaHei',sans-serif;
   position: fixed; inset: 0; z-index: 1000;
   background: #f4f4f2;
   opacity: 0; visibility: hidden;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+  display: flex; flex-direction: row;
 }
 #work-detail.open { opacity: 1; visibility: visible; }
 #wd-close {
-  position: fixed; top: 28px; right: 36px; z-index: 1002;
-  width: 46px; height: 46px; border-radius: 50%;
-  border: 1px solid #999; background: rgba(255,255,255,0.7);
+  position: fixed; top: 26px; right: 30px; z-index: 1003;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid #aaa; background: rgba(255,255,255,0.75);
   backdrop-filter: blur(6px);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: transform 0.3s ease, background 0.3s ease;
 }
 #wd-close:hover { transform: rotate(90deg); background: #fff; }
 #wd-close::before, #wd-close::after {
-  content: ''; position: absolute; width: 18px; height: 1.5px; background: #222;
+  content: ''; position: absolute; width: 17px; height: 1.5px; background: #222;
 }
 #wd-close::before { transform: rotate(45deg); }
 #wd-close::after  { transform: rotate(-45deg); }
-.wd-inner { max-width: 860px; margin: 0 auto; padding: 120px 28px 140px; }
+
+/* Left: media stage */
+.wd-stage {
+  position: relative; flex: 0 0 64%; max-width: 64%;
+  background: #1b1b1b; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.wd-track { width: 100%; height: 100%; position: relative; }
+.wd-slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 5vh 4vw;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.45s ease;
+}
+.wd-slide.active { opacity: 1; visibility: visible; }
+.wd-slide img, .wd-slide video {
+  max-width: 100%; max-height: 90vh; width: auto; height: auto;
+  display: block; object-fit: contain;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.wd-slide video { background: #000; width: 100%; }
+
+/* Arrows */
+.wd-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 2; width: 52px; height: 52px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(0,0,0,0.25); backdrop-filter: blur(4px);
+  cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease;
+}
+.wd-arrow:hover { background: rgba(0,0,0,0.55); border-color: #fff; }
+.wd-arrow::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 12px; height: 12px; border-top: 1.5px solid #fff; border-right: 1.5px solid #fff;
+}
+.wd-prev { left: 22px; }
+.wd-next { right: 22px; }
+.wd-prev::before { transform: translate(-30%, -50%) rotate(-135deg); }
+.wd-next::before { transform: translate(-70%, -50%) rotate(45deg); }
+.wd-arrow.hidden { display: none; }
+.wd-counter {
+  position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
+  z-index: 2; color: rgba(255,255,255,0.85);
+  font-family: var(--pf); font-size: 0.78rem; letter-spacing: 0.18em;
+  background: rgba(0,0,0,0.3); padding: 5px 14px; border-radius: 20px;
+}
+
+/* Right: text panel */
+.wd-panel {
+  flex: 1 1 36%; padding: 110px 5% 80px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  font-family: var(--pf);
+}
 .wd-title {
-  font-family: 'Noto Serif SC', 'Songti SC', serif;
-  font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 600;
-  color: #1a1a1a; line-height: 1.4; margin: 0 0 28px;
+  font-family: var(--pf);
+  font-size: clamp(1.4rem, 1.9vw, 2rem); font-weight: 600;
+  color: #1a1a1a; line-height: 1.5; margin: 0 0 26px;
 }
-.wd-body { white-space: pre-wrap; font-family: 'Noto Sans SC','PingFang SC',sans-serif;
-  font-size: 0.98rem; line-height: 2.05; color: #444; font-weight: 300;
-  letter-spacing: 0.02em; margin-bottom: 56px; }
-.wd-media { display: flex; flex-direction: column; gap: 28px; }
-.wd-media img, .wd-media video {
-  width: 100%; height: auto; display: block; border-radius: 2px;
-  box-shadow: 0 18px 50px rgba(0,0,0,0.10);
-  background: #e8e8e6;
+.wd-body {
+  white-space: pre-wrap; font-family: var(--pf);
+  font-size: 0.92rem; line-height: 2.0; color: #4a4a4a; font-weight: 300;
+  letter-spacing: 0.02em;
 }
-.wd-media video { background: #000; }
-@media (max-width: 768px) {
-  .wd-inner { padding: 96px 18px 100px; }
-  #wd-close { top: 16px; right: 18px; }
+
+@media (max-width: 860px) {
+  #work-detail { flex-direction: column; }
+  .wd-stage { flex: 0 0 52vh; max-width: 100%; width: 100%; }
+  .wd-slide { padding: 3vh 6vw; }
+  .wd-slide img, .wd-slide video { max-height: 46vh; }
+  .wd-panel { padding: 32px 26px 80px; }
+  #wd-close { top: 14px; right: 16px; }
 }
 
 
@@ -1816,10 +1869,15 @@ footer { border-top-color: #e0e0e0; }
 <!-- Work detail overlay -->
 <div id="work-detail">
   <button id="wd-close" aria-label="关闭"></button>
-  <div class="wd-inner">
+  <div class="wd-stage">
+    <div class="wd-track"></div>
+    <button class="wd-arrow wd-prev" aria-label="上一张"></button>
+    <button class="wd-arrow wd-next" aria-label="下一张"></button>
+    <div class="wd-counter"></div>
+  </div>
+  <div class="wd-panel">
     <h1 class="wd-title"></h1>
     <div class="wd-body"></div>
-    <div class="wd-media"></div>
   </div>
 </div>
 
@@ -3547,13 +3605,29 @@ var WORKS=[
     sys.appendChild(el);
   });
 
-  // ── Detail overlay ──
+  // ── Detail overlay (carousel) ──
   var ov     = document.getElementById('work-detail');
   var elT    = ov.querySelector('.wd-title');
   var elB    = ov.querySelector('.wd-body');
-  var elM    = ov.querySelector('.wd-media');
+  var track  = ov.querySelector('.wd-track');
+  var panel  = ov.querySelector('.wd-panel');
   var btnX   = document.getElementById('wd-close');
+  var btnPrev= ov.querySelector('.wd-prev');
+  var btnNext= ov.querySelector('.wd-next');
+  var counter= ov.querySelector('.wd-counter');
   var lenis  = window._lenis;
+  var slides = [], curIdx = 0;
+
+  function showSlide(n) {
+    if (!slides.length) return;
+    curIdx = (n + slides.length) % slides.length;
+    slides.forEach(function (s, i) {
+      var on = (i === curIdx);
+      s.classList.toggle('active', on);
+      if (!on) { var v = s.querySelector('video'); if (v) v.pause(); }
+    });
+    counter.textContent = (curIdx + 1) + ' / ' + slides.length;
+  }
 
   function openDetail(w) {
     elT.textContent = w.title || w.name;
@@ -3561,21 +3635,34 @@ var WORKS=[
     var lines = (w.intro || '').split('\n');
     if (lines.length && lines[0].trim() === (w.title || '').trim()) lines.shift();
     elB.textContent = lines.join('\n').replace(/^\n+/, '');
-    elM.innerHTML = '';
+
+    track.innerHTML = '';
+    slides = [];
     w.media.forEach(function (m) {
       var src = BASE + w.slug + '/' + m.s;
+      var slide = document.createElement('div');
+      slide.className = 'wd-slide';
       if (m.t === 'video') {
         var v = document.createElement('video');
         v.src = src; v.controls = true; v.preload = 'none'; v.playsInline = true;
         v.poster = BASE + w.slug + '/' + (w.cover || 'cover.jpg');
-        elM.appendChild(v);
+        slide.appendChild(v);
       } else {
         var img = document.createElement('img');
         img.loading = 'lazy'; img.src = src; img.alt = w.name;
-        elM.appendChild(img);
+        slide.appendChild(img);
       }
+      track.appendChild(slide);
+      slides.push(slide);
     });
-    ov.scrollTop = 0;
+
+    var multi = slides.length > 1;
+    btnPrev.classList.toggle('hidden', !multi);
+    btnNext.classList.toggle('hidden', !multi);
+    counter.style.display = multi ? '' : 'none';
+    showSlide(0);
+
+    panel.scrollTop = 0;
     ov.classList.add('open');
     document.body.style.overflow = 'hidden';
     if (lenis && lenis.stop) lenis.stop();
@@ -3585,14 +3672,18 @@ var WORKS=[
     ov.classList.remove('open');
     document.body.style.overflow = '';
     if (lenis && lenis.start) lenis.start();
-    // stop & unload any playing video to free memory
-    elM.querySelectorAll('video').forEach(function (v) { v.pause(); v.removeAttribute('src'); v.load(); });
-    setTimeout(function () { elM.innerHTML = ''; }, 500);
+    track.querySelectorAll('video').forEach(function (v) { v.pause(); v.removeAttribute('src'); v.load(); });
+    setTimeout(function () { track.innerHTML = ''; slides = []; }, 500);
   }
 
+  btnPrev.addEventListener('click', function () { showSlide(curIdx - 1); });
+  btnNext.addEventListener('click', function () { showSlide(curIdx + 1); });
   btnX.addEventListener('click', closeDetail);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && ov.classList.contains('open')) closeDetail();
+    if (!ov.classList.contains('open')) return;
+    if (e.key === 'Escape') closeDetail();
+    else if (e.key === 'ArrowLeft')  showSlide(curIdx - 1);
+    else if (e.key === 'ArrowRight') showSlide(curIdx + 1);
   });
 })();
 </script>
