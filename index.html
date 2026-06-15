@@ -1899,44 +1899,21 @@ footer { border-top-color: #e0e0e0; }
   var log  = document.getElementById('loader-log');
   var pct  = 0;
   var step = 0;
-  var t0   = Date.now();
-  var MAX_WAIT = 20000;
 
-  function finish() {
-    fill.style.width = '100%';
-    log.textContent = '> system ready.';
-    setTimeout(function() {
-      document.getElementById('loader').classList.add('hidden');
-    }, 400);
-  }
-
-  // smooth easing: pct slowly chases a target that itself grows with real progress
   var iv = setInterval(function() {
-    var ready  = window._stoneReady === true;
-    var waited = Date.now() - t0;
-    var realPct = (window._stoneProgress || 0) * 100;
-
-    // target is the higher of: real asset progress, or a slow linear crawl
-    // but cap at 97 until truly ready, so bar is always moving but never finishes early
-    var linearCrawl = Math.min(97, (waited / MAX_WAIT) * 85);
-    var target = ready ? 100 : Math.min(97, Math.max(realPct, linearCrawl));
-
-    // ease toward target (always closing the gap, so speed slows naturally near target)
-    pct += (target - pct) * 0.07;
-
-    fill.style.width = pct.toFixed(1) + '%';
-
+    pct += Math.random() * 22 + 8;
+    if (pct > 100) pct = 100;
+    fill.style.width = pct + '%';
     if (step < steps.length) {
       log.textContent = '> ' + steps[step++];
-    } else if (!ready) {
-      log.textContent = '> loading 3D assets...';
     }
-
-    if (ready || waited > MAX_WAIT) {
+    if (pct >= 100) {
       clearInterval(iv);
-      finish();
+      setTimeout(function() {
+        document.getElementById('loader').classList.add('hidden');
+      }, 300);
     }
-  }, 80);
+  }, 160);
 })();
 
 // ── Cursor ────────────────────────────────────────────────────────────────────
@@ -2511,20 +2488,11 @@ window._sf = 0; // scatter factor 0→1
   var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.z = 3.2;
 
-  /* ── asset-loading tracker: gates the boot loader ── */
-  window._stoneReady = false;
-  var _assetsTotal = 4, _assetsDone = 0;
-  function _assetDone() {
-    _assetsDone++;
-    window._stoneProgress = _assetsDone / _assetsTotal;
-    if (_assetsDone >= _assetsTotal) window._stoneReady = true;
-  }
-
   /* load PBR textures */
   var texLoader = new THREE.TextureLoader();
-  var normalTex   = texLoader.load('DefaultMaterial_Normal.webp',   _assetDone, undefined, _assetDone);
-  var roughTex    = texLoader.load('DefaultMaterial_Roughness.webp', _assetDone, undefined, _assetDone);
-  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.webp',  _assetDone, undefined, _assetDone);
+  var normalTex   = texLoader.load('DefaultMaterial_Normal.png');
+  var roughTex    = texLoader.load('DefaultMaterial_Roughness.png');
+  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.png');
 
   var mat = new THREE.MeshStandardMaterial({
     color: 0x999999,
@@ -2615,8 +2583,7 @@ window._sf = 0; // scatter factor 0→1
   fetch('asteroid1.obj')
     .then(function(r){ return r.text(); })
     .then(parseAndAddOBJ)
-    .then(_assetDone)
-    .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); _assetDone(); });
+    .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); });
 
   function resize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
