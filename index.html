@@ -977,6 +977,59 @@ main {
   color: #888;
   margin-top: 6px;
 }
+.work-photo.no-detail { cursor: default; }
+.work-photo.no-detail:hover img { filter: grayscale(1) brightness(0.85); transform: none; }
+.work-photo.no-detail .work-caption::after {
+  content: '（敬请期待）';
+  color: #bbb;
+  font-size: 0.62rem;
+}
+
+/* ── Work detail overlay ───────────────────────────────────────────── */
+#work-detail {
+  position: fixed; inset: 0; z-index: 1000;
+  background: #f4f4f2;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#work-detail.open { opacity: 1; visibility: visible; }
+#wd-close {
+  position: fixed; top: 28px; right: 36px; z-index: 1002;
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid #999; background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+#wd-close:hover { transform: rotate(90deg); background: #fff; }
+#wd-close::before, #wd-close::after {
+  content: ''; position: absolute; width: 18px; height: 1.5px; background: #222;
+}
+#wd-close::before { transform: rotate(45deg); }
+#wd-close::after  { transform: rotate(-45deg); }
+.wd-inner { max-width: 860px; margin: 0 auto; padding: 120px 28px 140px; }
+.wd-title {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 600;
+  color: #1a1a1a; line-height: 1.4; margin: 0 0 28px;
+}
+.wd-body { white-space: pre-wrap; font-family: 'Noto Sans SC','PingFang SC',sans-serif;
+  font-size: 0.98rem; line-height: 2.05; color: #444; font-weight: 300;
+  letter-spacing: 0.02em; margin-bottom: 56px; }
+.wd-media { display: flex; flex-direction: column; gap: 28px; }
+.wd-media img, .wd-media video {
+  width: 100%; height: auto; display: block; border-radius: 2px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.10);
+  background: #e8e8e6;
+}
+.wd-media video { background: #000; }
+@media (max-width: 768px) {
+  .wd-inner { padding: 96px 18px 100px; }
+  #wd-close { top: 16px; right: 18px; }
+}
+
 
 /* Fixed stone */
 #stone-fixed, #stone-sharp {
@@ -1749,25 +1802,7 @@ footer { border-top-color: #e0e0e0; }
 
   <!-- SECTION 5: white, falling stone with work photos -->
   <section id="system" style="position:relative;overflow:hidden;">
-    <!-- 20 alternating work photos, spaced 60vh apart starting at 30vh -->
-    <div class="work-photo work-photo--left"  style="top:150vh;" data-caption="传统纹样的当代转译"><img src="https://picsum.photos/480/360?random=103" alt=""><span class="work-caption">传统纹样的当代转译</span></div>
-    <div class="work-photo work-photo--right" style="top:210vh;" data-caption="材质语言与触觉想象"><img src="https://picsum.photos/480/360?random=104" alt=""><span class="work-caption">材质语言与触觉想象</span></div>
-    <div class="work-photo work-photo--left"  style="top:270vh;" data-caption="时间切片中的记忆碎片"><img src="https://picsum.photos/480/360?random=105" alt=""><span class="work-caption">时间切片中的记忆碎片</span></div>
-    <div class="work-photo work-photo--right" style="top:330vh;" data-caption="自然形态的抽象提炼"><img src="https://picsum.photos/480/360?random=106" alt=""><span class="work-caption">自然形态的抽象提炼</span></div>
-    <div class="work-photo work-photo--left"  style="top:390vh;" data-caption="人工智能介入的视觉叙事"><img src="https://picsum.photos/480/360?random=107" alt=""><span class="work-caption">人工智能介入的视觉叙事</span></div>
-    <div class="work-photo work-photo--right" style="top:450vh;" data-caption="身体与空间的感知关系"><img src="https://picsum.photos/480/360?random=108" alt=""><span class="work-caption">身体与空间的感知关系</span></div>
-    <div class="work-photo work-photo--left"  style="top:510vh;" data-caption="数字媒介的物质性研究"><img src="https://picsum.photos/480/360?random=109" alt=""><span class="work-caption">数字媒介的物质性研究</span></div>
-    <div class="work-photo work-photo--right" style="top:570vh;" data-caption="社会议题的视觉化表达"><img src="https://picsum.photos/480/360?random=110" alt=""><span class="work-caption">社会议题的视觉化表达</span></div>
-    <div class="work-photo work-photo--left"  style="top:630vh;" data-caption="器物之美与日常诗意"><img src="https://picsum.photos/480/360?random=111" alt=""><span class="work-caption">器物之美与日常诗意</span></div>
-    <div class="work-photo work-photo--right" style="top:690vh;" data-caption="运动轨迹与时间叠影"><img src="https://picsum.photos/480/360?random=112" alt=""><span class="work-caption">运动轨迹与时间叠影</span></div>
-    <div class="work-photo work-photo--left"  style="top:750vh;" data-caption="建筑语言中的呼吸节奏"><img src="https://picsum.photos/480/360?random=113" alt=""><span class="work-caption">建筑语言中的呼吸节奏</span></div>
-    <div class="work-photo work-photo--right" style="top:810vh;" data-caption="色彩作为情绪的直接书写"><img src="https://picsum.photos/480/360?random=114" alt=""><span class="work-caption">色彩作为情绪的直接书写</span></div>
-    <div class="work-photo work-photo--left"  style="top:870vh;" data-caption="符号系统与意义的漂移"><img src="https://picsum.photos/480/360?random=115" alt=""><span class="work-caption">符号系统与意义的漂移</span></div>
-    <div class="work-photo work-photo--right" style="top:930vh;" data-caption="地图作为一种世界观"><img src="https://picsum.photos/480/360?random=116" alt=""><span class="work-caption">地图作为一种世界观</span></div>
-    <div class="work-photo work-photo--left"  style="top:990vh;" data-caption="手工痕迹与机械复制的对话"><img src="https://picsum.photos/480/360?random=117" alt=""><span class="work-caption">手工痕迹与机械复制的对话</span></div>
-    <div class="work-photo work-photo--right" style="top:1050vh;" data-caption="植物作为设计语言的起源"><img src="https://picsum.photos/480/360?random=118" alt=""><span class="work-caption">植物作为设计语言的起源</span></div>
-    <div class="work-photo work-photo--left"  style="top:1110vh;" data-caption="边界的模糊与新秩序的生成"><img src="https://picsum.photos/480/360?random=119" alt=""><span class="work-caption">边界的模糊与新秩序的生成</span></div>
-    <div class="work-photo work-photo--right" style="top:1170vh;" data-caption="沉默作为一种设计语言"><img src="https://picsum.photos/480/360?random=120" alt=""><span class="work-caption">沉默作为一种设计语言</span></div>
+    <!-- Real works injected by JS from WORKS data, alternating left/right -->
   </section>
 
   <!-- CONTACT — emptied, black -->
@@ -1777,6 +1812,16 @@ footer { border-top-color: #e0e0e0; }
 
 <!-- Portal text overlay (animated by JS) -->
 <div id="word-trans" aria-hidden="true">DIGITAL</div>
+
+<!-- Work detail overlay -->
+<div id="work-detail">
+  <button id="wd-close" aria-label="关闭"></button>
+  <div class="wd-inner">
+    <h1 class="wd-title"></h1>
+    <div class="wd-body"></div>
+    <div class="wd-media"></div>
+  </div>
+</div>
 
 <script>
 // ── Loader ────────────────────────────────────────────────────────────────────
@@ -3455,5 +3500,102 @@ window._sf = 0; // scatter factor 0→1
   frame();
 })();
 </script>
+
+<script>
+// ── Works gallery + detail overlay ─────────────────────────────────────────
+(function () {
+var WORKS=[
+{slug:"w01",name:"书籍设计",title:"《织路》—— 草鞋编织非遗书籍设计",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"},{t:"image",s:"05.jpg"}],intro:"《织路》—— 草鞋编织非遗书籍设计\n\n项目类型：非遗文化书籍设计 / 工艺文献\n\n项目主题：草鞋编织技艺的纪录、拆解与再呈现\n\n项目概述\n\n《织路》是一本以草鞋编织技艺为核心内容的非遗主题书籍。书名取“编织之路”的双关之意——既是草绳经纬交织的物理之路，也是这门古老技艺从历史走向未来的传承之路。本书通过跨三省八市的田野调研、二十余位匠人访谈及百余张实景图像，系统梳理了草鞋从礼制象征到民生实用的文化脉络，以及江浙、川渝、陕北等多地特色编织技法。"},
+{slug:"w02",name:"包装设计",title:"《四时茗叙》——二十四节气茶饮包装",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"}],intro:"《四时茗叙》——二十四节气茶饮包装\n\n项目类型：茶叶包装设计\n\n本款「四时茗叙」二十四节气茶饮包装，以二十四节气文化为设计内核，将时令茶品与节气风物相融，传递顺应时节、自然饮茶的生活理念。\n\n整体包装采用简约雅致的环形主体结构，搭配玉璧造型挂饰与流苏细节，糅合东方传统美学；内部分设对应二十四节气的独立茶品单元，区分不同节气适配茶饮，实现一包装纳四时风物。设计兼顾实用与美学，通过素雅视觉、精巧结构与节气文化赋能，让饮茶成为感知时节流转、邂逅自然意趣的雅致体验，实现传统文化与现代茶饮包装的创新融合。"},
+{slug:"w03",name:"秦岭四宝",title:"《秦岭肆宝》—— 磁吸木制玩具系列设计",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"}],intro:"《秦岭肆宝》—— 磁吸木制玩具系列设计\n\n项目类型：文创产品设计 / 包装设计\n\n项目定位：以秦岭四大珍稀物种为主题的原木磁吸玩具\n\n项目概述\n\n本作品以秦岭地区四种代表性珍稀物种——大熊猫、金丝猴、朱鹮、羚牛——为原型，设计了一套磁吸式木制玩具。产品名称“秦岭肆宝”，强调其地域属性与收藏价值。"},
+{slug:"w04",name:"拼拼俑",title:"《拼拼俑 YONG》—— 兵马俑 DIY 生成软件设计",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"}],intro:"《拼拼俑 YONG》—— 兵马俑 DIY 生成软件设计\n\n项目类型：移动端软件设计 / 传统文化交互设计 / IP 视觉延展\n\n项目主题：卡通兵马俑 DIY、拼图生成、个性化创作\n\n核心策略：兵马俑符号 × 模块化拼装 × 用户自定义生成  \n\n项目概述\n《拼拼俑 YONG》是一款以兵马俑文化为灵感的 DIY 生成类软件设计。项目将传统兵马俑的头饰、脸型、表情、盔甲与肢体结构进行卡通化、模块化拆解，让用户可以通过选择形状、滑动编辑、调整颜色等方式，自由拼装出专属于自己的卡通兵马俑形象。"},
+{slug:"w05",name:"莲湖文旅",title:"《莲湖文旅》",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"},{t:"image",s:"05.jpg"},{t:"image",s:"06.jpg"}],intro:"《莲湖文旅》\n项目类型：品牌形象设计 / LOGO设计\n委托方：西安莲湖文化旅游集团有限公司\n\n项目概述\n\n本作品为西安莲湖文化旅游集团设计品牌LOGO，以“莲湖”地名为核心切入点，提取莲花的自然意象与长安的地域文脉，融合形成兼具文化厚度与识别度的视觉符号。"},
+{slug:"w06",name:"布同一斑",title:"《茶坞阿樵》—— 乡村品牌设计及运营策划",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"}],intro:"《茶坞阿樵》—— 乡村品牌设计及运营策划\n项目类型：乡村文旅品牌设计 / IP 形象设计 / 运营策划\n赛事背景：第三届“两山杯”创新创意创业大赛\n服务对象：浙江省湖州市安吉县剑山村\n核心策略：地域文化 × 白茶产业 × IP 文创 × 文旅导览  \n项目概述\n本项目以安吉县剑山村的地域文化与白茶产业为核心切入点，围绕村庄文化宣传不足、特色辨识度不强、文旅体验体系有待完善等问题，构建“茶坞阿樵”乡村品牌形象及配套运营方案。\n设计从安吉白茶、村庄自然环境与地方文化中提取视觉元素，创作出具有亲和力与传播性的 IP 形象“阿樵”。其造型融合白瓷茶盖、茶碗、茶水等符号，以潮流化、趣味化的视觉语言降低乡村品牌的传播门槛，使地方文化从传统叙事转化为更易被游客感知和记忆的品牌角色。"},
+{slug:"w07",name:"字体设计",title:"《西安交通大学校训字体设计》—— 毕业服袖口字体应用",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"},{t:"image",s:"05.jpg"}],intro:"《西安交通大学校训字体设计》—— 毕业服袖口字体应用\n\n项目类型：校庆字体设计 / 服饰图案应用 / 校园文创设计\n\n应用场景：西安交通大学毕业服袖口及礼服装饰\n\n核心策略：线性字体 × 服饰纹样转化  \n\n项目概述\n本项目围绕西安交通大学校训主题展开字体设计，并将其应用于毕业服袖口等服饰细节中。设计以校园身份和毕业仪式感为核心，将文字从单一信息表达转化为具有装饰性与纪念意义的视觉纹样。\n字体造型采用细线条、几何化和篆刻感的结构处理，在保持文字识别度的同时强化秩序感与东方书写气质。线性笔画适合在袖口、披肩、绶带等服饰边缘进行连续排布，使字体既能作为信息符号呈现，也能成为毕业服整体视觉系统中的装饰语言。"},
+{slug:"w08",name:"叁伍壹壹",title:"《叁伍壹壹 3511》—— 商业街区 IP 延展落地设计",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"},{t:"image",s:"04.jpg"},{t:"image",s:"05.jpg"},{t:"image",s:"06.jpg"},{t:"image",s:"07.jpg"},{t:"image",s:"08.jpg"},{t:"image",s:"09.jpg"},{t:"image",s:"10.jpg"},{t:"image",s:"11.jpg"},{t:"image",s:"12.jpg"}],intro:"《叁伍壹壹 3511》—— 商业街区 IP 延展落地设计\n\n项目类型：商业街区品牌延展 / IP 视觉设计 / 文创与导览系统设计\n\n参与内容：IP 延展、海报设计、文创设计、动态表情包、地图导览等\n\n核心策略：在地商业空间 × IP 角色延展 × 多场景视觉落地  \n\n项目概述\n本项目围绕叁伍壹壹商业街区的品牌视觉延展展开，将街区中的花卉市场、水族宠物市场、社区生活氛围等在地特色，转化为具有传播力的 IP 视觉系统。项目以“鱼人 FINNY”和“花人 BLOSSY”为核心角色，分别对应街区中的烟火气、行动力、审美感与生活诗意，使品牌形象从单一标识延展为更具人格化和亲和力的视觉资产。\n在项目包括 IP 形象延展、海报视觉、衍生文创、动态表情包、地图导览等多类设计内容。设计不仅服务于线上传播，也应用到线下街区导览、招商展示、文创产品与活动视觉中，形成覆盖“识别、引导、互动、纪念”的完整视觉触点。\n该项目重点在于将 IP 从形象设定推进到真实商业空间中的落地应用。通过角色表情、动作、物料、包装、导视与地图系统的持续延展，增强叁伍壹壹街区的品牌辨识度与体验感，让商业空间不只是消费场所，也成为具有记忆点、参与感和社交传播价值的城市生活场景。"},
+{slug:"w09",name:"阳明名扬",title:"《阳明名扬》—— 阳明心学可视化设计",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"}],intro:"《阳明名扬》—— 阳明心学可视化设计\n\n项目类型：文化信息可视化 / 视觉设计\n\n项目概述\n\n本作品以王阳明心学为核心内容，将抽象的哲学思想（知行合一、心即理、致良知）及阳明学说的历史发展脉络、世界传播路线，转化为可视化的信息图表与视觉系统。"},
+{slug:"w10",name:"插画",title:"《气态行星》——幻想生物插画",cover:"cover.jpg",detail:true,media:[{t:"image",s:"01.jpg"},{t:"image",s:"02.jpg"},{t:"image",s:"03.jpg"}],intro:"《气态行星》——幻想生物插画\n\n项目类型：插画设计\n\n\n本作构想了一个完全悬浮于云层之上的外星生态系统。在此设定中，陆地不存在，生命体全部依赖气流与浮力生存。作品描绘了从1米到3米的五种代表性生物，涵盖了掠食者、浮游者、群居植食者及伞状悬浮植物。设计围绕“失重环境下的生存策略”展开，探讨体态、运动方式、食物链之间的协同演化。画面采用混乱的笔触与黑白色调，强化了高空生态的陌生感。"},
+{slug:"w11",name:"贝贝的白日梦",title:"《贝贝的白日梦》",cover:"cover.jpg",detail:false,media:[],intro:"《贝贝的白日梦》\n\n项目类型：绘本作品\n\n简介\n《贝贝的白日梦》是一部探讨「幸福与苦难如何共存」的原创绘本。故事讲述主角贝贝在湖边午睡时，做了一个可以重新设计人生的梦。她在梦中为自己「小小贝」精心挑选了聪明、美貌、健康、富裕但不奢靡的家庭、开明的父母、顺遂的学业与事业——甚至成为了一位成功的动画导演。\n\n然而，当这段「完美人生」被一步步书写完成时，贝贝却陷入了困惑：如果从未经历过痛苦，人还能感知到幸福的滋味吗？如果幸福失去了苦难作为参照，它是否会变得寡淡、扁平，甚至令人麻木？\n\n绘本通过梦境与现实的交织，追问一个朴素却深刻的问题：我们拼命追求的「完美人生」，真的是幸福的唯一答案吗？\n\n创作动机\n这部作品的灵感来源于作者对「成功叙事」的反思——那些看似拥有一切的人，未必如外界想象般幸福。同时，它也源于一种普遍的生命经验：每个人都会在某个年纪，偷偷为自己的人生感到惋惜，然后一边惋惜，一边继续活着。\n\n作者试图通过「白日梦」这一轻盈的叙事载体，探讨一个并不轻盈的命题：苦难是否真的是幸福的必要前提？有没有一种幸福，可以不靠跌倒、受伤、流泪来衬托？"},
+{slug:"w12",name:"云上云下",title:"《云上云下》—— 绘本设计",cover:"cover.jpg",detail:false,media:[],intro:"《云上云下》—— 绘本设计\n\n项目类型：绘本创作 / 插画叙事 / 视觉书籍设计\n\n创作主题：云朵、自然想象、童话叙事、情绪表达\n\n核心策略：双重空间 × 图像叙事 × 儿童化视觉语言  \n\n项目概述\n《云上云下》是一部围绕“天空与地面”展开的原创绘本作品。项目以“云上”和“云下”两个空间作为叙事线索，通过云朵、天空、自然景象与人物情绪之间的关系，构建出一个兼具想象力与温度的童话世界。\n绘本在视觉上强调柔和、轻盈和富有呼吸感的画面氛围，通过色彩层次、场景转换和版面节奏，引导读者在不同空间之间自然穿梭。故事不只呈现云朵与世界的外在变化，也借由“上”与“下”的对照，表达成长中对未知、陪伴、自由与情感连接的理解。"},
+{slug:"w13",name:"唐代综合性宝象花纹",title:"《唐代综合型宝相花纹》—— 传统纹样动态演绎",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"}],intro:"《唐代综合型宝相花纹》—— 传统纹样动态演绎\n\n项目类型：纹样动态设计 / 传统文化视觉转译 / MG 动画\n\n作品时长：约 43 秒\n\n核心策略：唐代纹样 × 宝相花结构 × 动态视觉重构  \n\n项目概述\n本项目以唐代综合型宝相花纹为创作对象，对传统纹样的结构、对称关系和装饰特征进行提取与动态化演绎。作品通过图形拆解、层级展开、旋转生长和节奏化组合，将原本静态的传统纹样转化为具有时间感和视觉流动性的动态画面。"},
+{slug:"w14",name:"御物灵境",title:"《御物灵境》—— 传统脸谱动态视觉设计",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"}],intro:"《御物灵境》—— 传统脸谱动态视觉设计\n项目类型：传统文化视觉转译 / 动态影像设计\n创作主题：戏曲脸谱、国潮视觉、动态演绎\n核心策略：传统符号 × 现代动效 × 视觉节奏重构  \n项目概述\n本项目以中国传统戏曲脸谱为视觉原点，提取脸谱中高辨识度的色彩、线条、对称结构与人物性格符号，将其转化为更具现代感的动态视觉语言。作品通过图形拆解、节奏变化、色彩冲击和画面转场，使传统脸谱从静态纹样转变为具有表现力的动态影像。"},
+{slug:"w15",name:"多巴胺多边形",title:"《多巴胺多边形》—— MG 动态图形动画",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"}],intro:"《多巴胺多边形》—— MG 动态图形动画\n项目类型：MG 动画 / 动态视觉设计 / 图形实验\n作品时长：约 19 秒\n核心策略：高饱和色彩 × 几何图形 × 节奏化运动  \n项目概述\n《多巴胺多边形》是一支以高饱和色彩和几何图形为核心的 MG 动画作品。项目围绕“多巴胺视觉”展开，通过明亮、跳跃、强对比的色彩组合，结合多边形的分裂、旋转、位移与重组，营造出充满活力和节奏感的动态画面。"},
+{slug:"w16",name:"海",title:"《海》—— 自然流体动态练习",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"}],intro:"《海》—— 自然流体动态练习\n项目类型：二维动画 / 动态视觉设计 / 自然元素表现\n作品时长：约 19 秒\n核心策略：海水形态 × 流动节奏 × 画面氛围营造  \n项目概述\n《海》是一支以海水流动为主题的动态视觉作品。项目围绕海浪、涌动、起伏和扩散等自然运动特征展开，通过连续的形态变化与节奏控制，表现海水在画面中的流动感和生命力。\n动画设计重点在于对“水”的动态特征进行视觉转译。通过曲线形态、层次推进、速度变化和循环节奏，让画面呈现出柔和而持续的运动状态。"},
+{slug:"w17",name:"太空网站",title:"《星际漫游》—— 太空主题交互网站设计",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"}],intro:"《星际漫游》—— 太空主题交互网站设计\n\n项目类型：沉浸式网页设计 / 动态交互视觉\n\n项目主题：太空探索、星际航行、未来科技\n\n核心策略：宇宙叙事 × 动态视觉 × 沉浸式网页体验  \n\n项目概述\n本项目以“太空探索”为创意原点，将星球、轨道、星云、舱体界面等视觉元素转化为网页中的动态叙事语言。通过滚动触发、画面切换、空间层次与动效节奏，营造出类似星际航行的浏览体验，让用户在进入网站的同时完成一次从地面到宇宙深处的视觉旅程。"},
+{slug:"w18",name:"赤尾",title:"《赤尾·理想状态》—— 动态广告策划",cover:"cover.jpg",detail:true,media:[{t:"video",s:"video1.mp4"},{t:"video",s:"video2.mp4"},{t:"video",s:"video3.mp4"}],intro:"《赤尾·理想状态》—— 动态广告策划\n项目类型：品牌动态广告策划\n合作品牌：赤尾（避孕套品牌）\n核心策略：物理实验 × 产品卖点的视觉类比\n\n项目概述\n\n本策划以物理学中的“理想状态”（无摩擦、无衰减、完全弹性）为创意原点，将赤尾品牌“薄”与“持久”的产品特性，转化为三个义务教育阶段的经典物理实验——斜坡实验（顺滑）、钟摆实验（持久）、弹簧实验（弹性）。通过科学语境重新定义亲密关系中的体验感，传递“科技让爱更贴近”的品牌主张。"}
+];
+
+  var sys = document.getElementById('system');
+  if (!sys) return;
+  var BASE = 'works/';
+  var startVh = 150, stepVh = 60;
+
+  WORKS.forEach(function (w, i) {
+    var side = (i % 2 === 0) ? 'left' : 'right';
+    var top  = startVh + i * stepVh;
+    var el = document.createElement('div');
+    el.className = 'work-photo work-photo--' + side + (w.detail ? '' : ' no-detail');
+    el.style.top = top + 'vh';
+    el.setAttribute('data-caption', w.name);
+    var cover = BASE + w.slug + '/' + (w.cover || 'cover.jpg');
+    el.innerHTML = '<img loading="lazy" src="' + cover + '" alt="' + w.name + '">' +
+                   '<span class="work-caption">' + w.name + '</span>';
+    if (w.detail) {
+      el.setAttribute('data-hoverable', '');
+      el.addEventListener('click', function () { openDetail(w); });
+    }
+    sys.appendChild(el);
+  });
+
+  // ── Detail overlay ──
+  var ov     = document.getElementById('work-detail');
+  var elT    = ov.querySelector('.wd-title');
+  var elB    = ov.querySelector('.wd-body');
+  var elM    = ov.querySelector('.wd-media');
+  var btnX   = document.getElementById('wd-close');
+  var lenis  = window._lenis;
+
+  function openDetail(w) {
+    elT.textContent = w.title || w.name;
+    // body: drop the first line (it duplicates the title), keep the rest
+    var lines = (w.intro || '').split('\n');
+    if (lines.length && lines[0].trim() === (w.title || '').trim()) lines.shift();
+    elB.textContent = lines.join('\n').replace(/^\n+/, '');
+    elM.innerHTML = '';
+    w.media.forEach(function (m) {
+      var src = BASE + w.slug + '/' + m.s;
+      if (m.t === 'video') {
+        var v = document.createElement('video');
+        v.src = src; v.controls = true; v.preload = 'none'; v.playsInline = true;
+        v.poster = BASE + w.slug + '/' + (w.cover || 'cover.jpg');
+        elM.appendChild(v);
+      } else {
+        var img = document.createElement('img');
+        img.loading = 'lazy'; img.src = src; img.alt = w.name;
+        elM.appendChild(img);
+      }
+    });
+    ov.scrollTop = 0;
+    ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (lenis && lenis.stop) lenis.stop();
+  }
+
+  function closeDetail() {
+    ov.classList.remove('open');
+    document.body.style.overflow = '';
+    if (lenis && lenis.start) lenis.start();
+    // stop & unload any playing video to free memory
+    elM.querySelectorAll('video').forEach(function (v) { v.pause(); v.removeAttribute('src'); v.load(); });
+    setTimeout(function () { elM.innerHTML = ''; }, 500);
+  }
+
+  btnX.addEventListener('click', closeDetail);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && ov.classList.contains('open')) closeDetail();
+  });
+})();
+</script>
+
 </body>
 </html>
