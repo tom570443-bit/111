@@ -1899,21 +1899,39 @@ footer { border-top-color: #e0e0e0; }
   var log  = document.getElementById('loader-log');
   var pct  = 0;
   var step = 0;
+  var t0   = Date.now();
+  var MAX_WAIT = 40000; // safety: never block longer than 40s even if a file stalls
+
+  function finish() {
+    fill.style.width = '100%';
+    log.textContent = '> system ready.';
+    setTimeout(function() {
+      document.getElementById('loader').classList.add('hidden');
+    }, 400);
+  }
 
   var iv = setInterval(function() {
-    pct += Math.random() * 22 + 8;
-    if (pct > 100) pct = 100;
-    fill.style.width = pct + '%';
+    var ready  = window._stoneReady === true;
+    var waited = Date.now() - t0;
+    var realPct = (window._stoneProgress || 0) * 100;
+
+    // bar always creeps forward; capped at 97% until model is truly ready
+    var crawl  = Math.min(97, (waited / MAX_WAIT) * 90);
+    var target = ready ? 100 : Math.min(97, Math.max(realPct, crawl));
+    pct += (target - pct) * 0.08; // ease toward target — smooth, never stalls visually
+    fill.style.width = pct.toFixed(1) + '%';
+
     if (step < steps.length) {
       log.textContent = '> ' + steps[step++];
+    } else if (!ready) {
+      log.textContent = '> loading 3D model...';
     }
-    if (pct >= 100) {
+
+    if (ready || waited > MAX_WAIT) {
       clearInterval(iv);
-      setTimeout(function() {
-        document.getElementById('loader').classList.add('hidden');
-      }, 300);
+      finish();
     }
-  }, 160);
+  }, 80);
 })();
 
 // ── Cursor ────────────────────────────────────────────────────────────────────
@@ -2488,11 +2506,20 @@ window._sf = 0; // scatter factor 0→1
   var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.z = 3.2;
 
-  /* load PBR textures */
+  /* ── asset-loading tracker: gates the boot loader ── */
+  window._stoneReady = false;
+  var _assetsTotal = 4, _assetsDone = 0;
+  function _assetDone() {
+    _assetsDone++;
+    window._stoneProgress = _assetsDone / _assetsTotal;
+    if (_assetsDone >= _assetsTotal) window._stoneReady = true;
+  }
+
+  /* load PBR textures (compressed webp) */
   var texLoader = new THREE.TextureLoader();
-  var normalTex   = texLoader.load('DefaultMaterial_Normal.png');
-  var roughTex    = texLoader.load('DefaultMaterial_Roughness.png');
-  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.png');
+  var normalTex   = texLoader.load('DefaultMaterial_Normal.webp',   _assetDone, undefined, _assetDone);
+  var roughTex    = texLoader.load('DefaultMaterial_Roughness.webp', _assetDone, undefined, _assetDone);
+  var aoTex       = texLoader.load('DefaultMaterial_Mixed_AO.webp',  _assetDone, undefined, _assetDone);
 
   var mat = new THREE.MeshStandardMaterial({
     color: 0x999999,
@@ -2583,7 +2610,8 @@ window._sf = 0; // scatter factor 0→1
   fetch('asteroid1.obj')
     .then(function(r){ return r.text(); })
     .then(parseAndAddOBJ)
-    .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); });
+    .then(_assetDone)
+    .catch(function(){ console.warn('asteroid1.obj not found — run: python -m http.server 8080'); _assetDone(); });
 
   function resize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
